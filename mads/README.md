@@ -1,0 +1,33 @@
+# MADS
+Modified Assistive Driving with Safety (aka Always On Lateral)
+
+A simple mads implementation that enables always on lateral with the ability to
+toggle disengage lateral on brakes as well as disengage lateral on blinker.
+
+# Status
+Rough Implementation
+
+Known working but there are some known bugs where the state can get out of sync
+with panda result in a flashing warning light on dash with no lateral controls
+due to panda blocking the controls. There also is no indication in the UI when
+always on lateral is active vs inactive.
+
+# Cars Supported
+Currently only supports hkg-can vehicles but more will likely be added.
+
+# Panda Safety
+This code does to the best of my knowledge meet the panda safety standards.
+However, there is always some risk associated to modifying panda in any way. I
+suggest you take a look at the changes these patches make before using and
+make sure you understand the change. The change does not make modifications
+to the controls allowed state of the longitudinal controls, so all longitudinal
+behavior should remain the same.
+
+# Using
+This change requires two patches due to it modifying both openpilot and panda.
+Please read the panda safety section of this README before using the patches.
+Applying the openpilot patch will point the panda module in the openpilot repo
+to my commit hash. I recommend that you apply the panda patch to your own panda
+repo and then create another commit overwriting the commit hash in the openpilot
+repo to your own panda with mads. I may rewrite the git history on my mads branch
+at any time.

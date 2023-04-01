@@ -1,5 +1,6 @@
 # POP - Pfeifer Openpilot Patches
-A collection of single commit patches of common unsupported/unofficial community patches.
+A collection of single (or few) commit patches of common unsupported/unofficial
+community features.
 
 # WARNING! Here be dragons!
 This fork and branch is intended to provide patches that add common
