@@ -2,6 +2,15 @@
 Uses the predicted driving path from the model to limit speed when entering
 and during curves.
 
+# Branch
+[pfeifer-vtsc](https://github.com/pfeiferj/openpilot/tree/pfeifer-vtsc)
+
+# Acknowledgments
+* Refactor of the [move-fast](https://github.com/move-fast/openpilot) vtsc
+implementation.
+* [Sunnypilot](https://github.com/sunnyhaibin/sunnypilot) was also used as a
+reference.
+
 # Status
 Experimental
 
@@ -12,6 +21,6 @@ well as some cleanup and visual indicators of its status in the ui.
 
 # Why two patch files?
 Currently the plan is for the changes in the first patch file to be merged
-upstream into openpilot. Once merged thatwould make the second patch the only
+upstream into openpilot. Once merged that would make the second patch the only
 code needed for the VTSC implementation. If the upstream PR gets rejected I
 will merge the two patch files into a single patch instead.

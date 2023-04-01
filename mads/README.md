@@ -4,6 +4,15 @@ Modified Assistive Driving with Safety (aka Always On Lateral)
 A simple mads implementation that enables always on lateral with the ability to
 toggle disengage lateral on brakes as well as disengage lateral on blinker.
 
+# Branch
+[pfeifer-mads](https://github.com/pfeiferj/openpilot/tree/pfeifer-mads)
+
+# Acknowledgments
+I used the following forks as references:
+* [Sunnypilot](https://github.com/sunnyhaibin/sunnypilot)
+* [Spektor56's Ghostpilot](https://github.com/spektor56/ghostpilot)
+* [Alexandre Sato's Fork](https://github.com/AlexandreSato/openpilot/tree/personal3)
+
 # Status
 Rough Implementation
 
