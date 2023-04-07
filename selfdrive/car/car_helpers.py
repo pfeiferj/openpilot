@@ -17,12 +17,22 @@ FRAME_FINGERPRINT = 100  # 1s
 
 EventName = car.CarEvent.EventName
 
+# PFEIFER - NBW {{
+from system.version import get_short_branch
+# }} PFEIFER - NBW
+
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
-  if is_comma_remote() and is_tested_branch():
+  #if is_comma_remote() and is_tested_branch():
+  #  event = EventName.startup
+  #else:
+  #  event = EventName.startupMaster
+  # PFEIFER - NBW {{
+  if get_short_branch() in ['pfeifer-full']:
     event = EventName.startup
   else:
     event = EventName.startupMaster
+  # }} PFEIFER - NBW
 
   if not car_recognized:
     if fw_seen:
