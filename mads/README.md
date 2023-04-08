@@ -4,6 +4,9 @@ Modified Assistive Driving with Safety (aka Always On Lateral)
 A simple mads implementation that enables always on lateral with the ability to
 toggle disengage lateral on brakes as well as disengage lateral on blinker.
 
+# Cars Supported
+Currently only supports hkg-can vehicles but more will likely be added.
+
 # Branch
 [pfeifer-mads](https://github.com/pfeiferj/openpilot/tree/pfeifer-mads)
 
@@ -21,8 +24,8 @@ with panda result in a flashing warning light on dash with no lateral controls
 due to panda blocking the controls. There also is no indication in the UI when
 always on lateral is active vs inactive.
 
-# Cars Supported
-Currently only supports hkg-can vehicles but more will likely be added.
+# Comment Blocks Text
+PFEIFER - mads
 
 # Panda Safety
 This code does to the best of my knowledge meet the panda safety standards.
