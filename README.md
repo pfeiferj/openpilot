@@ -52,3 +52,6 @@ Any branch with -dev on the end of the name has a fairly high chance of breaking
 
 ### pfeifer branch
 _DO NOT TRUST THE pfeifer BRANCH!_ As mentioned in the warning section, the pfeifer branch is _extremely_ likely to be broken at any point in time. The branch is used as a playground and is frequently pushed to without _any_ testing. I highly recommend you do not use this branch. It _will_ have half baked changes. It _will_ have issues building from time to time. It _will_ have unexpected behavior and things that are not entirely safe without full understanding of what the possible problems of the particular changes are. It _will_ cause crashes on openpilot from time to time that prevent openpilot from operating.
+
+## Notes folder
+The notes folder doesn't contain any patches, but instead it contains notes related to openpilot. It is more or less just a collection of things that I either needed to lookup to gain better understanding of what openpilot is doing, or that I think would be helpful in general.
