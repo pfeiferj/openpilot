@@ -27,3 +27,6 @@ Currently the plan is for the changes in the first patch file to be merged
 upstream into openpilot. Once merged that would make the second patch the only
 code needed for the VTSC implementation. If the upstream PR gets rejected I
 will merge the two patch files into a single patch instead.
+
+# Upstream PR
+The first patch in this folder is in [this](https://github.com/commaai/openpilot/pull/27741) upstream PR.
