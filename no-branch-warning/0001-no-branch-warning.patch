@@ -1,0 +1,34 @@
+From 97df6e3f2f2c5b2a3c48d77d791da5dad4488cd3 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Fri, 7 Apr 2023 15:18:15 -0400
+Subject: [PATCH] no branch warning
+
+---
+ selfdrive/car/car_helpers.py | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/selfdrive/car/car_helpers.py b/selfdrive/car/car_helpers.py
+index 6a131c77d..8c098f702 100644
+--- a/selfdrive/car/car_helpers.py
++++ b/selfdrive/car/car_helpers.py
+@@ -17,10 +17,13 @@ EventName = car.CarEvent.EventName
+ 
+ 
+ def get_startup_event(car_recognized, controller_available, fw_seen):
+-  if is_comma_remote() and is_tested_branch():
+-    event = EventName.startup
+-  else:
+-    event = EventName.startupMaster
++  #if is_comma_remote() and is_tested_branch():
++  #  event = EventName.startup
++  #else:
++  #  event = EventName.startupMaster
++  # PFEIFER - no-branch-warning {{
++  event = EventName.startup
++  # }} PFEIFER - no-branch-warning
+ 
+   if not car_recognized:
+     if fw_seen:
+-- 
+2.40.0
+
