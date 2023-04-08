@@ -2,7 +2,7 @@
 A collection of single (or few) commit patches of common unsupported/unofficial
 community features.
 
-# Not a developer? Read this!
+## Not a developer? Read this!
 This repo is primarily intended for developers. If you're not a developer you
 may be better served by some of the amazing community forks of openpilot. The
 following are some popular forks I am personally aware of:
@@ -20,7 +20,7 @@ following are some popular forks I am personally aware of:
 
 Still want to use something in this repo? Read on about the dragons...
 
-# WARNING! Here be dragons!
+## WARNING! Here be dragons!
 This fork and branch is intended to provide patches that add common
 unsupported/unofficial community features of openpilot. Other branches in this
 repo will frequently have their commit history reset in order to maintain
@@ -31,23 +31,24 @@ with the latest openpilot master please create an issue. That being said, use
 at your own risk. The patches may at any time become incompatible with Openpilot
 master.
 
-# Reading the patch docs and code
+## Reading the patch docs and code
 Each patch has its own folder with a readme. The readme contains details regarding that particular patch set. In general the readme documents will describe what the patch does, what repos were used as references when writing the patch, the stability of the patch, the branch used for creating the patch, and warnings regarding any known issues or other things I deem important to warn about. Note that the readme docs are only loosely following the same pattern so you should read the entire doc for a patch you plan to use.
 
-## Planned for upstream
+### Planned for upstream
 If the patch is intended for upstream I will note the upstream PR related to the patch in the readme. Note that any patch planned for upstream will not contain comment blocks/fences for changes
 
-## Comment blocks/fences
+### Comment blocks/fences
 If the patch is not intended for a pr to upstream then the code will contain comments surrounding any new code. These blocks make it easier to see what changes were for what functionality when using multiple patches. This in turn helps with resolving any conflicts between patches. Many of the patches will likely conflict in the params and ui sections due to the toggles and params being placed in the same location, but the patches may have conflicts elsewhere that would need to be resolved when using multiple patches.
 
-## Commented out upstream code
+### Commented out upstream code
 Anywhere that lines of existing upstream code have to be replaced I comment out the upstream code and then directly follow the commented out code with the comment block and patch code. Generally commented out code is considered to be an anti-pattern since your source control keeps track of the old code. I'm commenting out code despite this for convenience. In this case the code may frequently have conflicts with upstream changes and while resolving those conflicts I am using the commented out code for context on what my change was vs what has changed since then in upstream. Doing this is especially relevent since I am rewriting my git history frequently which may cause the context to be lost.
 
-# pfeifer-full branch
+## Branches
+### pfeifer-full branch
 The pfeifer-full branch is intended to be a _somewhat_ stable branch that combines most of the patches in the pfeifer-openpilot-patches branch. If using multiple of the patches you may find it more convenient to cherry-pick off of the pfeifer-full branch instead of using the patches directly because conflicts between patches will already be resolved. Note that the git history on the pfeifer-full branch (and most other branches) will be rewritten frequently.
 
-# -dev branches
+### -dev branches
 Any branch with -dev on the end of the name has a fairly high chance of breaking at any time. These branches are intended for testing a change in isolation before creating a patch.
 
-# pfeifer branch
+### pfeifer branch
 _DO NOT TRUST THE pfeifer BRANCH!_ As mentioned in the warning section, the pfeifer branch is _extremely_ likely to be broken at any point in time. The branch is used as a playground and is frequently pushed to without _any_ testing. I highly recommend you do not use this branch. It _will_ have half baked changes. It _will_ have issues building from time to time. It _will_ have unexpected behavior and things that are not entirely safe without full understanding of what the possible problems of the particular changes are. It _will_ cause crashes on openpilot from time to time that prevent openpilot from operating.
