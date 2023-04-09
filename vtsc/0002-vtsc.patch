@@ -1,15 +1,15 @@
-From 60fce0657aff353ff4c7658077b1c0486201e41f Mon Sep 17 00:00:00 2001
+From b0fcdd2989d145b99ff0ede23bebed15599cafad Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 31 Mar 2023 13:51:24 -0400
-Subject: [PATCH 2/2] vtsc
+Subject: [PATCH] vtsc
 
 ---
  common/params.cc                              |   3 +
- .../controls/lib/longitudinal_planner.py      |  25 +-
- .../controls/lib/vision_turn_controller.py    | 221 ++++++++++++++++++
+ .../controls/lib/longitudinal_planner.py      |  26 ++-
+ .../controls/lib/vision_turn_controller.py    | 216 ++++++++++++++++++
  selfdrive/controls/plannerd.py                |   7 +-
  selfdrive/ui/qt/offroad/settings.cc           |   8 +
- 5 files changed, 260 insertions(+), 4 deletions(-)
+ 5 files changed, 256 insertions(+), 4 deletions(-)
  create mode 100644 selfdrive/controls/lib/vision_turn_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -27,7 +27,7 @@ index 428830a11..f58681d7d 100644
  
  } // namespace
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index a2ff42d75..339ef7c2c 100755
+index a2ff42d75..031c84a6a 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -14,6 +14,9 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
@@ -60,7 +60,7 @@ index a2ff42d75..339ef7c2c 100755
      self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
  
      v_ego = sm['carState'].vEgo
-@@ -119,15 +126,29 @@ class LongitudinalPlanner:
+@@ -119,15 +126,30 @@ class LongitudinalPlanner:
  
      if force_slow_decel:
        v_cruise = 0.0
@@ -76,7 +76,8 @@ index a2ff42d75..339ef7c2c 100755
 +    v_target = v_cruise
 +    if self.vision_turn_controller.active:
 +      a_target, v_target = self.vision_turn_controller.plan
-+      accel_limits_turns[0] = min(accel_limits_turns[0], a_target)
++      accel_limits_turns[0] = min(accel_limits_turns[0], a_target - 0.05)
++      accel_limits_turns[1] = min(accel_limits_turns[1], a_target + 0.05)
 +    # }} PFEIFER - VTSC
 +
      self.mpc.set_weights(prev_accel_constraint)
@@ -93,56 +94,39 @@ index a2ff42d75..339ef7c2c 100755
      self.a_desired_trajectory_full = np.interp(T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
 diff --git a/selfdrive/controls/lib/vision_turn_controller.py b/selfdrive/controls/lib/vision_turn_controller.py
 new file mode 100644
-index 000000000..0f5fe7b2e
+index 000000000..7dd451fe0
 --- /dev/null
 +++ b/selfdrive/controls/lib/vision_turn_controller.py
-@@ -0,0 +1,221 @@
+@@ -0,0 +1,216 @@
 +import numpy as np
-+import math
-+from common.numpy_fast import interp
-+from common.params import Params
-+from common.realtime import sec_since_boot
 +from common.conversions import Conversions as CV
-+from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
++from common.filter_simple import FirstOrderFilter
++from common.numpy_fast import clip
++from common.params import Params
++from common.realtime import sec_since_boot, DT_MDL
++
 +Polynomial = np.polynomial.polynomial.Polynomial
 +
-+from selfdrive.controls.lib.drive_helpers import CONTROL_N
++EVAL_COUNT = 30  # Number of points to evaluate on curvature.
++EVAL_START = 1  # seconds. Distance ahead to start evaluating vision curvature.
++EVAL_STOP = 9 # seconds. Distance ahead to stop evaluating vision curvature.
 +
++TARGET_LAT_A = 2.1 # m/s^2
 +
-+EVAL_STEP = 5  # mts. Resolution of the curvature evaluation.
-+EVAL_START = 20  # mts. Distance ahead where to start evaluating vision curvature.
-+EVAL_LENGTH = 150  # mts. Distance ahead where to stop evaluating vision curvature.
-+EVAL_RANGE = np.arange(EVAL_START, EVAL_LENGTH, EVAL_STEP)
-+
-+A_LAT_REG_MAX = 2  # Maximum lateral acceleration
-+
-+NO_OVERSHOOT_TIME_HORIZON = 4  # s. Time to use for velocity desired based on a_target when not overshooting.
++TARGET_DECEL_TIME = 3.5 # seconds. Time to hit target velocity. Note: calculating from distance on poly does not work well
 +
 +# The minimum amount of lateral acceleration that the controller considers to be an active turn
-+TURN_ACTIVE_LIMIT = 1.1 # m/s^2
-+
-+# Lookup table for the minimum smooth deceleration during the ENTERING state
-+# depending on the actual maximum absolute lateral acceleration predicted on the turn ahead.
-+SMOOTH_ACCEL_V = [-0.2, -1]  # min decel value allowed on ENTERING state
-+SMOOTH_ACCEL_BP = [TURN_ACTIVE_LIMIT, 3]  # absolute value of lat acc ahead
++TURN_ACTIVE_LIMIT = 1.7 # m/s^2
 +
 +# The maximum this controller will request to decelerate
 +MAX_DECEL = -2 # m/s^2
 +
-+# The maximum amount of deceleration this controller will request while actively in a turn
-+MAX_ACTIVE_TURN_DECEL = -1.2 # m/s^2
++# The maximum amount of acceleration and deceleration this controller will request while actively in a turn
++MAX_ACTIVE_TURN_ACCEL = 0.1 # m/s^2
++MAX_ACTIVE_TURN_DECEL = -0.5 # m/s^2
 +
-+def eval_lat_acc(v_ego, x_curv):
-+  """
-+  This function returns a vector with the lateral acceleration based
-+  for the provided speed `v_ego` evaluated over curvature vector `x_curv`
-+  """
-+
-+  def lat_acc(curv):
-+    a = v_ego**2 * curv
-+    return a
-+
-+  return np.vectorize(lat_acc)(x_curv)
++# The "lag" of the filter. Higher values cause smoother changes in acceleration but delays hitting the desired acceleration
++FILTER_RC = 0.2
 +
 +def poly_points_to_curvature(poly, x_points):
 +  """
@@ -175,9 +159,9 @@ index 000000000..0f5fe7b2e
 +       ( 1 + y'(x)^2 ) ^ (3/2)
 +
 +  """
++  dy = poly.deriv()
++  ddy = dy.deriv()
 +  def point_to_curv(x):
-+    dy = poly.deriv()
-+    ddy = dy.deriv()
 +    k = abs(ddy(x)) / ((1 + dy(x)**2)**(3/2))
 +    return k
 +
@@ -194,22 +178,34 @@ index 000000000..0f5fe7b2e
 +    self.v_ego = 0
 +    self.a_ego = 0
 +    self.a_target = 0
-+    self.v_overshoot = 0
++    self.v_target = 0
 +    self.enabled = self.params.get_bool("TurnVisionControl")
++    self.filter = FirstOrderFilter(0.0, FILTER_RC, DT_MDL)
 +
 +    self.reset()
 +
 +  @property
 +  def active(self):
-+    decel_needed = self.max_pred_lat_acc > TURN_ACTIVE_LIMIT or self.current_lat_accel > TURN_ACTIVE_LIMIT
-+    return self.op_enabled and not self.gas_pressed and self.enabled and decel_needed
++    turn_limit_exceeded = self.max_pred_lat_acc > TURN_ACTIVE_LIMIT
++    return self.op_enabled and not self.gas_pressed and self.enabled and turn_limit_exceeded
++
++  @property
++  def eval_distances(self):
++    # Get start and stop using defined seconds against the current velocity
++    v_ego = max(self.v_ego, 0.1) # ensure a value greater than 0 for calculations
++    eval_start = EVAL_START * v_ego
++    eval_stop = EVAL_STOP * v_ego
++    eval_step = (eval_stop - eval_start) / EVAL_COUNT
++    eval_distances = np.arange(eval_start, eval_stop, eval_step)
++    return eval_distances
++
++  @property
++  def plan(self):
++    return (self.filtered_a, self.v_target)
 +
 +  def reset(self):
 +    self.current_lat_accel = 0
-+    self.max_v_for_current_curvature = 0
 +    self.max_pred_lat_acc = 0
-+    self.v_overshoot_distance = 200
-+    self.lat_acc_overshoot_ahead = False
 +    self.x_plan = []
 +    self.y_plan = []
 +
@@ -218,6 +214,17 @@ index 000000000..0f5fe7b2e
 +    if time > self.last_params_update + 5.0:
 +      self.enabled = self.params.get_bool("TurnVisionControl")
 +      self.last_params_update = time
++
++
++  def get_driving_path_poly(self):
++    """
++    Fits the points from the predicted driving path to a numpy polynomial function.
++    """
++    # Calculate curvature polynomial from predicted path
++    if len(self.x_plan) > 3:
++      return Polynomial.fit(self.x_plan, self.y_plan, 4)
++
++    return Polynomial([0, 0, 0, 0])
 +
 +  def update_current_state(self, sm):
 +    """
@@ -231,81 +238,70 @@ index 000000000..0f5fe7b2e
 +
 +    self.current_lat_accel = current_curvature * self.v_ego**2
 +
-+    if current_curvature > 0:
-+      self.max_v_for_current_curvature = math.sqrt(A_LAT_REG_MAX / current_curvature)
-+    else:
-+      self.max_v_for_current_curvature = V_CRUISE_MAX * CV.KPH_TO_MS
 +
++  def apply_limits(self):
++    # get current max velocity
++    max_v = self.v_cruise_setpoint * CV.KPH_TO_MS
 +
-+  def get_driving_path_poly(self, sm):
-+    """
-+    Fits the points from the predicted driving path to a numpy polynomial function.
-+    """
-+    # Calculate curvature polynomial from predicted path
-+    if len(self.x_plan) > 3:
-+      return Polynomial.fit(self.x_plan, self.y_plan, 4)
++    # initialize our targets based off of current values
++    a_target = self.a_ego
++    v_target = max_v
 +
-+    return Polynomial([0, 0, 0, 0])
++    # VTSC not needed or disabled, do not change targets
++    if not self.active:
++      self.a_target = a_target
++      self.v_target = v_target
++      return
++
++    # Limit the requested deceleration by the defined maximum deceleration
++    if self.max_pred_lat_acc > TARGET_LAT_A:
++      a_target = max(self.a_target, MAX_DECEL)
++      v_target = min(self.v_target, max_v) # Never request more velocity than the set max
++
++    # If there is an upcoming active turn limit the accel to the max active turn accel, but not the decel
++    if self.max_pred_lat_acc > TURN_ACTIVE_LIMIT:
++      a_target = min(a_target, MAX_ACTIVE_TURN_ACCEL)
++
++    # If in an active turn limit the accel to defined parameters
++    if self.current_lat_accel > TURN_ACTIVE_LIMIT:
++      a_target = clip(a_target, MAX_ACTIVE_TURN_DECEL, MAX_ACTIVE_TURN_ACCEL)
++
++    self.a_target = a_target
++    self.v_target = v_target
 +
 +
 +  def update_calculations(self, sm):
-+    # Set values related to current curvature
 +    self.update_current_state(sm)
 +
 +    # Fit the model's predicted path to polynomial
-+    path_poly = self.get_driving_path_poly(sm)
++    path_poly = self.get_driving_path_poly()
++
++    # Get distances on path to calculate for
++    eval_distances = self.eval_distances
 +
 +    # Find curvature values from the predicted driving path
-+    predicted_curvatures = poly_points_to_curvature(path_poly, EVAL_RANGE)
++    v_ego = max(self.v_ego, 0.1) # ensure a value greater than 0 for calculations
++    predicted_curvatures = poly_points_to_curvature(path_poly, eval_distances)
++    predicted_lat_accels = predicted_curvatures * v_ego**2
 +
-+    # Get the maximum predicted lateral acceleration from future curvature and current speed
-+    max_pred_curvature = np.amax(predicted_curvatures)
-+    self.max_pred_lat_acc = self.v_ego**2 * max_pred_curvature
++    # Find max lat accel
++    accel_idx = np.argmax(predicted_lat_accels)
++    self.max_pred_lat_acc = predicted_lat_accels[accel_idx]
 +
-+    # Get the largest curvature possible for the current velocity
-+    max_curvature_for_vego = A_LAT_REG_MAX / max(self.v_ego, 0.1)**2
++    # Get target deceleration
++    target_velocity = (TARGET_LAT_A / predicted_curvatures[accel_idx]) ** 0.5
++    velocity_diff = target_velocity - v_ego
++    needed_accel = velocity_diff / TARGET_DECEL_TIME
 +
-+    # Find points in the predicted curvature that our current velocity exceeds the max acceptable lateral acceleration
-+    lat_acc_overshoot_idxs = np.nonzero(predicted_curvatures >= max_curvature_for_vego)[0]
++    # Store the targets
++    self.a_target = needed_accel
++    self.v_target = target_velocity
 +
-+    # If there is a point that exceeds the max lateral acceleration we calculate
-+    # a maximum velocity that fits the acceptable lateral acceleration in the
-+    # upcoming curvature. We then calculate the distance to the point at which
-+    # the new maximum velocity is needed.
-+    self.lat_acc_overshoot_ahead = len(lat_acc_overshoot_idxs) > 0
-+    if self.lat_acc_overshoot_ahead:
-+      self.v_overshoot = min(math.sqrt(A_LAT_REG_MAX / max_pred_curvature), self.v_cruise_setpoint)
-+      self.v_overshoot_distance = max(lat_acc_overshoot_idxs[0] * EVAL_STEP + EVAL_START, EVAL_STEP)
++    # update targets based on limits
++    self.apply_limits()
 +
-+  @property
-+  def plan(self):
-+    # VTSC not needed or disabled, do not change accel
-+    if not self.active:
-+      return (self.a_ego, self.v_cruise_setpoint)
-+
-+    # decel for our current curve as it's greater than predicted curvature
-+    if self.current_lat_accel > self.max_pred_lat_acc:
-+      a_target = interp(self.max_pred_lat_acc, SMOOTH_ACCEL_BP, SMOOTH_ACCEL_V)
-+      v_target = self.v_cruise_setpoint
-+
-+    else: # decel for future turn
-+      a_target = interp(self.max_pred_lat_acc, SMOOTH_ACCEL_BP, SMOOTH_ACCEL_V)
-+      v_target = self.v_ego + self.a_target * NO_OVERSHOOT_TIME_HORIZON
-+
-+    # when overshooting, target the acceleration needed to achieve the overshoot speed at the required distance
-+    if self.lat_acc_overshoot_ahead:
-+      a_target = min((self.v_overshoot**2 - self.v_ego**2) / (2 * self.v_overshoot_distance), a_target)
-+      v_target = self.v_overshoot
-+
-+    # Limit the requested deceleration by the defined maximum deceleration
-+    a_target = max(a_target, MAX_DECEL)
-+
-+    # While actively turning, limit the requested deceleration by the defined maximum deceleration in a turn
-+    if self.current_lat_accel > TURN_ACTIVE_LIMIT:
-+      a_target = max(a_target, MAX_ACTIVE_TURN_DECEL)
-+
-+
-+    return (a_target, v_target)
++    # calculate the filtered acceleration
++    self.filtered_a = self.filter.update(self.a_target)
 +
 +  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, sm, lateral_planner):
 +    self.op_enabled = enabled
