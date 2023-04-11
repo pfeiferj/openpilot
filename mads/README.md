@@ -17,12 +17,10 @@ I used the following forks as references:
 * [Alexandre Sato's Fork](https://github.com/AlexandreSato/openpilot/tree/personal3)
 
 # Status
-Rough Implementation
+Alpha
 
-Known working but there are some known bugs where the state can get out of sync
-with panda result in a flashing warning light on dash with no lateral controls
-due to panda blocking the controls. There also is no indication in the UI when
-always on lateral is active vs inactive.
+There are no currently known bugs, but some additional testing of keeping sync
+with panda is needed. Limited car support.
 
 # Comment Blocks Text
 PFEIFER - mads
