@@ -8,7 +8,8 @@ toggle disengage lateral on brakes as well as disengage lateral on blinker.
 Currently only supports hkg-can vehicles but more will likely be added.
 
 ## Branch
-[pfeifer-mads](https://github.com/pfeiferj/openpilot/tree/pfeifer-mads)
+Openpilot: [pfeifer-mads](https://github.com/pfeiferj/openpilot/tree/pfeifer-mads)
+Panda: [pfeifer-mads](https://github.com/pfeiferj/panda/tree/pfeifer-mads)
 
 ## Acknowledgments
 I used the following forks as references:
