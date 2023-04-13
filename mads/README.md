@@ -4,28 +4,28 @@ Modified Assistive Driving with Safety (aka Always On Lateral)
 A simple mads implementation that enables always on lateral with the ability to
 toggle disengage lateral on brakes as well as disengage lateral on blinker.
 
-# Cars Supported
+## Cars Supported
 Currently only supports hkg-can vehicles but more will likely be added.
 
-# Branch
+## Branch
 [pfeifer-mads](https://github.com/pfeiferj/openpilot/tree/pfeifer-mads)
 
-# Acknowledgments
+## Acknowledgments
 I used the following forks as references:
 * [Sunnypilot](https://github.com/sunnyhaibin/sunnypilot)
 * [Spektor56's Ghostpilot](https://github.com/spektor56/ghostpilot)
 * [Alexandre Sato's Fork](https://github.com/AlexandreSato/openpilot/tree/personal3)
 
-# Status
+## Status
 Alpha
 
 There are no currently known bugs, but some additional testing of keeping sync
 with panda is needed. Limited car support.
 
-# Comment Blocks Text
+## Comment Blocks Text
 PFEIFER - mads
 
-# Panda Safety
+## Panda Safety
 This code does to the best of my knowledge meet the panda safety standards.
 However, there is always some risk associated to modifying panda in any way. I
 suggest you take a look at the changes these patches make before using and
@@ -33,7 +33,7 @@ make sure you understand the change. The change does not make modifications
 to the controls allowed state of the longitudinal controls, so all longitudinal
 behavior should remain the same.
 
-# Using
+## Using
 This change requires two patches due to it modifying both openpilot and panda.
 Please read the panda safety section of this README before using the patches.
 Applying the openpilot patch will point the panda module in the openpilot repo

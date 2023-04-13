@@ -2,15 +2,15 @@
 Improvements to how openpilot sends longitudinal commands to allow for smoother
 acceleration and deceleration while still maintaining responsiveness.
 
-# Status
+## Status
 Alpha
 
 Have been daily driving this for a while now. Should be a noticeable improvement overall but there may be poor behavior at low speeds when coming to a stop and starting from a stop.
 
-# Upstream
+## Upstream
 https://github.com/commaai/openpilot/pull/27867
 
-# Detailed Explanation of Change
+## Detailed Explanation of Change
 Calculate jerk from the acceleration plan and use as the lower limit value when sending accel commands to hyundai can vehicles.
 
 Using small min values for the jerk increases the resolution of the acceleration that the car provides. This allows the car to better fit the acceleration to the plan by making smaller adjustments to the acceleration to maintain/hit the target acceleration.

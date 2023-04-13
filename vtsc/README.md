@@ -2,16 +2,16 @@
 Uses the predicted driving path from the model to limit speed when entering
 and during curves.
 
-# Branch
+## Branch
 [pfeifer-vtsc](https://github.com/pfeiferj/openpilot/tree/pfeifer-vtsc)
 
-# Acknowledgments
+## Acknowledgments
 * Rewrite of the [move-fast](https://github.com/move-fast/openpilot) vtsc
 implementation.
 * [Sunnypilot](https://github.com/sunnyhaibin/sunnypilot) was also used as a
 reference.
 
-# Status
+## Status
 Alpha
 
 Behavior seems consistent in my limited testing. Have done a rough tune of the
@@ -19,19 +19,19 @@ constants and find it to be a reasonably good experience. Still needs some
 additional features such as: status in the UI, disabling when following a lead
 vehicle, and disabling at low speeds.
 
-# Comment Blocks Text
+## Comment Blocks Text
 PFEIFER - VTSC
 
-# Why two patch files?
+## Why two patch files?
 Currently the plan is for the changes in the first patch file to be merged
 upstream into openpilot. Once merged that would make the second patch the only
 code needed for the VTSC implementation. If the upstream PR gets rejected I
 will merge the two patch files into a single patch instead.
 
-# Upstream PR
+## Upstream PR
 The first patch in this folder is in [this](https://github.com/commaai/openpilot/pull/27741) upstream PR.
 
-# Tuning
+## Tuning
 Tuning should primarily be performed using the constants in
 selfdrive/controls/lib/vision\_turn\_controller.py. Below is a description of
 the constants that have the most impact on behavior. (Ordered by what I believe
