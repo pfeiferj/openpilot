@@ -1,6 +1,5 @@
 # POP - Pfeifer Openpilot Patches
-A collection of single (or few) commit patches of common unsupported/unofficial
-community features.
+A collection of patch sets of common unsupported/unofficial community features.
 
 ## Not a developer? Read this!
 This repo is primarily intended for developers. If you're not a developer you
@@ -24,7 +23,7 @@ Still want to use something in this repo? Read on about the dragons...
 This fork and branch is intended to provide patches that add common
 unsupported/unofficial community features of openpilot. Other branches in this
 repo will frequently have their commit history reset in order to maintain
-single commit patches. The branches are not meant to be built off of directly.
+few commit patches. The branches are not meant to be built off of directly.
 Many branches in this repo will be unstable, in particular the "pfeifer" branch
 should never be expected to be in a working state. If a patch doesn't work
 with the latest openpilot master please create an issue. That being said, use
