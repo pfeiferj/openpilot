@@ -2,6 +2,8 @@
 Uses the predicted driving path from the model to limit speed when entering
 and during curves.
 
+"It's like being driven by a teen driver..." - me
+
 ## Branch
 [pfeifer-vtsc](https://github.com/pfeiferj/openpilot/tree/pfeifer-vtsc)
 
@@ -62,7 +64,7 @@ TARGET\_DECEL\_TIME:
   will nearly always end up not quite reaching the TARGET\_LAT\_A value.
 
 FILTER\_RC:
-  - The controller uses a first order filter on the output acceleration to
+  - The controller uses a first order filter on the output velocity to
   smooth out changes in acceleration. The FILTER\_RC value affects the "lag" of
   the filter. Higher values will create smoother changes in acceleration at the
   cost of reaching the desired acceleration later. Lower values will make the

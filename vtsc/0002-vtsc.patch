@@ -1,4 +1,4 @@
-From c9e135627d5a4ccbe1a3af10a2be806350cfa3ce Mon Sep 17 00:00:00 2001
+From 12a79a07a656bf1cae0780645de733d4916369fb Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 31 Mar 2023 13:51:24 -0400
 Subject: [PATCH] vtsc
@@ -6,10 +6,10 @@ Subject: [PATCH] vtsc
 ---
  common/params.cc                              |   4 +
  .../controls/lib/longitudinal_planner.py      |  26 +-
- .../controls/lib/vision_turn_controller.py    | 227 ++++++++++++++++++
+ .../controls/lib/vision_turn_controller.py    | 235 ++++++++++++++++++
  selfdrive/controls/plannerd.py                |   7 +-
  selfdrive/ui/qt/offroad/settings.cc           |   8 +
- 5 files changed, 268 insertions(+), 4 deletions(-)
+ 5 files changed, 276 insertions(+), 4 deletions(-)
  create mode 100644 selfdrive/controls/lib/vision_turn_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -95,10 +95,10 @@ index a2ff42d75..031c84a6a 100755
      self.a_desired_trajectory_full = np.interp(T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
 diff --git a/selfdrive/controls/lib/vision_turn_controller.py b/selfdrive/controls/lib/vision_turn_controller.py
 new file mode 100644
-index 000000000..e714cc9dd
+index 000000000..d31e3712b
 --- /dev/null
 +++ b/selfdrive/controls/lib/vision_turn_controller.py
-@@ -0,0 +1,227 @@
+@@ -0,0 +1,235 @@
 +import numpy as np
 +from common.conversions import Conversions as CV
 +from common.filter_simple import FirstOrderFilter
@@ -109,24 +109,26 @@ index 000000000..e714cc9dd
 +Polynomial = np.polynomial.polynomial.Polynomial
 +
 +EVAL_COUNT = 30  # Number of points to evaluate on curvature.
-+EVAL_START = 1  # seconds. Distance ahead to start evaluating vision curvature.
++EVAL_START = 0.5  # seconds. Distance ahead to start evaluating vision curvature.
 +EVAL_STOP = 9 # seconds. Distance ahead to stop evaluating vision curvature.
 +
-+TARGET_LAT_A = [3.0, 2.0] # m/s^2
-+TARGET_LAT_A_BP = [5, 35] # m/s, velocity
++TARGET_LAT_A = [3.2, 2.3, 2.0] # m/s^2
++TARGET_LAT_A_BP = [5, 15, 35] # m/s, velocity
 +
-+TARGET_DECEL_TIME = 4 # seconds. Time to hit target velocity. Note: calculating from distance on poly does not work well
++# NOTE: testing this, may be better to reverse the direction
++TARGET_DECEL_TIME = [3.5, 7.0] # seconds. Time to hit target velocity. Note: calculating from distance on poly does not work well
++TARGET_DECEL_TIME_BP = [14, 0] # m/s. Breakpoints based on difference in current velocity and target velocity
 +
 +# The minimum amount of lateral acceleration that the controller considers to be an active turn
 +TURN_ACTIVE_LIMIT = [2.6, 1.6] # m/s^2, lateral acceleration
 +TURN_ACTIVE_LIMIT_BP = [5, 35] # m/s, velocity
 +
 +# The maximum this controller will request to decelerate
-+MAX_DECEL = -2 # m/s^2
++MAX_DECEL = -2.5 # m/s^2
 +
 +# The maximum amount of acceleration and deceleration this controller will request while actively in a turn
 +MAX_ACTIVE_TURN_ACCEL = 0.1 # m/s^2
-+MAX_ACTIVE_TURN_DECEL = -0.5 # m/s^2
++MAX_ACTIVE_TURN_DECEL = -0.8 # m/s^2
 +
 +# The "lag" of the filter. Higher values cause smoother changes in acceleration but delays hitting the desired acceleration
 +FILTER_RC = 0.3
@@ -184,6 +186,7 @@ index 000000000..e714cc9dd
 +    self.v_target = 0
 +    self.enabled = self.params.get_bool("TurnVisionControl")
 +    self.filter = FirstOrderFilter(0.0, FILTER_RC, DT_MDL)
++    self.has_lead = False
 +
 +    self.reset()
 +
@@ -198,8 +201,8 @@ index 000000000..e714cc9dd
 +
 +  @property
 +  def active(self):
-+    turn_limit_exceeded = self.max_pred_lat_acc > self.turn_active_limit
-+    return self.op_enabled and not self.gas_pressed and self.enabled and turn_limit_exceeded
++    turn_limit_exceeded = self.max_pred_lat_acc > self.turn_active_limit or self.current_lat_accel > self.turn_active_limit
++    return self.op_enabled and not self.gas_pressed and self.enabled and turn_limit_exceeded and not self.has_lead
 +
 +  @property
 +  def eval_distances(self):
@@ -213,7 +216,7 @@ index 000000000..e714cc9dd
 +
 +  @property
 +  def plan(self):
-+    return (self.filtered_a, self.v_target)
++    return (self.a_target, self.filtered_v)
 +
 +  def reset(self):
 +    self.current_lat_accel = 0
@@ -244,11 +247,13 @@ index 000000000..e714cc9dd
 +    angle of the wheels and store the max acceptable velocity for the curve as
 +    well as the current lateral acceleration.
 +    """
++    self.has_lead = sm['radarState'].leadOne.status
 +    lp = sm['liveParameters']
 +    sa = sm['carState'].steeringAngleDeg * CV.DEG_TO_RAD
 +    current_curvature = self.VM.calc_curvature(sa, self.v_ego, lp.roll)
 +
 +    self.current_lat_accel = current_curvature * self.v_ego**2
++    self.current_curvature = current_curvature
 +
 +
 +  def apply_limits(self):
@@ -300,20 +305,23 @@ index 000000000..e714cc9dd
 +    accel_idx = np.argmax(predicted_lat_accels)
 +    self.max_pred_lat_acc = predicted_lat_accels[accel_idx]
 +
-+    # Get target deceleration
-+    target_velocity = (self.target_lat_a / predicted_curvatures[accel_idx]) ** 0.5
-+    velocity_diff = target_velocity - v_ego
-+    needed_accel = velocity_diff / TARGET_DECEL_TIME
++    max_curve = predicted_curvatures[accel_idx] if self.current_lat_accel < self.max_pred_lat_acc else self.current_curvature
 +
-+    # Store the targets
-+    self.a_target = needed_accel
-+    self.v_target = target_velocity
++    if self.max_pred_lat_acc < self.target_lat_a and self.current_lat_accel < self.target_lat_a:
++      # use the planned v_ego as target if we don't want to decelerate so that we can properly filter between velocities
++      self.v_target = self.v_ego
++    else:
++      # Get target deceleration for curve
++      self.v_target = (self.target_lat_a / max_curve) ** 0.5
++    # calculate the filtered velocity to smooth out requests
++    self.filtered_v = self.filter.update(self.v_target)
++    velocity_diff = self.filtered_v - v_ego
++    target_decel_time = interp(velocity_diff, TARGET_DECEL_TIME_BP, TARGET_DECEL_TIME)
++    self.a_target = velocity_diff / target_decel_time
 +
 +    # update targets based on limits
 +    self.apply_limits()
 +
-+    # calculate the filtered acceleration
-+    self.filtered_a = self.filter.update(self.a_target)
 +
 +  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, sm, lateral_planner):
 +    self.op_enabled = enabled
