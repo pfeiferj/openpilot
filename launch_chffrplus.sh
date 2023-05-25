@@ -81,6 +81,14 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  # PFEIFER - FB {{
+  # Fastboot Acknowledgements:
+  # Fastboot changes were (nearly) directly copied from frogpilot. Thanks FrogAi! https://github.com/frogAi/FrogPilot
+  if [ -f "$BASEDIR/prebuilt" ]; then
+    python /data/openpilot/common/spinner.py &
+  fi
+  # }} PFEIFER - FB
+
   # start manager
   cd selfdrive/manager
   if [ ! -f $DIR/prebuilt ]; then

@@ -47,6 +47,8 @@ if __name__ == "__main__":
   import time
   with Spinner() as s:
     s.update("Spinner text")
-    time.sleep(5.0)
+    # time.sleep(5.0)
+    # PFEIFER - FB {{
+    # }} PFEIFER - FB
   print("gone")
   time.sleep(5.0)
