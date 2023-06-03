@@ -20,8 +20,12 @@ I used the following forks as references:
 ## Status
 Alpha
 
-There are no currently known bugs, but some additional testing of keeping sync
-with panda is needed. Limited car support.
+[Changelog](./CHANGELOG.md)
+
+* Some additional testing of keeping sync with panda may be needed.
+* Limited car support.
+* There may need to be a restart of the ignition if the always on later toggle is enabled, needs further investigation.
+* The current method of using params can be slow and may cause lag, especially when using a comma without an ssd.
 
 ## Comment Blocks Text
 PFEIFER - mads

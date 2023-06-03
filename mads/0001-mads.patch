@@ -1,4 +1,4 @@
-From b971306a9173022d604b891779ef0a35b88104dc Mon Sep 17 00:00:00 2001
+From a7054fc3ac3f96cd49d02de9abc7ecb12906c514 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 30 Mar 2023 12:42:16 -0400
 Subject: [PATCH] mads
@@ -6,25 +6,25 @@ Subject: [PATCH] mads
 ---
  common/params.cc                    |  7 +++
  panda                               |  2 +-
- selfdrive/car/hyundai/carstate.py   | 13 +++++
+ selfdrive/car/hyundai/carstate.py   | 13 ++++
  selfdrive/car/interfaces.py         |  4 ++
- selfdrive/controls/controlsd.py     | 13 ++++-
- selfdrive/controls/mads.py          | 89 +++++++++++++++++++++++++++++
- selfdrive/ui/qt/offroad/settings.cc | 20 +++++++
+ selfdrive/controls/controlsd.py     | 18 +++++-
+ selfdrive/controls/mads.py          | 97 +++++++++++++++++++++++++++++
+ selfdrive/ui/qt/offroad/settings.cc | 20 ++++++
  selfdrive/ui/qt/onroad.cc           |  7 +++
  selfdrive/ui/qt/onroad.h            |  3 +
  selfdrive/ui/ui.h                   |  6 ++
- 10 files changed, 162 insertions(+), 2 deletions(-)
+ 10 files changed, 175 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/mads.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 428830a11..4de0c4c52 100644
+index 530ffe305..8a839285a 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -202,6 +202,13 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"Offroad_TemperatureTooHigh", CLEAR_ON_MANAGER_START},
      {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
      {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
+     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
 +
 +// PFEIFER - mads {{
 +    {"MadsEnabled", PERSISTENT},
@@ -36,19 +36,19 @@ index 428830a11..4de0c4c52 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 878e0077a..c88d12e91 160000
+index 5847d7dbc..43542a4af 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 878e0077ac077c5325b37710b8df856468d85674
-+Subproject commit c88d12e91e7ac309a0996021af7a82a9691365e5
+-Subproject commit 5847d7dbc05df3bc76243b6704b9d98544eb53df
++Subproject commit 43542a4afc6746f040e57bf2c56252112de27056
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 22934c05b..7ca2f070a 100644
+index 9bf2e0d4c..e870818dd 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -9,6 +9,7 @@ from opendbc.can.can_define import CANDefine
- from selfdrive.car.hyundai.hyundaicanfd import get_e_can_bus
- from selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, FEATURES, CAMERA_SCC_CAR, CANFD_CAR, EV_CAR, HYBRID_CAR, Buttons, CarControllerParams
+ from selfdrive.car.hyundai.hyundaicanfd import CanBus
+ from selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_GEARS, CAMERA_SCC_CAR, CANFD_CAR, EV_CAR, HYBRID_CAR, Buttons, CarControllerParams
  from selfdrive.car.interfaces import CarStateBase
 +from common.params import Params
  
@@ -82,7 +82,7 @@ index 22934c05b..7ca2f070a 100644
      return ret
  
 diff --git a/selfdrive/car/interfaces.py b/selfdrive/car/interfaces.py
-index 8b1159f36..f5fdf51ce 100644
+index e5d743087..517f0d515 100644
 --- a/selfdrive/car/interfaces.py
 +++ b/selfdrive/car/interfaces.py
 @@ -328,6 +328,10 @@ class CarStateBase(ABC):
@@ -97,12 +97,12 @@ index 8b1159f36..f5fdf51ce 100644
      self.left_blinker_cnt = 0
      self.right_blinker_cnt = 0
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 1391d6570..e642cf131 100755
+index 3903340c8..17dc6987d 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
-@@ -30,6 +30,10 @@ from selfdrive.locationd.calibrationd import Calibration
+@@ -27,6 +27,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
+ from selfdrive.controls.lib.vehicle_model import VehicleModel
  from system.hardware import HARDWARE
- from selfdrive.manager.process_config import managed_processes
  
 +# PFEIFER - mads {{
 +from selfdrive.controls.mads import Mads
@@ -111,7 +111,7 @@ index 1391d6570..e642cf131 100755
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -111,7 +115,10 @@ class Controls:
+@@ -107,7 +111,10 @@ class Controls:
      self.CP.alternativeExperience = 0
      if not self.disengage_on_accelerator:
        self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
@@ -123,7 +123,19 @@ index 1391d6570..e642cf131 100755
      # read params
      self.is_metric = self.params.get_bool("IsMetric")
      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
-@@ -576,6 +583,10 @@ class Controls:
+@@ -550,6 +557,11 @@ class Controls:
+     self.active = self.state in ACTIVE_STATES
+     if self.active:
+       self.current_alert_types.append(ET.WARNING)
++    # PFEIFER - MADS {{
++    # Ensure we send warnings when only lat is active
++    elif self.mads.lat_active:
++      self.current_alert_types.append(ET.WARNING)
++    # }}
+ 
+   def state_control(self, CS):
+     """Given the state, this function returns a CarControl packet"""
+@@ -576,6 +588,10 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
@@ -136,10 +148,10 @@ index 1391d6570..e642cf131 100755
      actuators = CC.actuators
 diff --git a/selfdrive/controls/mads.py b/selfdrive/controls/mads.py
 new file mode 100644
-index 000000000..1e566c003
+index 000000000..14d539829
 --- /dev/null
 +++ b/selfdrive/controls/mads.py
-@@ -0,0 +1,89 @@
+@@ -0,0 +1,97 @@
 +# PFEIFER - mads
 +
 +from cereal import log, car
@@ -151,6 +163,9 @@ index 000000000..1e566c003
 +State = log.ControlsState.OpenpilotState
 +ACTIVE_STATES = (State.enabled, State.softDisabling, State.overriding)
 +
++# Speeds below this will deactivate lateral controls
++STOP_SPEED = 0.2 # m/s
++
 +class Mads:
 +  def __init__(self, CI, braking = False, blinkers_active = False, op_active = False, standstill = False, steer_fault = False, invalid_gear = False):
 +    self.CI = CI
@@ -161,6 +176,7 @@ index 000000000..1e566c003
 +    self.steer_fault = steer_fault
 +    self.invalid_gear = invalid_gear
 +    self.last_lat_allowed = False
++    self.stopped = True
 +
 +    self.params = Params()
 +
@@ -181,7 +197,8 @@ index 000000000..1e566c003
 +    self.op_active = op_state in ACTIVE_STATES
 +    self.steer_fault = car_state.steerFaultTemporary or car_state.steerFaultPermanent
 +    self.car_lat_active = car_state.cruiseState.available
-+    self.invalid_gear = car_state.gearShifter not in [car.CarState.GearShifter.drive, car.CarState.GearShifter.neutral, car.CarState.GearShifter.sport, car.CarState.GearShifter.low, car.CarState.GearShifter.eco, car.CarState.GearShifter.manumatic]
++    self.invalid_gear = car_state.gearShifter not in [car.CarState.GearShifter.drive, car.CarState.GearShifter.sport, car.CarState.GearShifter.low, car.CarState.GearShifter.eco]
++    self.stopped = car_state.vEgo < STOP_SPEED
 +
 +    # Always allow lateral when controls are allowed
 +    if any(ps.controlsAllowed for ps in panda_states) and not lateral_allowed:
@@ -190,13 +207,16 @@ index 000000000..1e566c003
 +  @property
 +  def lat_active(self):
 +
-+
 +    # If car is in a gear that does not move forward do not engage lateral
 +    if self.invalid_gear:
 +      return False
 +
 +    # If there is a steer fault lat is not available
 +    if self.steer_fault:
++      return False
++
++    # Disable lateral when vehicle is stopped to prevent "twitching" steering wheel
++    if self.stopped:
 +      return False
 +
 +    # If the car lateral control is not active lat cannot be active
@@ -222,20 +242,20 @@ index 000000000..1e566c003
 +  def alternative_experience(self):
 +    mads_enabled = self.params.get_bool('MadsEnabled')
 +    dlob = self.params.get_bool('DisengageLatOnBrake')
-+
-+    if mads_enabled and dlob:
-+      return ALTERNATIVE_EXPERIENCE.ENABLE_MADS
-+    if mads_enabled and not dlob:
-+      return ALTERNATIVE_EXPERIENCE.MADS_DISABLE_DISENGAGE_LATERAL_ON_BRAKE
-+    return 0
++    experience = 0
++    if mads_enabled:
++      experience |= ALTERNATIVE_EXPERIENCE.ENABLE_MADS
++    if not dlob:
++      experience |= ALTERNATIVE_EXPERIENCE.MADS_DISABLE_DISENGAGE_LATERAL_ON_BRAKE
++    return experience
 +
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index fd14ed15e..962028089 100644
+index 0c8132343..a546e1549 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -73,6 +73,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
-       tr("When enabled, pressing the accelerator pedal will disengage openpilot."),
-       "../assets/offroad/icon_disengage_on_accelerator.svg",
+       tr("Display speed in km/h instead of mph."),
+       "../assets/offroad/icon_metric.png",
      },
 +    // PFEIFER - mads {{
 +    {
@@ -261,7 +281,7 @@ index fd14ed15e..962028089 100644
      {
        "NavSettingTime24h",
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 009798a56..a592b4711 100644
+index af07f179c..a66d94713 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
 @@ -52,6 +52,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
@@ -293,7 +313,7 @@ index 73c2a3789..e7c02f535 100644
  private slots:
    void offroadTransition(bool offroad);
 diff --git a/selfdrive/ui/ui.h b/selfdrive/ui/ui.h
-index 4c4bd462e..b0b944d6e 100644
+index 2df047003..ad2195e6e 100644
 --- a/selfdrive/ui/ui.h
 +++ b/selfdrive/ui/ui.h
 @@ -85,6 +85,9 @@ typedef enum UIStatus {
@@ -317,5 +337,5 @@ index 4c4bd462e..b0b944d6e 100644
  
  typedef struct UIScene {
 -- 
-2.40.0
+2.40.1
 
