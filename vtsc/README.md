@@ -4,6 +4,9 @@ and during curves.
 
 "It's like being driven by a teen driver..." - me
 
+# NOTE: MOSTLY NOT WORKING
+My math was horribly wrong in this version, plan on updating in the near-ish future.
+
 ## Branch
 [pfeifer-vtsc](https://github.com/pfeiferj/openpilot/tree/pfeifer-vtsc)
 
