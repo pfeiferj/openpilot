@@ -560,3 +560,4 @@ tinygrad_repo/tinygrad/*.py
 
 selfdrive/controls/button_manager.py
 selfdrive/controls/gap_adjust_button.py
+selfdrive/controls/gap_adjust_control.py

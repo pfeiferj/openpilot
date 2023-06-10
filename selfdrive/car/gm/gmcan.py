@@ -1,5 +1,8 @@
 from openpilot.selfdrive.car import make_can_msg
 from openpilot.selfdrive.car.gm.values import CAR
+# PFEIFER - GAC {{
+from openpilot.selfdrive.controls.gap_adjust_control import gap_adjust
+# }} PFEIFER - GAC
 
 
 def create_buttons(packer, bus, idx, button):
@@ -105,11 +108,18 @@ def create_friction_brake_command(packer, bus, apply_brake, idx, enabled, near_s
 def create_acc_dashboard_command(packer, bus, enabled, target_speed_kph, lead_car_in_sight, fcw):
   target_speed = min(target_speed_kph, 255)
 
+  # PFEIFER - GAC {{
+  gap_set = gap_adjust.state + 1
+  # }} PFEIFER - GAC
+
   values = {
     "ACCAlwaysOne": 1,
     "ACCResumeButton": 0,
     "ACCSpeedSetpoint": target_speed,
-    "ACCGapLevel": 3 * enabled,  # 3 "far", 0 "inactive"
+    # "ACCGapLevel": 3 * enabled,  # 3 "far", 0 "inactive"
+    # PFEIFER - GAC {{
+    "ACCGapLevel": gap_set * enabled,  # 3 "far", 0 "inactive"
+    # }} PFEIFER - GAC
     "ACCCmdActive": enabled,
     "ACCAlwaysOne2": 1,
     "ACCLeadCar": lead_car_in_sight,

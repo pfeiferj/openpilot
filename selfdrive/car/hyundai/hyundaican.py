@@ -1,5 +1,8 @@
 import crcmod
 from openpilot.selfdrive.car.hyundai.values import CAR, CHECKSUM, CAMERA_SCC_CAR
+# PFEIFER - GAC {{
+from openpilot.selfdrive.controls.gap_adjust_control import gap_adjust
+# }} PFEIFER - GAC
 
 hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
 
@@ -129,9 +132,16 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
 def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, set_speed, stopping, long_override, use_fca):
   commands = []
 
+  # PFEIFER - GAC {{
+  gap_set = gap_adjust.state + 1
+  # }} PFEIFER - GAC
+
   scc11_values = {
     "MainMode_ACC": 1,
-    "TauGapSet": 4,
+    # "TauGapSet": 4,
+    # PFEIFER - GAC {{
+    "TauGapSet": gap_set,
+    # }} PFEIFER - GAC
     "VSetDis": set_speed if enabled else 0,
     "AliveCounterACC": idx % 0x10,
     "ObjValid": 1, # close lead makes controls tighter

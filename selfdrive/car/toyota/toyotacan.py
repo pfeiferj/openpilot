@@ -1,7 +1,10 @@
 from cereal import car
 
-SteerControlType = car.CarParams.SteerControlType
+# PFEIFER - GAC {{
+from openpilot.selfdrive.controls.gap_adjust_control import gap_adjust
+# }} PFEIFER - GAC
 
+SteerControlType = car.CarParams.SteerControlType
 
 def create_steer_command(packer, steer, steer_req):
   """Creates a CAN message for the Toyota Steer Command."""
@@ -34,11 +37,19 @@ def create_lta_steer_command(packer, steer_control_type, steer_angle, steer_req,
 
 
 def create_accel_command(packer, accel, pcm_cancel, standstill_req, lead, acc_type, fcw_alert):
+
+  # PFEIFER - GAC {{
+  distance_transition = int(gap_adjust.transition_car_state())
+  # }} PFEIFER - GAC
+
   # TODO: find the exact canceling bit that does not create a chime
   values = {
     "ACCEL_CMD": accel,
     "ACC_TYPE": acc_type,
-    "DISTANCE": 0,
+    # "DISTANCE": 0,
+    # PFEIFER - GAC {{
+    "DISTANCE": distance_transition,
+    # }} PFEIFER - GAC
     "MINI_CAR": lead,
     "PERMIT_BRAKING": 1,
     "RELEASE_STANDSTILL": not standstill_req,
