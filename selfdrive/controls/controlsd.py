@@ -32,6 +32,10 @@ from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
 
 from openpilot.system.hardware import HARDWARE
 
+# PFEIFER - EMT {{
+from openpilot.selfdrive.controls.experimental_mode_toggle import emt
+# }} PFEIFER - EMT
+
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
@@ -817,6 +821,10 @@ class Controls:
 
     self.update_events(CS)
     cloudlog.timestamp("Events updated")
+
+    # PFEIFER - EMT {{
+    emt.update()
+    # }} PFEIFER - EMT
 
     if not self.CP.passive and self.initialized:
       # Update control state
