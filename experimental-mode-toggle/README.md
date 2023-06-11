@@ -15,7 +15,8 @@ button from the steering wheel.
 * HKG button state was referenced from
   [Sunnypilot](https://github.com/sunnyhaibin/sunnypilot)
 
-## Status Alpha
+## Status
+Alpha
 
 Successfully toggles experimental mode but has limited car support. see cars
 supported above.
