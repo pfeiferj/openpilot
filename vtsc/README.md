@@ -16,8 +16,9 @@ implementation.
 reference.
 
 ## Status
-
 Alpha
+
+[Changelog](./CHANGELOG.md)
 
 * Behavior is reasonably consistent, but may be possible to improve the
   consistency some by adding the mpc data to the polyfit, needs further

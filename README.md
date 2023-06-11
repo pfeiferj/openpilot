@@ -37,15 +37,16 @@ the latest openpilot master please create an issue. That being said, use at your
 own risk. The patches may at any time become incompatible with Openpilot master.
 
 ## LICENSE
-The patches are bound by the MIT License located in the LICENSE file of this
-repo and branch. The MIT License is considered a permissive license in that it
-exlicitly allows you to "use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software". This license does not require
-you to open source the code these patches are used in or even modifications to
-the patches. I have explicitly chosen a permissive license as I feel like the
-code should truly be free and you should do whatever you want with the code
-within the terms of the license. Also note that the commaai/openpilot project
-itself uses the MIT License.
+The patches are bound by the MIT License located in the
+[LICENSE](./LICENSE) file of this repo and branch. The MIT License is
+considered a permissive license in that it exlicitly allows you to "use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software". This license does not require you to open source the
+code these patches are used in or even modifications to the patches. I
+have explicitly chosen a permissive license as I feel like the code
+should truly be free and you should do whatever you want with the code
+within the terms of the license. Also note that the commaai/openpilot
+project itself uses the MIT License.
 
 ## Reading the patch docs and code
 Each patch has its own folder with a readme. The readme contains details
