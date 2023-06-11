@@ -6,7 +6,7 @@ during curves.
 
 ## Branch
 [pfeifer-vtsc](https://github.com/pfeiferj/openpilot/tree/pfeifer-vtsc)
---
+\-
 [diff](https://github.com/commaai/openpilot/compare/master...pfeiferj:openpilot:pfeifer-vtsc)
 
 ## Acknowledgments

@@ -7,7 +7,7 @@ steering wheel.
 
 ## Branch
 [pfeifer-gap-adjust-control](https://github.com/pfeiferj/openpilot/tree/pfeifer-gap-adjust-control)
---
+\-
 [diff](https://github.com/commaai/openpilot/compare/master...pfeiferj:openpilot:pfeifer-gap-adjust-control)
 
 ## Status

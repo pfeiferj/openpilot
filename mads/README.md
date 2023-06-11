@@ -9,7 +9,7 @@ Currently only supports hkg-can vehicles but more will likely be added.
 
 ## Branch
 * Openpilot: [pfeifer-mads](https://github.com/pfeiferj/openpilot/tree/pfeifer-mads)
---
+\-
 [diff](https://github.com/commaai/openpilot/compare/master...pfeiferj:openpilot:pfeifer-mads)
 
 * Panda: [pfeifer-mads](https://github.com/pfeiferj/panda/tree/pfeifer-mads)
