@@ -1,39 +1,47 @@
-From 29ee1d7d88386aed6395450c04f2419a5327695e Mon Sep 17 00:00:00 2001
+From 58daea2cbbd00786575742b25af4405026ef9e29 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Thu, 30 Mar 2023 13:01:18 -0400
-Subject: [PATCH] hyundai-can long control improvements
+Date: Sun, 11 Jun 2023 14:43:40 -0400
+Subject: [PATCH] hkg-can longitudinal tuning improvements
 
 ---
- selfdrive/car/hyundai/carcontroller.py | 12 +++++++++---
+ selfdrive/car/hyundai/carcontroller.py | 19 ++++++++++++++++---
  selfdrive/car/hyundai/hyundaican.py    |  6 +++---
- selfdrive/car/hyundai/interface.py     |  8 ++++++--
- 3 files changed, 18 insertions(+), 8 deletions(-)
+ selfdrive/car/hyundai/interface.py     |  9 +++++++--
+ 3 files changed, 26 insertions(+), 8 deletions(-)
 
 diff --git a/selfdrive/car/hyundai/carcontroller.py b/selfdrive/car/hyundai/carcontroller.py
-index 257203849..164dd55a2 100644
+index ac74d2cc5..7e33b008a 100644
 --- a/selfdrive/car/hyundai/carcontroller.py
 +++ b/selfdrive/car/hyundai/carcontroller.py
-@@ -173,9 +173,15 @@ class CarController:
+@@ -175,10 +175,23 @@ class CarController:
                self.last_button_frame = self.frame
  
        if self.frame % 2 == 0 and self.CP.openpilotLongitudinalControl:
 -        # TODO: unclear if this is needed
 -        jerk = 3.0 if actuators.longControlState == LongCtrlState.pid else 1.0
 -        can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled, accel, jerk, int(self.frame / 2),
++        min_required_jerk = min(2.5, abs(accel - CS.out.aEgo) * 15)
 +        # calculate jerk from plan, give a small offset for the upper limit for the cars ecu
-+        lower_jerk = clip(abs(accel - self.accel_last) * 50, 0., 3.0)
++        lower_jerk = clip(abs(accel - self.accel_last) * 50, min_required_jerk, 3.0)
 +        upper_jerk = lower_jerk + 0.5
 +
-+        # When accelerating from very low speeds or stopped, allow more jerk to prevent a slow takeoff
-+        if CS.out.vEgoRaw < 4. and accel > 0:
++        if CS.out.vEgoRaw < 4.:
++          if accel > 0:
++            # When accelerating from very low speeds or stopped, allow more jerk to prevent a slow takeoff
 +            lower_jerk = max(0.5, lower_jerk)
++            upper_jerk = lower_jerk + 0.5
++          else:
++            # When decelerating from very low speeds allow more jerk to prevent a slow stop
++            lower_jerk = max(0.2, lower_jerk)
 +            upper_jerk = lower_jerk + 0.5
 +        can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled, accel, upper_jerk, lower_jerk, int(self.frame / 2),
                                                          hud_control.leadVisible, set_speed_in_units, stopping, CC.cruiseControl.override))
++        self.accel_last = accel
  
        # 20 Hz LFA MFA message
+       if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
 diff --git a/selfdrive/car/hyundai/hyundaican.py b/selfdrive/car/hyundai/hyundaican.py
-index 858f3d087..9cc078b12 100644
+index afd112326..a1d9e8b46 100644
 --- a/selfdrive/car/hyundai/hyundaican.py
 +++ b/selfdrive/car/hyundai/hyundaican.py
 @@ -96,7 +96,7 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
@@ -52,15 +60,15 @@ index 858f3d087..9cc078b12 100644
 -    "JerkUpperLimit": upper_jerk, # stock usually is 1.0 but sometimes uses higher values
 -    "JerkLowerLimit": 5.0, # stock usually is 0.5 but sometimes uses higher values
 +    "JerkUpperLimit": min(3.0, upper_jerk), # stock usually is 1.0 but sometimes uses higher values
-+    "JerkLowerLimit": max(0.1, lower_jerk), # stock usually is 0.5 but sometimes uses higher values
++    "JerkLowerLimit": max(0.05, lower_jerk), # stock usually is 0.5 but sometimes uses higher values
      "ACCMode": 2 if enabled and long_override else 1 if enabled else 4, # stock will always be 4 instead of 0 after first disengage
      "ObjGap": 2 if lead_visible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
    }
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 1dd91ac88..20e38badb 100644
+index 418068a5c..6f8074362 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -233,8 +233,12 @@ class CarInterface(CarInterfaceBase):
+@@ -240,9 +240,14 @@ class CarInterface(CarInterfaceBase):
        ret.longitudinalTuning.kiV = [0.0]
        ret.experimentalLongitudinalAvailable = candidate in (HYBRID_CAR | EV_CAR) and candidate not in CANFD_RADAR_SCC_CAR
      else:
@@ -70,11 +78,13 @@ index 1dd91ac88..20e38badb 100644
 +      ret.longitudinalTuning.kpV = [0.4, 0.9]
 +
 +      ret.longitudinalTuning.kiBP = [2.0, 7.0]
-+      ret.longitudinalTuning.kiV = [0.0, 0.19]
++      ret.longitudinalTuning.kiV = [0.0, 0.15]
 +
        ret.experimentalLongitudinalAvailable = candidate not in (LEGACY_SAFETY_MODE_CAR | CAMERA_SCC_CAR)
++
      ret.openpilotLongitudinalControl = experimental_long and ret.experimentalLongitudinalAvailable
      ret.pcmCruise = not ret.openpilotLongitudinalControl
+ 
 -- 
-2.40.0
+2.41.0
 
