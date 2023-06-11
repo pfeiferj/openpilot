@@ -1,27 +1,27 @@
-From a7054fc3ac3f96cd49d02de9abc7ecb12906c514 Mon Sep 17 00:00:00 2001
+From cea2ecfc999ddf828e4834fb47327a15600c630e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Thu, 30 Mar 2023 12:42:16 -0400
+Date: Sat, 10 Jun 2023 17:24:39 -0400
 Subject: [PATCH] mads
 
 ---
- common/params.cc                    |  7 +++
- panda                               |  2 +-
- selfdrive/car/hyundai/carstate.py   | 13 ++++
- selfdrive/car/interfaces.py         |  4 ++
- selfdrive/controls/controlsd.py     | 18 +++++-
- selfdrive/controls/mads.py          | 97 +++++++++++++++++++++++++++++
- selfdrive/ui/qt/offroad/settings.cc | 20 ++++++
- selfdrive/ui/qt/onroad.cc           |  7 +++
- selfdrive/ui/qt/onroad.h            |  3 +
- selfdrive/ui/ui.h                   |  6 ++
- 10 files changed, 175 insertions(+), 2 deletions(-)
+ common/params.cc                    |   7 ++
+ panda                               |   2 +-
+ selfdrive/car/hyundai/carstate.py   |  11 +++
+ selfdrive/car/interfaces.py         |   4 +
+ selfdrive/controls/controlsd.py     |  18 +++-
+ selfdrive/controls/mads.py          | 136 ++++++++++++++++++++++++++++
+ selfdrive/ui/qt/offroad/settings.cc |  20 ++++
+ selfdrive/ui/qt/onroad.cc           |   7 ++
+ selfdrive/ui/qt/onroad.h            |   3 +
+ selfdrive/ui/ui.h                   |   6 ++
+ 10 files changed, 212 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/mads.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 530ffe305..8a839285a 100644
+index be285c6aa..87ecbb7ac 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -202,6 +202,13 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -203,6 +203,13 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
      {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
      {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
@@ -36,36 +36,28 @@ index 530ffe305..8a839285a 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 5847d7dbc..43542a4af 160000
+index b56340590..4dba9f7c8 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 5847d7dbc05df3bc76243b6704b9d98544eb53df
-+Subproject commit 43542a4afc6746f040e57bf2c56252112de27056
+-Subproject commit b56340590485bba2428538259e020f176127458c
++Subproject commit 4dba9f7c80a4111e24d28cb44b47a05a26a15c8f
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 9bf2e0d4c..e870818dd 100644
+index 9bf2e0d4c..c4e650696 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
-@@ -9,6 +9,7 @@ from opendbc.can.can_define import CANDefine
- from selfdrive.car.hyundai.hyundaicanfd import CanBus
+@@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
  from selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_GEARS, CAMERA_SCC_CAR, CANFD_CAR, EV_CAR, HYBRID_CAR, Buttons, CarControllerParams
  from selfdrive.car.interfaces import CarStateBase
-+from common.params import Params
  
++# PFEIFER - mads {{
++from selfdrive.controls.mads import Mads
++# }} PFEIFER - mads
++
  PREV_BUTTON_SAMPLES = 8
  CLUSTER_SAMPLE_RATE = 20  # frames
-@@ -19,6 +20,10 @@ class CarState(CarStateBase):
-     super().__init__(CP)
-     can_define = CANDefine(DBC[CP.carFingerprint]["pt"])
  
-+    # PFEIFER - mads {{
-+    self._params = Params()
-+    # }}
-+
-     self.cruise_buttons = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
-     self.main_buttons = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
- 
-@@ -152,7 +157,15 @@ class CarState(CarStateBase):
+@@ -152,7 +156,14 @@ class CarState(CarStateBase):
      self.steer_state = cp.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
@@ -75,8 +67,7 @@ index 9bf2e0d4c..e870818dd 100644
      self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
 +    # PFEIFER - mads {{
 +    if self.prev_main_buttons == 0 and self.main_buttons[-1] != 0:
-+      lateral_allowed = self._params.get_bool("LateralAllowed")
-+      self._params.put_bool("LateralAllowed", not lateral_allowed)
++      Mads.toggle_lateral_allowed()
 +    # }} PFEIFER - mads
  
      return ret
@@ -97,7 +88,7 @@ index e5d743087..517f0d515 100644
      self.left_blinker_cnt = 0
      self.right_blinker_cnt = 0
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 3903340c8..17dc6987d 100755
+index 82c66a20f..d31c29480 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -27,6 +27,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
@@ -123,7 +114,7 @@ index 3903340c8..17dc6987d 100755
      # read params
      self.is_metric = self.params.get_bool("IsMetric")
      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
-@@ -550,6 +557,11 @@ class Controls:
+@@ -554,6 +561,11 @@ class Controls:
      self.active = self.state in ACTIVE_STATES
      if self.active:
        self.current_alert_types.append(ET.WARNING)
@@ -135,7 +126,7 @@ index 3903340c8..17dc6987d 100755
  
    def state_control(self, CS):
      """Given the state, this function returns a CarControl packet"""
-@@ -576,6 +588,10 @@ class Controls:
+@@ -580,6 +592,10 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
@@ -148,14 +139,14 @@ index 3903340c8..17dc6987d 100755
      actuators = CC.actuators
 diff --git a/selfdrive/controls/mads.py b/selfdrive/controls/mads.py
 new file mode 100644
-index 000000000..14d539829
+index 000000000..b2986d635
 --- /dev/null
 +++ b/selfdrive/controls/mads.py
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,136 @@
 +# PFEIFER - mads
 +
 +from cereal import log, car
-+from common.params import Params
++from common.params import Params, put_bool_nonblocking
 +from selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEED
 +from panda import ALTERNATIVE_EXPERIENCE
 +from selfdrive.controls.lib.events import EngagementAlert, AudibleAlert
@@ -164,7 +155,22 @@ index 000000000..14d539829
 +ACTIVE_STATES = (State.enabled, State.softDisabling, State.overriding)
 +
 +# Speeds below this will deactivate lateral controls
-+STOP_SPEED = 0.2 # m/s
++STOP_SPEED = 0.5 # m/s
++
++mem_params = Params("/dev/shm/params")
++"""
++A speed optimization, Params with a base path in /dev/shm/params.
++
++/dev/shm is a memory mapped folder and does not persistently store across
++reboots. The advantage to using a memory mapped folder is that it should be
++very fast and consistent for both writes and reads.
++
++If using the real filesystem placing data can, in extreme circumstances,
++take over 1 second. put_bool_nonblocking helps with this by creating a
++thread but this can create race conditions. If we need to block but don't
++care about persistence across reboots the memory mapped location should
++avoid random lag.
++"""
 +
 +class Mads:
 +  def __init__(self, CI, braking = False, blinkers_active = False, op_active = False, standstill = False, steer_fault = False, invalid_gear = False):
@@ -180,9 +186,33 @@ index 000000000..14d539829
 +
 +    self.params = Params()
 +
++
++  @staticmethod
++  def get_lateral_allowed() -> bool:
++    return mem_params.get_bool("LateralAllowed");
++
++  @staticmethod
++  def set_lateral_allowed(lateral_allowed: bool) -> None:
++    mem_params.put_bool("LateralAllowed", lateral_allowed);
++    # also place lateral allowed in normal params for ui, but do not block
++    put_bool_nonblocking("LateralAllowed", lateral_allowed);
++
++  @staticmethod
++  def toggle_lateral_allowed() -> None:
++    lateral_allowed = Mads.get_lateral_allowed()
++    Mads.set_lateral_allowed(not lateral_allowed)
++
++  @property
++  def lateral_allowed(self) -> bool:
++    return Mads.get_lateral_allowed();
++
++  @lateral_allowed.setter
++  def lateral_allowed(self, lateral_allowed: bool) -> None:
++    Mads.set_lateral_allowed(lateral_allowed)
++
 +  def update(self, car_state, op_state, car_params, sm, alert_manager):
 +    panda_states = sm['pandaStates']
-+    lateral_allowed = self.params.get_bool("LateralAllowed")
++    lateral_allowed = self.lateral_allowed
 +    if self.last_lat_allowed != lateral_allowed:
 +      alert = None
 +      if lateral_allowed:
@@ -202,7 +232,7 @@ index 000000000..14d539829
 +
 +    # Always allow lateral when controls are allowed
 +    if any(ps.controlsAllowed for ps in panda_states) and not lateral_allowed:
-+      self.params.put_bool("LateralAllowed", True)
++      self.lateral_allowed = True
 +
 +  @property
 +  def lat_active(self):
@@ -220,7 +250,7 @@ index 000000000..14d539829
 +      return False
 +
 +    # If the car lateral control is not active lat cannot be active
-+    if self.params.get_bool('MadsEnabled') and not self.params.get_bool("LateralAllowed"):
++    if self.params.get_bool('MadsEnabled') and not self.lateral_allowed:
 +      return False
 +
 +    # If mads is disabled then lat is only active when openpilot is active
@@ -250,7 +280,7 @@ index 000000000..14d539829
 +    return experience
 +
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 0c8132343..a546e1549 100644
+index e37e5a984..51ecbe977 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -73,6 +73,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
@@ -337,5 +367,5 @@ index 2df047003..ad2195e6e 100644
  
  typedef struct UIScene {
 -- 
-2.40.1
+2.41.0
 

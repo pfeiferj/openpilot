@@ -9,7 +9,12 @@ Currently only supports hkg-can vehicles but more will likely be added.
 
 ## Branch
 * Openpilot: [pfeifer-mads](https://github.com/pfeiferj/openpilot/tree/pfeifer-mads)
+--
+[diff](https://github.com/commaai/openpilot/compare/master...pfeiferj:openpilot:pfeifer-mads)
+
 * Panda: [pfeifer-mads](https://github.com/pfeiferj/panda/tree/pfeifer-mads)
+--
+[diff](https://github.com/commaai/panda/compare/master...pfeiferj:openpilot:pfeifer-mads)
 
 ## Acknowledgments
 I used the following forks as references:
@@ -25,7 +30,6 @@ Alpha
 * Some additional testing of keeping sync with panda may be needed.
 * Limited car support.
 * There may need to be a restart of the ignition if the always on later toggle is enabled, needs further investigation.
-* The current method of using params can be slow and may cause lag, especially when using a comma without an ssd.
 
 ## Comment Blocks Text
 PFEIFER - mads

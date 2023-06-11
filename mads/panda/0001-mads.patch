@@ -1,21 +1,21 @@
-From 43542a4afc6746f040e57bf2c56252112de27056 Mon Sep 17 00:00:00 2001
+From 4dba9f7c80a4111e24d28cb44b47a05a26a15c8f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Mon, 27 Mar 2023 21:31:12 -0400
 Subject: [PATCH] mads
 
 ---
- board/safety.h                       | 43 ++++++++++++++++++++++++----
+ board/safety.h                       | 48 +++++++++++++++++++++++++---
  board/safety/safety_defaults.h       |  1 +
- board/safety/safety_hyundai_common.h | 10 +++++++
+ board/safety/safety_hyundai_common.h | 10 ++++++
  board/safety_declarations.h          |  9 ++++++
  python/__init__.py                   |  4 +++
- 5 files changed, 62 insertions(+), 5 deletions(-)
+ 5 files changed, 67 insertions(+), 5 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
-index 4d7efd2a..2e9c21ea 100644
+index 4d7efd2a..2513a848 100644
 --- a/board/safety.h
 +++ b/board/safety.h
-@@ -256,18 +256,33 @@ void generic_rx_checks(bool stock_ecu_detected) {
+@@ -256,18 +256,38 @@ void generic_rx_checks(bool stock_ecu_detected) {
    if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS)) {
      controls_allowed = 0;
    }
@@ -45,11 +45,16 @@ index 4d7efd2a..2e9c21ea 100644
 +  if (regen_braking && (!regen_braking_prev || vehicle_moving) && !(alternative_experience & ALT_EXP_MADS_DISABLE_DISENGAGE_LATERAL_ON_BRAKE)) {
 +    lateral_controls_allowed = 0;
 +  }
++
++  // If mads is not enabled we set lateral_controls_allowed to controls_allowed to maintain stock behavior
++  if (!(alternative_experience & ALT_EXP_ENABLE_MADS)) {
++    lateral_controls_allowed = controls_allowed;
++  }
 +  // }} PFEIFER - MADS
    regen_braking_prev = regen_braking;
  
    // check if stock ECU is on bus broken by car harness
-@@ -335,6 +350,9 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
+@@ -335,6 +355,9 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
    vehicle_moving = false;
    acc_main_on = false;
    cruise_button_prev = 0;
@@ -59,7 +64,7 @@ index 4d7efd2a..2e9c21ea 100644
    desired_torque_last = 0;
    rt_torque_last = 0;
    ts_angle_last = 0;
-@@ -531,7 +549,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -531,7 +554,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    bool violation = false;
    uint32_t ts = microsecond_timer_get();
  
@@ -71,7 +76,7 @@ index 4d7efd2a..2e9c21ea 100644
      // *** global torque limit check ***
      violation |= max_limit_check(desired_torque, limits.max_steer, -limits.max_steer);
  
-@@ -558,7 +579,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -558,7 +584,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // no torque if controls is not allowed
@@ -83,7 +88,7 @@ index 4d7efd2a..2e9c21ea 100644
      violation = true;
    }
  
-@@ -600,7 +624,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -600,7 +629,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // reset to 0 if either controls is not allowed or there's a violation
@@ -95,7 +100,7 @@ index 4d7efd2a..2e9c21ea 100644
      valid_steer_req_count = 0;
      invalid_steer_req_count = 0;
      desired_torque_last = 0;
-@@ -616,7 +643,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -616,7 +648,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
  bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const SteeringLimits limits) {
    bool violation = false;
  
@@ -107,7 +112,7 @@ index 4d7efd2a..2e9c21ea 100644
      // convert floating point angle rate limits to integers in the scale of the desired angle on CAN,
      // add 1 to not false trigger the violation. also fudge the speed by 1 m/s so rate limits are
      // always slightly above openpilot's in case we read an updated speed in between angle commands
-@@ -659,7 +689,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
+@@ -659,7 +694,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
    }
  
    // No angle control allowed when controls are not allowed
@@ -185,7 +190,7 @@ index 393e5546..567b79f1 100644
 +#define ALT_EXP_MADS_DISABLE_DISENGAGE_LATERAL_ON_BRAKE 32
 +// }} PFEIFER - mads
 diff --git a/python/__init__.py b/python/__init__.py
-index 9d4722d5..5177ca8c 100644
+index 68f01439..afd4982d 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
 @@ -127,6 +127,10 @@ class ALTERNATIVE_EXPERIENCE:
@@ -200,5 +205,5 @@ index 9d4722d5..5177ca8c 100644
  class Panda:
  
 -- 
-2.40.1
+2.41.0
 
