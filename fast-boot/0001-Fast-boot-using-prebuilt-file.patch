@@ -1,0 +1,117 @@
+From aec6d3a65a1ac08dbee0ed89ceddca690ea10fbd Mon Sep 17 00:00:00 2001
+From: FrogAi <91348155+FrogAi@users.noreply.github.com>
+Date: Wed, 24 May 2023 17:26:16 -0700
+Subject: [PATCH] Fast boot using prebuilt file
+
+Added prebuilt functionality that removes itself whenever the user installs updates to prevent installation failures.
+---
+ common/spinner.py                            |  4 +++-
+ launch_chffrplus.sh                          |  6 ++++++
+ selfdrive/thermald/thermald.py               |  5 +++++
+ selfdrive/ui/qt/offroad/software_settings.cc |  6 ++++++
+ selfdrive/ui/qt/widgets/offroad_alerts.cc    | 11 ++++++++++-
+ 5 files changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/common/spinner.py b/common/spinner.py
+index 57242d644..e9ed3f35d 100644
+--- a/common/spinner.py
++++ b/common/spinner.py
+@@ -47,6 +47,8 @@ if __name__ == "__main__":
+   import time
+   with Spinner() as s:
+     s.update("Spinner text")
+-    time.sleep(5.0)
++    # time.sleep(5.0)
++    # PFEIFER - FB {{
++    # }} PFEIFER - FB
+   print("gone")
+   time.sleep(5.0)
+diff --git a/launch_chffrplus.sh b/launch_chffrplus.sh
+index a91bd677a..a6f789e88 100755
+--- a/launch_chffrplus.sh
++++ b/launch_chffrplus.sh
+@@ -77,6 +77,12 @@ function launch {
+   # write tmux scrollback to a file
+   tmux capture-pane -pq -S-1000 > /tmp/launch_log
+ 
++  # PFEIFER - FB {{
++  if [ -f "$BASEDIR/prebuilt" ]; then
++    python /data/openpilot/common/spinner.py &
++  fi
++  # }} PFEIFER - FB
++
+   # start manager
+   cd selfdrive/manager
+   ./build.py && ./manager.py
+diff --git a/selfdrive/thermald/thermald.py b/selfdrive/thermald/thermald.py
+index aa7897861..58fbab5f2 100755
+--- a/selfdrive/thermald/thermald.py
++++ b/selfdrive/thermald/thermald.py
+@@ -405,6 +405,11 @@ def thermald_thread(end_event, hw_queue):
+ 
+     count += 1
+ 
++    # PFEIFER - FB {{
++    # Create the prebuilt file if it doesn't exist
++    if not os.path.isfile('/data/openpilot/prebuilt'):
++      os.system(f"touch {'/data/openpilot/prebuilt'}")
++    # }} PFEIFER - FB
+ 
+ def main():
+   hw_queue = queue.Queue(maxsize=1)
+diff --git a/selfdrive/ui/qt/offroad/software_settings.cc b/selfdrive/ui/qt/offroad/software_settings.cc
+index d25c8490f..6c9a74c05 100644
+--- a/selfdrive/ui/qt/offroad/software_settings.cc
++++ b/selfdrive/ui/qt/offroad/software_settings.cc
+@@ -6,6 +6,9 @@
+ 
+ #include <QDebug>
+ #include <QLabel>
++// PFEIFER - FB {{
++#include <QProcess>
++// }} PFEIFER - FB
+ 
+ #include "common/params.h"
+ #include "common/util.h"
+@@ -44,6 +47,9 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
+   // install update btn
+   installBtn = new ButtonControl(tr("Install Update"), tr("INSTALL"));
+   connect(installBtn, &ButtonControl::clicked, [=]() {
++    // PFEIFER - FB {{
++    QProcess::execute("rm -f /data/openpilot/prebuilt"); // Remove the prebuilt file when installing updates
++    // }} PFEIFER - FB
+     installBtn->setEnabled(false);
+     params.putBool("DoReboot", true);
+   });
+diff --git a/selfdrive/ui/qt/widgets/offroad_alerts.cc b/selfdrive/ui/qt/widgets/offroad_alerts.cc
+index ceb823fb2..0f1dcbdf7 100644
+--- a/selfdrive/ui/qt/widgets/offroad_alerts.cc
++++ b/selfdrive/ui/qt/widgets/offroad_alerts.cc
+@@ -3,6 +3,9 @@
+ #include <QHBoxLayout>
+ #include <QJsonDocument>
+ #include <QJsonObject>
++// PFEIFER - FB {{
++#include <QProcess>
++// }} PFEIFER - FB
+ 
+ #include "common/util.h"
+ #include "system/hardware/hw.h"
+@@ -41,7 +44,13 @@ AbstractAlert::AbstractAlert(bool hasRebootBtn, QWidget *parent) : QFrame(parent
+     QPushButton *rebootBtn = new QPushButton(tr("Reboot and Update"));
+     rebootBtn->setFixedSize(600, 125);
+     footer_layout->addWidget(rebootBtn, 0, Qt::AlignBottom | Qt::AlignRight);
+-    QObject::connect(rebootBtn, &QPushButton::clicked, [=]() { Hardware::reboot(); });
++    // QObject::connect(rebootBtn, &QPushButton::clicked, [=]() { Hardware::reboot(); });
++    // PFEIFER - FB {{
++    QObject::connect(rebootBtn, &QPushButton::clicked, [=]() {
++      QProcess::execute("rm -f /data/openpilot/prebuilt"); // Remove the prebuilt file when installing updates
++      Hardware::reboot();
++    });
++    // }} PFEIFER - FB
+   }
+ 
+   setStyleSheet(R"(
+-- 
+2.41.0
+
