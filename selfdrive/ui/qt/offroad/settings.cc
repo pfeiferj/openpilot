@@ -63,6 +63,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Display speed in km/h instead of mph."),
       "../assets/offroad/icon_metric.png",
     },
+    // PFEIFER - SLC {{
+    {
+      "NavSpeedLimitControl",
+      tr("Nav Speed Limit Control"),
+      tr("Enables Nav Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav instructions. On some cars double pressing the gap adjust button will set an offset using the current set max speed minus the speed limit."),
+      "../assets/img_experimental_white.svg",
+    },
+    {
+      "MapSpeedLimitControl",
+      tr("Map Speed Limit Control"),
+      tr("Enables Map Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by openstreetmap (mapd). On some cars double pressing the gap adjust button will set an offset using the current set max speed minus the speed limit."),
+      "../assets/img_experimental_white.svg",
+    },
+    {
+      "CarSpeedLimitControl",
+      tr("Car Speed Limit Control"),
+      tr("Enables Car Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by the car on some cars. On some cars double pressing the gap adjust button will set an offset using the current set max speed minus the speed limit."),
+      "../assets/img_experimental_white.svg",
+    },
+    // }} PFEIFER - SLC
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",

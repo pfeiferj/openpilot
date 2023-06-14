@@ -15,6 +15,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
 from openpilot.common.swaglog import cloudlog
 
+# PFEIFER - SLC {{
+from openpilot.selfdrive.controls.speed_limit_controller import slc
+# }} PFEIFER - SLC
+
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
@@ -114,6 +118,12 @@ class LongitudinalPlanner:
     # clip limits, cannot init MPC outside of bounds
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
+
+    # PFEIFER - SLC {{
+    slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS, v_ego)
+    if slc.speed_limit > 0 and (slc.speed_limit + slc.offset) < v_cruise:
+      v_cruise = slc.speed_limit + slc.offset
+    # }} PFEIFER - SLC
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])

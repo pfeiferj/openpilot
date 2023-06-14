@@ -17,6 +17,10 @@ from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
                                     parse_banner_instructions)
 from openpilot.common.swaglog import cloudlog
 
+# PFEIFER - SLC {{
+from openpilot.selfdrive.controls.speed_limit_controller import slc
+# }} PFEIFER - SLC
+
 REROUTE_DISTANCE = 25
 MANEUVER_TRANSITION_THRESHOLD = 10
 REROUTE_COUNTER_MIN = 3
@@ -206,6 +210,11 @@ class RouteEngine:
 
     if self.step_idx is None:
       msg.valid = False
+      # PFEIFER - SLC {{
+      slc.load_state()
+      slc.nav_speed_limit = 0
+      slc.write_nav_state()
+      # }} PFEIFER - SLC
       self.pm.send('navInstruction', msg)
       return
 
@@ -280,6 +289,15 @@ class RouteEngine:
 
     if ('maxspeed' in closest.annotations) and self.localizer_valid:
       msg.navInstruction.speedLimit = closest.annotations['maxspeed']
+    # PFEIFER - SLC {{
+      slc.load_state()
+      slc.nav_speed_limit = closest.annotations['maxspeed']
+      slc.write_nav_state()
+    if not self.localizer_valid or ('maxspeed' not in closest.annotations):
+      slc.load_state()
+      slc.nav_speed_limit = 0
+      slc.write_nav_state()
+    # }} PFEIFER - SLC
 
     # Speed limit sign type
     if 'speedLimitSign' in step:

@@ -564,3 +564,4 @@ tinygrad_repo/tinygrad/*.py
 
 selfdrive/controls/button_manager.py
 selfdrive/controls/gap_adjust_button.py
+selfdrive/controls/speed_limit_controller.py
