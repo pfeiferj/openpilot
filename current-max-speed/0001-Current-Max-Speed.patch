@@ -1,0 +1,129 @@
+From c7e4f6930c04fba731f7a5f9d635908e97c6422d Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Wed, 14 Jun 2023 19:27:10 -0400
+Subject: [PATCH] Current Max Speed
+
+Show the current maximum speed in the car hud instead of the set max.
+Useful when there are things other than the set max speed limiting your
+speed, i.e. speed limit control.
+---
+ common/params.cc                              |  4 ++
+ selfdrive/controls/controlsd.py               |  6 +++
+ selfdrive/controls/current_max_speed.py       | 39 +++++++++++++++++++
+ .../controls/lib/longitudinal_planner.py      |  8 ++++
+ 4 files changed, 57 insertions(+)
+ create mode 100644 selfdrive/controls/current_max_speed.py
+
+diff --git a/common/params.cc b/common/params.cc
+index 0e6b64402..d530ff1a1 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -202,6 +202,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
+     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
+     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
++
++    // PFEIFER - CMS {{
++    {"CurrentMaxSpeed", PERSISTENT},
++    // }} PFEIFER - CMS
+ };
+ 
+ } // namespace
+diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
+index f2f9cef86..f7bc7c359 100755
+--- a/selfdrive/controls/controlsd.py
++++ b/selfdrive/controls/controlsd.py
+@@ -27,6 +27,9 @@ from selfdrive.controls.lib.events import Events, ET
+ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
+ from selfdrive.controls.lib.vehicle_model import VehicleModel
+ from system.hardware import HARDWARE
++# PFEIFER - CMS {{
++from selfdrive.controls.current_max_speed import cms
++# }} PFEIFER - CMS
+ 
+ SOFT_DISABLE_TIME = 3  # seconds
+ LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
+@@ -699,6 +702,9 @@ class Controls:
+ 
+     hudControl = CC.hudControl
+     hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)
++    # PFEIFER - CMS {{
++    hudControl.setSpeed = cms.max_speed
++    # }} PFEIFER - CMS
+     hudControl.speedVisible = self.enabled
+     hudControl.lanesVisible = self.enabled
+     hudControl.leadVisible = self.sm['longitudinalPlan'].hasLead
+diff --git a/selfdrive/controls/current_max_speed.py b/selfdrive/controls/current_max_speed.py
+new file mode 100644
+index 000000000..c0042b3b6
+--- /dev/null
++++ b/selfdrive/controls/current_max_speed.py
+@@ -0,0 +1,39 @@
++from common.conversions import Conversions as CV
++from common.params import Params
++import json
++mem_params = Params("/dev/shm/params")
++
++class CurrentMaxSpeed:
++  def __init__(self) -> None:
++    self.max_speed = 0
++
++  @property
++  def max_speed(self) -> float:
++    try:
++      return json.loads(mem_params.get("CurrentMaxSpeed"))
++    except:
++      return 0
++
++  @max_speed.setter
++  def max_speed(self, max_speed: float):
++    try:
++      mem_params.put("CurrentMaxSpeed", json.dumps(float(max_speed)))
++    except: pass
++
++  @property
++  def max_speed_mph(self) -> float:
++    return self.max_speed * CV.MS_TO_MPH
++
++  @max_speed_mph.setter
++  def max_speed_mph(self, max_speed: float):
++    self.max_speed = max_speed * CV.MPH_TO_MS
++
++  @property
++  def max_speed_kph(self) -> float:
++    return self.max_speed * CV.MS_TO_KPH
++
++  @max_speed_kph.setter
++  def max_speed_kph(self, max_speed: float):
++    self.max_speed = max_speed * CV.KPH_TO_MS
++
++cms = CurrentMaxSpeed()
+diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
+index a9c3cc780..156a745a0 100755
+--- a/selfdrive/controls/lib/longitudinal_planner.py
++++ b/selfdrive/controls/lib/longitudinal_planner.py
+@@ -16,6 +16,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
+ from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
+ from system.swaglog import cloudlog
+ 
++# PFEIFER - CMS {{
++from selfdrive.controls.current_max_speed import cms
++# }} PFEIFER - CMS
++
+ LON_MPC_STEP = 0.2  # first step is 0.2s
+ A_CRUISE_MIN = -1.2
+ A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
+@@ -135,6 +139,10 @@ class LongitudinalPlanner:
+     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
+     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=self.personality)
+ 
++    # PFEIFER - CMS {{
++    cms.max_speed = v_cruise
++    # }} PFEIFER - CMS
++
+     self.v_desired_trajectory_full = np.interp(T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
+     self.a_desired_trajectory_full = np.interp(T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
+     self.v_desired_trajectory = self.v_desired_trajectory_full[:CONTROL_N]
+-- 
+2.41.0
+
