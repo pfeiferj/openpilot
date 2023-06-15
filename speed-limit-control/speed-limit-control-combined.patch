@@ -1,0 +1,616 @@
+From b6266a61120837f15d4365ea19b1b118aaf41bd8 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Sat, 10 Jun 2023 15:04:21 -0400
+Subject: [PATCH 1/3] button manager
+
+---
+ selfdrive/controls/button_manager.py | 214 +++++++++++++++++++++++++++
+ 1 file changed, 214 insertions(+)
+ create mode 100644 selfdrive/controls/button_manager.py
+
+diff --git a/selfdrive/controls/button_manager.py b/selfdrive/controls/button_manager.py
+new file mode 100644
+index 000000000..dee8f649a
+--- /dev/null
++++ b/selfdrive/controls/button_manager.py
+@@ -0,0 +1,214 @@
++# PFEIFER - BM
++
++from common.params import Params
++from enum import IntEnum
++from time import time
++import json
++
++mem_params = Params("/dev/shm/params")
++
++LONG_PRESS_LENGTH = 0.4 #s
++PRESS_INTERVAL = 0.2 #s
++DEBOUNCE_LENGTH = 0.03 #s
++
++class ButtonState(IntEnum):
++  VOID = 0
++  WAITING_SINGLE_RELEASE = 1
++  LONG_PRESS_WAITING_RELEASE = 2
++  LONG_PRESS = 3
++  SINGLE_PRESS_WAITING_DOUBLE = 4
++  SINGLE_PRESS = 5
++  DOUBLE_PRESS_WAITING_RELEASE = 6
++  DOUBLE_PRESS_WAITING_TRIPLE = 7
++  DOUBLE_PRESS = 8
++  TRIPLE_PRESS_WAITING_RELEASE = 9
++  TRIPLE_PRESS = 10
++
++simple_states = [ButtonState.VOID, ButtonState.LONG_PRESS, ButtonState.SINGLE_PRESS, ButtonState.DOUBLE_PRESS, ButtonState.TRIPLE_PRESS]
++
++class Button:
++  name: str
++  state: ButtonState = ButtonState.VOID
++  transition_id: int = 0
++  last_transition_time: float = time()
++
++  def __init__(self, name: str) -> None:
++    self.name = name
++
++    self.write_state()
++
++    self.state_transition = {
++      ButtonState.VOID: self.update_void_state,
++      ButtonState.WAITING_SINGLE_RELEASE: self.update_waiting_single_release_state,
++      ButtonState.LONG_PRESS_WAITING_RELEASE: self.update_long_press_waiting_release_state,
++      ButtonState.LONG_PRESS: self.update_long_press_state,
++      ButtonState.SINGLE_PRESS_WAITING_DOUBLE: self.update_single_press_waiting_double_state,
++      ButtonState.SINGLE_PRESS: self.update_single_press_state,
++      ButtonState.DOUBLE_PRESS_WAITING_RELEASE: self.update_double_press_waiting_release_state,
++      ButtonState.DOUBLE_PRESS_WAITING_TRIPLE: self.update_double_press_waiting_triple_state,
++      ButtonState.DOUBLE_PRESS: self.update_double_press_state,
++      ButtonState.TRIPLE_PRESS_WAITING_RELEASE: self.update_triple_press_waiting_release_state,
++      ButtonState.TRIPLE_PRESS: self.update_triple_press_state,
++    }
++
++  def update_transition_time(self) -> None:
++    self.last_transition_time = time()
++
++  def press_interval_elapsed(self) -> bool:
++    return (time() - self.last_transition_time) > PRESS_INTERVAL
++
++  def long_press_length_elapsed(self) -> bool:
++    return (time() - self.last_transition_time) > LONG_PRESS_LENGTH
++
++  def debounce_length_elapsed(self) -> bool:
++    return (time() - self.last_transition_time) > DEBOUNCE_LENGTH
++
++
++  @property
++  def simple_state(self) -> ButtonState:
++    """
++    For most transitional states this returns void. For transitional states that
++    only have a single possible final state this returns the final state.
++    Possible output states are the following: VOID, LONG_PRESS, SINGLE_PRESS,
++    DOUBLE_PRESS, TRIPLE_PRESS
++    """
++    if self.state in simple_states:
++      return self.state
++
++    if self.state == ButtonState.TRIPLE_PRESS_WAITING_RELEASE:
++      return ButtonState.TRIPLE_PRESS
++
++    if self.state == ButtonState.LONG_PRESS_WAITING_RELEASE:
++      return ButtonState.LONG_PRESS
++
++    return ButtonState.VOID
++
++  @property
++  def simple_transition_id(self) -> int:
++    """
++    If a state only has a single possible final state this returns the next
++    transition id, otherwise it responds with the current transition id. Useful
++    For determining changes in simple state.
++    """
++    if self.state == ButtonState.TRIPLE_PRESS_WAITING_RELEASE:
++      return self.transition_id + 1
++
++    if self.state == ButtonState.LONG_PRESS_WAITING_RELEASE:
++      return self.transition_id + 1
++
++    return self.transition_id
++
++  @property
++  def dict(self):
++    return {
++      "state": int(self.state),
++      "transition_id": self.transition_id,
++      "last_transition_time": self.last_transition_time
++    }
++
++  def write_state(self) -> None:
++    mem_params.put(self.name, json.dumps(self.dict))
++
++  def load_state(self) -> None:
++    try:
++      state_dict = json.loads(mem_params.get(self.name))
++      self.state = ButtonState(state_dict["state"])
++      self.transition_id = state_dict["transition_id"]
++      self.last_transition_time = state_dict["last_transition_time"]
++    except:
++      self.state = ButtonState.VOID
++      self.transition_id = 0
++      self.last_transition_time = time()
++
++  def update(self, button_pressed: bool, load_state = True, write_state = True) -> ButtonState:
++    if load_state:
++      self.load_state()
++
++    if not self.debounce_length_elapsed():
++      return self.state
++
++    state = self.state_transition[self.state](button_pressed)
++
++    if self.state != state:
++      self.state = state
++      self.transition_id += 1
++      self.update_transition_time()
++      if write_state:
++        self.write_state()
++
++    return self.state
++
++  # ---------------- STATE TRANSITIONS ----------------------------
++  def update_void_state(self, button_pressed: bool) -> ButtonState:
++    if button_pressed:
++      return ButtonState.WAITING_SINGLE_RELEASE
++
++    return self.state
++
++  def update_waiting_single_release_state(self, button_pressed: bool) -> ButtonState:
++    if button_pressed and self.long_press_length_elapsed():
++      return ButtonState.LONG_PRESS_WAITING_RELEASE
++
++    if not button_pressed:
++      return ButtonState.SINGLE_PRESS_WAITING_DOUBLE
++
++    return self.state
++
++  def update_long_press_waiting_release_state(self, button_pressed: bool) -> ButtonState:
++    if not button_pressed:
++      return ButtonState.LONG_PRESS
++
++    return self.state
++
++  def update_long_press_state(self, button_pressed: bool) -> ButtonState:
++    if button_pressed:
++      return ButtonState.WAITING_SINGLE_RELEASE
++
++    return self.state
++
++  def update_single_press_waiting_double_state(self, button_pressed: bool) -> ButtonState:
++    if not button_pressed and self.press_interval_elapsed():
++      return ButtonState.SINGLE_PRESS
++
++    if button_pressed:
++      return ButtonState.DOUBLE_PRESS_WAITING_RELEASE
++
++    return self.state
++
++  def update_single_press_state(self, button_pressed: bool) -> ButtonState:
++    if button_pressed:
++      return ButtonState.WAITING_SINGLE_RELEASE
++
++    return self.state
++
++  def update_double_press_waiting_release_state(self, button_pressed: bool) -> ButtonState:
++      if not button_pressed:
++        return ButtonState.DOUBLE_PRESS_WAITING_TRIPLE
++
++      return self.state
++
++  def update_double_press_waiting_triple_state(self, button_pressed: bool) -> ButtonState:
++      if not button_pressed and self.press_interval_elapsed():
++        return ButtonState.DOUBLE_PRESS
++      if button_pressed:
++        return ButtonState.TRIPLE_PRESS_WAITING_RELEASE
++
++      return self.state
++
++  def update_double_press_state(self, button_pressed: bool) -> ButtonState:
++      if button_pressed:
++        return ButtonState.WAITING_SINGLE_RELEASE
++
++      return self.state
++
++  def update_triple_press_waiting_release_state(self, button_pressed: bool) -> ButtonState:
++    if not button_pressed:
++        return ButtonState.TRIPLE_PRESS
++
++    return self.state
++
++  def update_triple_press_state(self, button_pressed: bool) -> ButtonState:
++    if button_pressed:
++      return ButtonState.WAITING_SINGLE_RELEASE
++
++    return self.state
+-- 
+2.41.0
+
+
+From b8607a1786451dc178386f8b923cd4a1b11da981 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Sat, 10 Jun 2023 15:17:10 -0400
+Subject: [PATCH 2/3] gap adjust button
+
+---
+ common/params.cc                        | 4 ++++
+ selfdrive/car/hyundai/interface.py      | 9 +++++++++
+ selfdrive/controls/gap_adjust_button.py | 8 ++++++++
+ 3 files changed, 21 insertions(+)
+ create mode 100644 selfdrive/controls/gap_adjust_button.py
+
+diff --git a/common/params.cc b/common/params.cc
+index 0e6b64402..2c33874af 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -202,6 +202,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
+     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
+     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
++
++    // PFEIFER - GAB {{
++    {"GapAdjustButton", PERSISTENT},
++    // }} PFEIFER - GAB
+ };
+ 
+ } // namespace
+diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
+index 418068a5c..d12a89452 100644
+--- a/selfdrive/car/hyundai/interface.py
++++ b/selfdrive/car/hyundai/interface.py
+@@ -9,6 +9,10 @@ from selfdrive.car import STD_CARGO_KG, create_button_event, scale_tire_stiffnes
+ from selfdrive.car.interfaces import CarInterfaceBase
+ from selfdrive.car.disable_ecu import disable_ecu
+ 
++# PFEIFER - GAB {{
++from selfdrive.controls.gap_adjust_button import gap_adjust_button
++# }} PFEIFER - GAB
++
+ Ecu = car.CarParams.Ecu
+ ButtonType = car.CarState.ButtonEvent.Type
+ EventName = car.CarEvent.EventName
+@@ -324,6 +328,11 @@ class CarInterface(CarInterfaceBase):
+ 
+       ret.buttonEvents = buttonEvents
+ 
++    # PFEIFER - GAB {{
++    gap_button_pressed = (self.CS.cruise_buttons[-1] == Buttons.GAP_DIST)
++    gap_adjust_button.update(gap_button_pressed)
++    # }} PFEIFER - GAB
++
+     # On some newer model years, the CANCEL button acts as a pause/resume button based on the PCM state
+     # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
+     # Main button also can trigger an engagement on these cars
+diff --git a/selfdrive/controls/gap_adjust_button.py b/selfdrive/controls/gap_adjust_button.py
+new file mode 100644
+index 000000000..35d5d0c76
+--- /dev/null
++++ b/selfdrive/controls/gap_adjust_button.py
+@@ -0,0 +1,8 @@
++# PFEIFER - GAB
++
++from selfdrive.controls.button_manager import Button, ButtonState
++
++# export button state so only one import is necessary
++GapButtonState = ButtonState
++
++gap_adjust_button = Button("GapAdjustButton")
+-- 
+2.41.0
+
+
+From 55e99eb6dcbc5f853528a36c077af925207778d5 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Wed, 14 Jun 2023 19:43:11 -0400
+Subject: [PATCH 3/3] Speed Limit Controller
+
+Limits the speed based on the current speed limit.
+---
+ common/params.cc                              |   6 +
+ selfdrive/car/hyundai/carstate.py             |  20 ++++
+ .../controls/lib/longitudinal_planner.py      |  10 ++
+ selfdrive/controls/speed_limit_controller.py  | 108 ++++++++++++++++++
+ selfdrive/navd/navd.py                        |  24 ++++
+ selfdrive/ui/qt/offroad/settings.cc           |  20 ++++
+ 6 files changed, 188 insertions(+)
+ create mode 100644 selfdrive/controls/speed_limit_controller.py
+
+diff --git a/common/params.cc b/common/params.cc
+index 2c33874af..4bc69d81e 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -206,6 +206,12 @@ std::unordered_map<std::string, uint32_t> keys = {
+     // PFEIFER - GAB {{
+     {"GapAdjustButton", PERSISTENT},
+     // }} PFEIFER - GAB
++    // PFEIFER - SLC {{
++    {"NavSpeedLimitControl", PERSISTENT},
++    {"MapSpeedLimitControl", PERSISTENT},
++    {"CarSpeedLimitControl", PERSISTENT},
++    {"SpeedLimitControlData", PERSISTENT},
++    // }} PFEIFER - SLC
+ };
+ 
+ } // namespace
+diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
+index 9bf2e0d4c..21a61faa8 100644
+--- a/selfdrive/car/hyundai/carstate.py
++++ b/selfdrive/car/hyundai/carstate.py
+@@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
+ from selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_GEARS, CAMERA_SCC_CAR, CANFD_CAR, EV_CAR, HYBRID_CAR, Buttons, CarControllerParams
+ from selfdrive.car.interfaces import CarStateBase
+ 
++# PFEIFER - SLC {{
++from selfdrive.controls.speed_limit_controller import slc
++# }} PFEIFER - SLC
++
+ PREV_BUTTON_SAMPLES = 8
+ CLUSTER_SAMPLE_RATE = 20  # frames
+ 
+@@ -45,6 +49,14 @@ class CarState(CarStateBase):
+ 
+     self.params = CarControllerParams(CP)
+ 
++  # PFEIFER - SLC {{
++  def calculate_speed_limit(self, cp):
++    if "SpeedLim_Nav_Clu" not in cp.vl["Navi_HU"]:
++      return 0
++    speed_limit = cp.vl["Navi_HU"]["SpeedLim_Nav_Clu"]
++    return speed_limit if speed_limit not in (0, 255) else 0
++  # }} PFEIFER - SLC
++
+   def update(self, cp, cp_cam):
+     if self.CP.carFingerprint in CANFD_CAR:
+       return self.update_canfd(cp, cp_cam)
+@@ -154,6 +166,10 @@ class CarState(CarStateBase):
+     self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
+     self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
+ 
++    # PFEIFER - SLC {{
++    slc.car_speed_limit = self.calculate_speed_limit(cp)
++    slc.write_state()
++    # }} PFEIFER - SLC
+     return ret
+ 
+   def update_canfd(self, cp, cp_cam):
+@@ -518,6 +534,10 @@ class CarState(CarStateBase):
+         ("ACCELERATOR_BRAKE_ALT", 100),
+       ]
+ 
++    # PFEIFER - SLC {{
++    signals.append(("SpeedLim_Nav_Clu", "Navi_HU"))
++    checks.append(("Navi_HU", 5))
++    # }} PFEIFER - SLC
+     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus(CP).ECAN)
+ 
+   @staticmethod
+diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
+index a9c3cc780..04e11a54f 100755
+--- a/selfdrive/controls/lib/longitudinal_planner.py
++++ b/selfdrive/controls/lib/longitudinal_planner.py
+@@ -16,6 +16,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
+ from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
+ from system.swaglog import cloudlog
+ 
++# PFEIFER - SLC {{
++from selfdrive.controls.speed_limit_controller import slc
++# }} PFEIFER - SLC
++
+ LON_MPC_STEP = 0.2  # first step is 0.2s
+ A_CRUISE_MIN = -1.2
+ A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
+@@ -129,6 +133,12 @@ class LongitudinalPlanner:
+     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
+     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
+ 
++    # PFEIFER - SLC {{
++    slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS)
++    if slc.speed_limit > 0 and (slc.speed_limit + slc.offset) < v_cruise:
++      v_cruise = slc.speed_limit + slc.offset
++    # }} PFEIFER - SLC
++
+     self.mpc.set_weights(prev_accel_constraint, personality=self.personality)
+     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
+     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
+diff --git a/selfdrive/controls/speed_limit_controller.py b/selfdrive/controls/speed_limit_controller.py
+new file mode 100644
+index 000000000..4c18d76d9
+--- /dev/null
++++ b/selfdrive/controls/speed_limit_controller.py
+@@ -0,0 +1,108 @@
++from common.params import Params
++from common.conversions import Conversions as CV
++from selfdrive.controls.gap_adjust_button import gap_adjust_button, GapButtonState
++import json
++
++mem_params = Params("/dev/shm/params")
++params = Params()
++
++class SpeedLimitController:
++  nav_speed_limit: float = 0 # m/s
++  map_speed_limit: float = 0 # m/s
++  car_speed_limit: float = 0 # m/s
++  offset: float = 0 # m/s
++  nav_enabled: bool = False
++  car_enabled: bool = False
++  speed_enabled: bool = False
++  last_transition_id: int = 0
++  current_max_velocity_update_count: int = 0
++
++  def __init__(self) -> None:
++    self.load_persistent_enabled()
++    self.write_state()
++
++  def update_current_max_velocity(self, max_v: float, load_state: bool = True, write_state: bool = True) -> None:
++    self.current_max_velocity_update_count += 1
++    self.current_max_velocity_update_count = self.current_max_velocity_update_count % 100
++    if load_state:
++      self.load_state()
++      if self.current_max_velocity_update_count == 0:
++        self.load_persistent_enabled()
++
++    gap_adjust_button.load_state()
++    if self.last_transition_id != gap_adjust_button.simple_transition_id:
++      self.last_transition_id = gap_adjust_button.simple_transition_id
++      if gap_adjust_button.simple_state == GapButtonState.DOUBLE_PRESS:
++        if max_v > 0 and max_v < 38 and self.speed_limit > 0:
++          self.offset = max_v - self.speed_limit
++          if write_state:
++            self.write_state()
++
++  @property
++  def speed_limit(self) -> float:
++    limit: float = 0
++    if self.nav_enabled and self.nav_speed_limit != 0:
++      limit = self.nav_speed_limit
++    elif self.map_enabled and self.map_speed_limit != 0:
++      limit = self.map_speed_limit
++    elif self.car_enabled and self.car_speed_limit != 0:
++      limit = self.car_speed_limit
++
++    return limit
++
++  @property
++  def speed_limit_mph(self) -> float:
++    return self.speed_limit * CV.MS_TO_MPH
++
++  @property
++  def speed_limit_kph(self) -> float:
++    return self.speed_limit * CV.MS_TO_KPH
++
++  @property
++  def offset_mph(self) -> float:
++    return self.offset * CV.MS_TO_MPH
++
++  @property
++  def offset_kph(self) -> float:
++    return self.offset * CV.MS_TO_KPH
++
++  def write_state(self, write_persistent_enabled=False):
++    data = json.dumps({
++      "nav_speed_limit": self.nav_speed_limit,
++      "map_speed_limit": self.map_speed_limit,
++      "car_speed_limit": self.car_speed_limit,
++      "offset": self.offset,
++      "nav_enabled": self.nav_enabled,
++      "car_enabled": self.car_enabled,
++      "map_enabled": self.map_enabled,
++    })
++    mem_params.put("SpeedLimitControlData", data)
++    if write_persistent_enabled:
++      self.write_persistent_enabled()
++
++  def load_state(self, load_persistent_enabled=False):
++    data = json.loads(mem_params.get("SpeedLimitControlData"))
++    self.nav_enabled = data["nav_enabled"]
++    self.car_enabled = data["car_enabled"]
++    self.map_enabled = data["map_enabled"]
++    self.offset = data["offset"]
++    self.nav_speed_limit = data["nav_speed_limit"]
++    self.map_speed_limit = data["map_speed_limit"]
++    self.car_speed_limit = data["car_speed_limit"]
++
++    if load_persistent_enabled:
++      self.load_persistent_enabled()
++
++  def load_persistent_enabled(self):
++    self.nav_enabled = params.get_bool("NavSpeedLimitControl")
++    self.car_enabled = params.get_bool("CarSpeedLimitControl")
++    self.map_enabled = params.get_bool("MapSpeedLimitControl")
++
++
++  def write_persistent_enabled(self):
++    params.put_bool("NavSpeedLimitControl", self.nav_enabled)
++    params.put_bool("CarSpeedLimitControl", self.car_enabled)
++    params.put_bool("MapSpeedLimitControl", self.map_enabled)
++
++
++slc = SpeedLimitController()
+diff --git a/selfdrive/navd/navd.py b/selfdrive/navd/navd.py
+index 7af911ab2..747ce5c2a 100755
+--- a/selfdrive/navd/navd.py
++++ b/selfdrive/navd/navd.py
+@@ -19,6 +19,10 @@ from selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
+                                     parse_banner_instructions)
+ from system.swaglog import cloudlog
+ 
++# PFEIFER - SLC {{
++from selfdrive.controls.speed_limit_controller import slc
++# }} PFEIFER - SLC
++
+ REROUTE_DISTANCE = 25
+ MANEUVER_TRANSITION_THRESHOLD = 10
+ VALID_POS_STD = 50.0
+@@ -210,6 +214,14 @@ class RouteEngine:
+ 
+     if self.step_idx is None:
+       msg.valid = False
++      # PFEIFER - SLC {{
++      slc.load_state()
++      slc.nav_speed_limit = 0
++      slc.write_state()
++
++      if slc.speed_limit != 0:
++        msg.navInstruction.speedLimit = slc.speed_limit
++      # }} PFEIFER - SLC
+       self.pm.send('navInstruction', msg)
+       return
+ 
+@@ -251,6 +263,18 @@ class RouteEngine:
+ 
+     if ('maxspeed' in closest.annotations) and self.localizer_valid:
+       msg.navInstruction.speedLimit = closest.annotations['maxspeed']
++    # PFEIFER - SLC {{
++      slc.load_state()
++      slc.nav_speed_limit = closest.annotations['maxspeed']
++      slc.write_state()
++    if not self.localizer_valid or ('maxspeed' not in closest.annotations):
++      slc.load_state()
++      slc.nav_speed_limit = 0
++      slc.write_state()
++
++    if slc.speed_limit != 0:
++      msg.navInstruction.speedLimit = slc.speed_limit
++    # }} PFEIFER - SLC
+ 
+     # Speed limit sign type
+     if 'speedLimitSign' in step:
+diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
+index e37e5a984..4a3d5ab21 100644
+--- a/selfdrive/ui/qt/offroad/settings.cc
++++ b/selfdrive/ui/qt/offroad/settings.cc
+@@ -73,6 +73,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+       tr("Display speed in km/h instead of mph."),
+       "../assets/offroad/icon_metric.png",
+     },
++    // PFEIFER - SLC {{
++    {
++      "NavSpeedLimitControl",
++      tr("Speed Limit Control"),
++      tr("Enables Nav Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav instructions. On some cars double pressing the gap adjust button will set an offset using the current set max speed minus the speed limit."),
++      "../assets/img_experimental_white.svg",
++    },
++    {
++      "MapSpeedLimitControl",
++      tr("Map Speed Limit Control"),
++      tr("Enables Map Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by openstreetmap (mapd). On some cars double pressing the gap adjust button will set an offset using the current set max speed minus the speed limit."),
++      "../assets/img_experimental_white.svg",
++    },
++    {
++      "CarSpeedLimitControl",
++      tr("Car Speed Limit Control"),
++      tr("Enables Car Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by the car on some cars. On some cars double pressing the gap adjust button will set an offset using the current set max speed minus the speed limit."),
++      "../assets/img_experimental_white.svg",
++    },
++    // }} PFEIFER - SLC
+ #ifdef ENABLE_MAPS
+     {
+       "NavSettingTime24h",
+-- 
+2.41.0
+
