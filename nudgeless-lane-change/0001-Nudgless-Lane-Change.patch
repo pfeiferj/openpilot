@@ -1,0 +1,85 @@
+From 82650e819f26271dd8a095f230d92ef33a107c94 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Sat, 17 Jun 2023 15:07:16 -0400
+Subject: [PATCH] Nudgless Lane Change
+
+Enables automatically changing lanes when the blinker is turned on.
+---
+ common/params.cc                        |  4 ++++
+ selfdrive/controls/lib/desire_helper.py | 11 +++++++++++
+ selfdrive/ui/qt/offroad/settings.cc     |  8 ++++++++
+ 3 files changed, 23 insertions(+)
+
+diff --git a/common/params.cc b/common/params.cc
+index d880db278..edc771a49 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -203,6 +203,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
+     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
+     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
++
++    // PFEIFER - NLC {{
++    {"NudgelessLaneChange", PERSISTENT},
++    // }} PFEIFER - NLC
+ };
+ 
+ } // namespace
+diff --git a/selfdrive/controls/lib/desire_helper.py b/selfdrive/controls/lib/desire_helper.py
+index 4790b8f0e..6ebfcc0a6 100644
+--- a/selfdrive/controls/lib/desire_helper.py
++++ b/selfdrive/controls/lib/desire_helper.py
+@@ -1,6 +1,8 @@
+ from cereal import log
+ from common.conversions import Conversions as CV
+ from common.realtime import DT_MDL
++from common.params import Params
++params = Params()
+ 
+ LaneChangeState = log.LateralPlan.LaneChangeState
+ LaneChangeDirection = log.LateralPlan.LaneChangeDirection
+@@ -67,6 +69,11 @@ class DesireHelper:
+         blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
+                               (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
+ 
++        # PFEIFER - NLC {{
++        if params.get_bool('NudgelessLaneChange'):
++          torque_applied = True
++        # }} PFEIFER - NLC
++
+         if not one_blinker or below_lane_change_speed:
+           self.lane_change_state = LaneChangeState.off
+         elif torque_applied and not blindspot_detected:
+@@ -92,6 +99,10 @@ class DesireHelper:
+             self.lane_change_state = LaneChangeState.preLaneChange
+           else:
+             self.lane_change_state = LaneChangeState.off
++          # PFEIFER - NLC {{
++          if one_blinker and params.get('NudgelessLaneChangeEnabled'):
++            self.lane_change_state = LaneChangeState.laneChangeFinishing
++          # }} PFEIFER - NLC
+ 
+     if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
+       self.lane_change_timer = 0.0
+diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
+index d9f200865..051aad537 100644
+--- a/selfdrive/ui/qt/offroad/settings.cc
++++ b/selfdrive/ui/qt/offroad/settings.cc
+@@ -73,6 +73,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+       tr("Display speed in km/h instead of mph."),
+       "../assets/offroad/icon_metric.png",
+     },
++    // PFEIFER - NLC {{
++    {
++      "NudgelessLaneChange",
++      tr("Nudgeless Lane Change"),
++      tr("Enables automatically changing lanes when the blinker is turned on."),
++      "../assets/offroad/icon_metric.png",
++    },
++    // }} PFEIFER - NLC
+ #ifdef ENABLE_MAPS
+     {
+       "NavSettingTime24h",
+-- 
+2.41.0
+
