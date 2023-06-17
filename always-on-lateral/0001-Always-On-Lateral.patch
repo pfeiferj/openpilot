@@ -1,0 +1,713 @@
+From 2b0b6dade72a6b8992d1485d90b2b0d70058a675 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Fri, 16 Jun 2023 06:00:27 -0400
+Subject: [PATCH] Always On Lateral
+
+Provides support for Always On Lateral on some cars. Note that always on
+lateral requires changes to panda safety code so please refer to the
+corresponding panda commit to read and understand those changes. To
+engage lateral you must have engaged cruise control at least once after
+pressing the main button. Once cruise control has been engaged lateral
+will remain on after a brake press or the cancel button has been
+pressed. Pressing the cruise main button again will disable lateral
+control.
+---
+ common/params.cc                        |   9 +
+ panda                                   |   2 +-
+ selfdrive/car/chrysler/carstate.py      |   8 +
+ selfdrive/car/ford/carstate.py          |   8 +
+ selfdrive/car/gm/carstate.py            |   8 +
+ selfdrive/car/honda/carstate.py         |   8 +
+ selfdrive/car/hyundai/carstate.py       |  29 ++++
+ selfdrive/car/interfaces.py             |   4 +
+ selfdrive/car/mazda/carstate.py         |   8 +
+ selfdrive/car/subaru/carstate.py        |   8 +
+ selfdrive/car/tesla/carstate.py         |   8 +
+ selfdrive/car/toyota/carstate.py        |   8 +
+ selfdrive/controls/always_on_lateral.py | 210 ++++++++++++++++++++++++
+ selfdrive/controls/controlsd.py         |  18 +-
+ selfdrive/ui/qt/offroad/settings.cc     |  20 +++
+ selfdrive/ui/qt/onroad.cc               |   7 +
+ selfdrive/ui/qt/onroad.h                |   3 +
+ selfdrive/ui/ui.h                       |   6 +
+ 18 files changed, 370 insertions(+), 2 deletions(-)
+ create mode 100644 selfdrive/controls/always_on_lateral.py
+
+diff --git a/common/params.cc b/common/params.cc
+index 0e6b64402..fe9dfe293 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -202,6 +202,15 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
+     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
+     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
++
++    // PFEIFER - AOL {{
++    {"AlwaysOnLateralEnabled", PERSISTENT},
++    {"AlwaysOnLateralType", PERSISTENT},
++    {"LateralAllowed", PERSISTENT},
++    {"LateralActive", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
++    {"DisengageLatOnBrake", PERSISTENT},
++    {"DisengageLatOnBlinker", PERSISTENT},
++    // }} PFEIFER - AOL
+ };
+ 
+ } // namespace
+diff --git a/panda b/panda
+index b56340590..187c66683 160000
+--- a/panda
++++ b/panda
+@@ -1 +1 @@
+-Subproject commit b56340590485bba2428538259e020f176127458c
++Subproject commit 187c66683f15acfec8901146f46881f4eb261f4c
+diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
+index fdc5aa338..fcbc4c931 100644
+--- a/selfdrive/car/chrysler/carstate.py
++++ b/selfdrive/car/chrysler/carstate.py
+@@ -5,6 +5,10 @@ from opendbc.can.can_define import CANDefine
+ from selfdrive.car.interfaces import CarStateBase
+ from selfdrive.car.chrysler.values import DBC, STEER_THRESHOLD, RAM_CARS
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ 
+ class CarState(CarStateBase):
+   def __init__(self, CP):
+@@ -21,6 +25,10 @@ class CarState(CarStateBase):
+     else:
+       self.shifter_values = can_define.dv["GEAR"]["PRNDL"]
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, cp, cp_cam):
+ 
+     ret = car.CarState.new_message()
+diff --git a/selfdrive/car/ford/carstate.py b/selfdrive/car/ford/carstate.py
+index b76874932..7d5115af5 100644
+--- a/selfdrive/car/ford/carstate.py
++++ b/selfdrive/car/ford/carstate.py
+@@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
+ from selfdrive.car.ford.fordcan import CanBus
+ from selfdrive.car.ford.values import DBC, CarControllerParams
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ GearShifter = car.CarState.GearShifter
+ TransmissionType = car.CarParams.TransmissionType
+ 
+@@ -20,6 +24,10 @@ class CarState(CarStateBase):
+     self.vehicle_sensors_valid = False
+     self.hybrid_platform = False
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, cp, cp_cam):
+     ret = car.CarState.new_message()
+ 
+diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
+index 2f9c95287..85a63a273 100644
+--- a/selfdrive/car/gm/carstate.py
++++ b/selfdrive/car/gm/carstate.py
+@@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
+ from selfdrive.car.interfaces import CarStateBase
+ from selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ TransmissionType = car.CarParams.TransmissionType
+ NetworkLocation = car.CarParams.NetworkLocation
+ STANDSTILL_THRESHOLD = 10 * 0.0311 * CV.KPH_TO_MS
+@@ -26,6 +30,10 @@ class CarState(CarStateBase):
+     self.cam_lka_steering_cmd_counter = 0
+     self.buttons_counter = 0
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, pt_cp, cam_cp, loopback_cp):
+     ret = car.CarState.new_message()
+ 
+diff --git a/selfdrive/car/honda/carstate.py b/selfdrive/car/honda/carstate.py
+index 35d627990..35073b696 100644
+--- a/selfdrive/car/honda/carstate.py
++++ b/selfdrive/car/honda/carstate.py
+@@ -9,6 +9,10 @@ from selfdrive.car.honda.hondacan import get_cruise_speed_conversion, get_pt_bus
+ from selfdrive.car.honda.values import CAR, DBC, STEER_THRESHOLD, HONDA_BOSCH, HONDA_NIDEC_ALT_SCM_MESSAGES, HONDA_BOSCH_ALT_BRAKE_SIGNAL, HONDA_BOSCH_RADARLESS
+ from selfdrive.car.interfaces import CarStateBase
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ TransmissionType = car.CarParams.TransmissionType
+ 
+ 
+@@ -157,6 +161,10 @@ class CarState(CarStateBase):
+     # However, on cars without a digital speedometer this is not always present (HRV, FIT, CRV 2016, ILX and RDX)
+     self.dash_speed_seen = False
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, cp, cp_cam, cp_body):
+     ret = car.CarState.new_message()
+ 
+diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
+index 9bf2e0d4c..e52316e1e 100644
+--- a/selfdrive/car/hyundai/carstate.py
++++ b/selfdrive/car/hyundai/carstate.py
+@@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
+ from selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_GEARS, CAMERA_SCC_CAR, CANFD_CAR, EV_CAR, HYBRID_CAR, Buttons, CarControllerParams
+ from selfdrive.car.interfaces import CarStateBase
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ PREV_BUTTON_SAMPLES = 8
+ CLUSTER_SAMPLE_RATE = 20  # frames
+ 
+@@ -98,11 +102,17 @@ class CarState(CarStateBase):
+       ret.cruiseState.available = cp.vl["TCS13"]["ACCEnable"] == 0
+       ret.cruiseState.enabled = cp.vl["TCS13"]["ACC_REQ"] == 1
+       ret.cruiseState.standstill = False
++      # PFEIFER - AOL {{
++      AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.BUTTON)
++      # }} PFEIFER - AOL
+     else:
+       ret.cruiseState.available = cp_cruise.vl["SCC11"]["MainMode_ACC"] == 1
+       ret.cruiseState.enabled = cp_cruise.vl["SCC12"]["ACCMode"] != 0
+       ret.cruiseState.standstill = cp_cruise.vl["SCC11"]["SCCInfoDisplay"] == 4.
+       ret.cruiseState.speed = cp_cruise.vl["SCC11"]["VSetDis"] * speed_conv
++      # PFEIFER - AOL {{
++      AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++      # }} PFEIFER - AOL
+ 
+     # TODO: Find brake pressure
+     ret.brake = 0
+@@ -152,11 +162,22 @@ class CarState(CarStateBase):
+     self.steer_state = cp.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
+     self.prev_cruise_buttons = self.cruise_buttons[-1]
+     self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
++    # PFEIFER - AOL {{
++    self.prev_main_buttons = self.main_buttons[-1]
++    # }} PFEIFER - AOL
+     self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
++    # PFEIFER - AOL {{
++    if self.prev_main_buttons == 0 and self.main_buttons[-1] != 0:
++      AlwaysOnLateral.toggle_lateral_allowed()
++    # }} PFEIFER - AOL
+ 
+     return ret
+ 
+   def update_canfd(self, cp, cp_cam):
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.BUTTON)
++    # }} PFEIFER - AOL
++
+     ret = car.CarState.new_message()
+ 
+     self.is_metric = cp.vl["CRUISE_BUTTONS_ALT"]["DISTANCE_UNIT"] != 1
+@@ -220,7 +241,15 @@ class CarState(CarStateBase):
+     cruise_btn_msg = "CRUISE_BUTTONS_ALT" if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS else "CRUISE_BUTTONS"
+     self.prev_cruise_buttons = self.cruise_buttons[-1]
+     self.cruise_buttons.extend(cp.vl_all[cruise_btn_msg]["CRUISE_BUTTONS"])
++    # PFEIFER - AOL {{
++    self.prev_main_buttons = self.main_buttons[-1]
++    # }} PFEIFER - AOL
+     self.main_buttons.extend(cp.vl_all[cruise_btn_msg]["ADAPTIVE_CRUISE_MAIN_BTN"])
++    # PFEIFER - AOL {{
++    if self.main_buttons[-1] != self.prev_main_buttons:
++        AlwaysOnLateral.toggle_lateral_allowed()
++    # }} PFEIFER - AOL
++
+     self.buttons_counter = cp.vl[cruise_btn_msg]["COUNTER"]
+     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
+ 
+diff --git a/selfdrive/car/interfaces.py b/selfdrive/car/interfaces.py
+index e5d743087..60cee81df 100644
+--- a/selfdrive/car/interfaces.py
++++ b/selfdrive/car/interfaces.py
+@@ -328,6 +328,10 @@ class CarStateBase(ABC):
+     self.car_fingerprint = CP.carFingerprint
+     self.out = car.CarState.new_message()
+ 
++    # PFEIFER - AOL {{
++    self.lateral_allowed = False
++    # }} PFEIFER - AOL
++
+     self.cruise_buttons = 0
+     self.left_blinker_cnt = 0
+     self.right_blinker_cnt = 0
+diff --git a/selfdrive/car/mazda/carstate.py b/selfdrive/car/mazda/carstate.py
+index 944d79809..947557b24 100644
+--- a/selfdrive/car/mazda/carstate.py
++++ b/selfdrive/car/mazda/carstate.py
+@@ -5,6 +5,10 @@ from opendbc.can.parser import CANParser
+ from selfdrive.car.interfaces import CarStateBase
+ from selfdrive.car.mazda.values import DBC, LKAS_LIMITS, GEN1
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ class CarState(CarStateBase):
+   def __init__(self, CP):
+     super().__init__(CP)
+@@ -18,6 +22,10 @@ class CarState(CarStateBase):
+     self.lkas_allowed_speed = False
+     self.lkas_disabled = False
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, cp, cp_cam):
+ 
+     ret = car.CarState.new_message()
+diff --git a/selfdrive/car/subaru/carstate.py b/selfdrive/car/subaru/carstate.py
+index 8ce31b184..d3c56d095 100644
+--- a/selfdrive/car/subaru/carstate.py
++++ b/selfdrive/car/subaru/carstate.py
+@@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
+ from opendbc.can.parser import CANParser
+ from selfdrive.car.subaru.values import DBC, CAR, GLOBAL_GEN2, PREGLOBAL_CARS, SubaruFlags
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ 
+ class CarState(CarStateBase):
+   def __init__(self, CP):
+@@ -13,6 +17,10 @@ class CarState(CarStateBase):
+     can_define = CANDefine(DBC[CP.carFingerprint]["pt"])
+     self.shifter_values = can_define.dv["Transmission"]["Gear"]
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, cp, cp_cam, cp_body):
+     ret = car.CarState.new_message()
+ 
+diff --git a/selfdrive/car/tesla/carstate.py b/selfdrive/car/tesla/carstate.py
+index 0f373842f..9ad53eede 100644
+--- a/selfdrive/car/tesla/carstate.py
++++ b/selfdrive/car/tesla/carstate.py
+@@ -7,6 +7,10 @@ from selfdrive.car.interfaces import CarStateBase
+ from opendbc.can.parser import CANParser
+ from opendbc.can.can_define import CANDefine
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ class CarState(CarStateBase):
+   def __init__(self, CP):
+     super().__init__(CP)
+@@ -20,6 +24,10 @@ class CarState(CarStateBase):
+     self.acc_state = 0
+     self.das_control_counters = deque(maxlen=32)
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, cp, cp_cam):
+     ret = car.CarState.new_message()
+ 
+diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
+index 68adc2ee5..7b15ce1dc 100644
+--- a/selfdrive/car/toyota/carstate.py
++++ b/selfdrive/car/toyota/carstate.py
+@@ -10,6 +10,10 @@ from opendbc.can.parser import CANParser
+ from selfdrive.car.interfaces import CarStateBase
+ from selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ 
+ class CarState(CarStateBase):
+   def __init__(self, CP):
+@@ -30,6 +34,10 @@ class CarState(CarStateBase):
+     self.acc_type = 1
+     self.lkas_hud = {}
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def update(self, cp, cp_cam):
+     ret = car.CarState.new_message()
+ 
+diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
+new file mode 100644
+index 000000000..5024c53fe
+--- /dev/null
++++ b/selfdrive/controls/always_on_lateral.py
+@@ -0,0 +1,210 @@
++# PFEIFER - AOL
++
++from cereal import log, car
++from common.params import Params, put_bool_nonblocking
++from selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEED
++from panda import ALTERNATIVE_EXPERIENCE
++from selfdrive.controls.lib.events import EngagementAlert, AudibleAlert
++from enum import IntEnum
++
++State = log.ControlsState.OpenpilotState
++ACTIVE_STATES = (State.enabled, State.softDisabling, State.overriding)
++
++# Speeds below this will deactivate lateral controls
++STOP_SPEED = 0.5 # m/s
++
++params = Params()
++mem_params = Params("/dev/shm/params")
++"""
++A speed optimization, Params with a base path in /dev/shm/params.
++
++/dev/shm is a memory mapped folder and does not persistently store across
++reboots. The advantage to using a memory mapped folder is that it should be
++very fast and consistent for both writes and reads.
++
++If using the real filesystem placing data can, in extreme circumstances,
++take over 1 second. put_bool_nonblocking helps with this by creating a
++thread but this can create race conditions. If we need to block but don't
++care about persistence across reboots the memory mapped location should
++avoid random lag.
++"""
++
++class AlwaysOnLateralType(IntEnum):
++  STOCK_OP = 0
++  CRUISE_STATE = 1
++  BUTTON = 2
++
++class AlwaysOnLateral:
++  def __init__(self, CI):
++    self.CI = CI
++
++    # UI Toggles
++    self.enabled: bool = False
++    self.disengage_lat_on_brake: bool = False
++    self.disengage_lat_on_blinker: bool = False
++
++    # Car State
++    self.braking: bool = False
++    self.blinkers_active: bool = False
++    self.standstill: bool = False
++    self.steer_fault: bool = False
++    self.invalid_gear: bool = False
++    self.cruise_available: bool = False
++    self.cruise_enabled: bool = False
++
++    # OP/AOL states
++    self.cruise_previously_engaged: bool = False
++    self.last_lat_allowed: bool = False
++    self.op_active: bool = False
++    self.aol_type: AlwaysOnLateralType = AlwaysOnLateralType.STOCK_OP
++    self.prev_lat_active: bool = False
++
++
++
++  @staticmethod
++  def set_always_on_lateral_type(typ: AlwaysOnLateralType):
++    mem_params.put("AlwaysOnLateralType", str(int(typ)))
++
++  @staticmethod
++  def get_always_on_lateral_type() -> AlwaysOnLateralType:
++    try:
++      return AlwaysOnLateralType(int(mem_params.get("AlwaysOnLateralType")))
++    except:
++      return AlwaysOnLateralType.STOCK_OP
++
++  @staticmethod
++  def get_lateral_allowed() -> bool:
++    return mem_params.get_bool("LateralAllowed");
++
++  @staticmethod
++  def set_lateral_allowed(lateral_allowed: bool) -> None:
++    mem_params.put_bool("LateralAllowed", lateral_allowed);
++
++  @staticmethod
++  def toggle_lateral_allowed() -> None:
++    lateral_allowed = AlwaysOnLateral.get_lateral_allowed()
++    AlwaysOnLateral.set_lateral_allowed(not lateral_allowed)
++
++  def handle_audible_alert(self, alert_manager, sm, lateral_allowed: bool):
++    if self.last_lat_allowed != lateral_allowed:
++      alert = None
++      if lateral_allowed:
++        alert = EngagementAlert(AudibleAlert.engage)
++      else:
++        alert = EngagementAlert(AudibleAlert.disengage)
++      alert_manager.add_many(sm.frame, [alert])
++
++  def update_cruise_previously_engaged(self):
++    if not self.cruise_available:
++      self.cruise_previously_engaged = False
++    self.cruise_previously_engaged |= self.op_active
++
++  def check_aol_state(self) -> bool:
++    if not self.enabled:
++      return False
++
++    if self.aol_type == AlwaysOnLateralType.STOCK_OP:
++      return self.op_active
++    elif self.aol_type == AlwaysOnLateralType.CRUISE_STATE:
++      return self.cruise_previously_engaged and self.cruise_available
++    elif self.aol_type == AlwaysOnLateralType.BUTTON:
++      return self.cruise_previously_engaged and self.cruise_available and AlwaysOnLateral.get_lateral_allowed()
++
++    # Should be unreachable
++    return False
++
++  def update(self, car_state, op_state, car_params, sm, alert_manager):
++    panda_states = sm['pandaStates']
++    self.op_active = op_state in ACTIVE_STATES
++
++    self.aol_type = AlwaysOnLateral.get_always_on_lateral_type()
++    lateral_allowed = self.check_aol_state()
++    self.handle_audible_alert(alert_manager, sm, lateral_allowed)
++
++    self.enabled = params.get_bool('AlwaysOnLateralEnabled')
++    self.disengage_lat_on_brake = params.get_bool('DisengageLatOnBrake')
++    self.disengage_lat_on_blinker = params.get_bool('DisengageLatOnBlinker')
++
++    self.cruise_available = car_state.cruiseState.available
++    self.cruise_enabled = car_state.cruiseState.enabled
++
++    self.update_cruise_previously_engaged()
++
++
++    self.braking = car_state.brakePressed or car_state.regenBraking
++    self.blinkers_active = car_state.leftBlinker or car_state.rightBlinker
++    self.standstill = car_state.vEgo <= max(car_params.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or car_state.standstill
++    self.steer_fault = car_state.steerFaultTemporary or car_state.steerFaultPermanent
++    self.invalid_gear = car_state.gearShifter not in [car.CarState.GearShifter.drive, car.CarState.GearShifter.sport, car.CarState.GearShifter.low, car.CarState.GearShifter.eco]
++
++    # Always allow lateral when controls are allowed
++    if any(ps.controlsAllowed for ps in panda_states) and not lateral_allowed:
++      AlwaysOnLateral.set_lateral_allowed(True)
++
++    self.last_lat_allowed = lateral_allowed
++
++  @property
++  def _lat_active(self):
++
++    # cruise state must be reporting available to send lateral controls
++    if not self.cruise_available:
++      return False
++
++    # Require engaging cruise control at least once before keeping lateral on
++    # This helps to prevent cruise faults in some cars
++    if not self.cruise_previously_engaged:
++      return False
++
++    # If car is in a gear that does not move forward do not engage lateral
++    if self.invalid_gear:
++      return False
++
++    # If there is a steer fault lat is not available
++    if self.steer_fault:
++      return False
++
++    # Disable lateral when vehicle is stopped to prevent "twitching" steering wheel
++    if self.standstill:
++      return False
++
++    # Track the main button for BUTTON type aol
++    if self.enabled and self.aol_type == AlwaysOnLateralType.BUTTON and not self.get_lateral_allowed():
++      return False
++
++    # lat is only active when openpilot is active if aol is disabled or we do not support AOL for the car
++    if (not self.enabled or self.aol_type == AlwaysOnLateralType.STOCK_OP) and not self.op_active:
++      return False
++
++    # If DisengageLatOnBrake is enabled we disable lat when braking
++    if self.disengage_lat_on_brake and self.braking:
++      return False
++
++    # If DisengageLatOnBlinker is enabled we disable lat when blinkers are on
++    if self.disengage_lat_on_blinker and self.blinkers_active:
++      return False
++
++    # Lat is active if we pass all previous tests for disengagement
++    return True
++
++  @property
++  def lat_active(self):
++    lat_active = self._lat_active
++
++    # push lat active to the ui
++    if self.prev_lat_active != lat_active:
++      put_bool_nonblocking("LateralActive", lat_active)
++
++    self.prev_lat_active = lat_active
++    return lat_active
++
++  @property
++  def alternative_experience(self):
++    always_on_lateral_enabled = params.get_bool('AlwaysOnLateralEnabled')
++    dlob = params.get_bool('DisengageLatOnBrake')
++    experience = 0
++    if always_on_lateral_enabled:
++      experience |= ALTERNATIVE_EXPERIENCE.ENABLE_ALWAYS_ON_LATERAL
++    if not dlob:
++      experience |= ALTERNATIVE_EXPERIENCE.AOL_DISABLE_DISENGAGE_LATERAL_ON_BRAKE
++    return experience
++
+diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
+index f2f9cef86..dfc183dfe 100755
+--- a/selfdrive/controls/controlsd.py
++++ b/selfdrive/controls/controlsd.py
+@@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
+ from selfdrive.controls.lib.vehicle_model import VehicleModel
+ from system.hardware import HARDWARE
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral
++# }} PFEIFER - AOL
++
+ SOFT_DISABLE_TIME = 3  # seconds
+ LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
+ LANE_DEPARTURE_THRESHOLD = 0.1
+@@ -106,7 +110,10 @@ class Controls:
+     self.CP.alternativeExperience = 0
+     if not self.disengage_on_accelerator:
+       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
+-
++    # PFEIFER - AOL {{
++    self.aol = AlwaysOnLateral(self.CI)
++    self.CP.alternativeExperience |= self.aol.alternative_experience
++    # }} PFEIFER - AOL
+     # read params
+     self.is_metric = self.params.get_bool("IsMetric")
+     self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
+@@ -558,6 +565,11 @@ class Controls:
+     self.active = self.state in ACTIVE_STATES
+     if self.active:
+       self.current_alert_types.append(ET.WARNING)
++    # PFEIFER - AOL {{
++    # Ensure we send warnings when only lat is active
++    elif self.aol.lat_active:
++      self.current_alert_types.append(ET.WARNING)
++    # }} PFEIFER - AOL
+ 
+   def state_control(self, CS):
+     """Given the state, this function returns a CarControl packet"""
+@@ -584,6 +596,10 @@ class Controls:
+     standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
+     CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
+                    (not standstill or self.joystick_mode)
++    # PFEIFER - AOL {{
++    self.aol.update(CS, self.state, self.CP, self.sm, self.AM)
++    CC.latActive = self.aol.lat_active
++    # }} PFEIFER - AOL
+     CC.longActive = self.enabled and not self.events.any(ET.OVERRIDE_LONGITUDINAL) and self.CP.openpilotLongitudinalControl
+ 
+     actuators = CC.actuators
+diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
+index e37e5a984..ed9d85637 100644
+--- a/selfdrive/ui/qt/offroad/settings.cc
++++ b/selfdrive/ui/qt/offroad/settings.cc
+@@ -73,6 +73,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+       tr("Display speed in km/h instead of mph."),
+       "../assets/offroad/icon_metric.png",
+     },
++    // PFEIFER - AOL {{
++    {
++      "AlwaysOnLateralEnabled",
++      tr("Always on Lateral"),
++      tr("When enabled lateral control will be engaged even when longitudinal is not. Main cruise button toggles lateral control on and off."),
++      "../assets/img_experimental_white.svg",
++    },
++    {
++      "DisengageLatOnBrake",
++      tr("Disengage Lateral on Brake Pedal"),
++      tr("Disables lateral while the brake is being applied. Only changes behavior of Always on Lateral."),
++      "../assets/img_experimental_white.svg",
++    },
++    {
++      "DisengageLatOnBlinker",
++      tr("Disengage Lateral on Blinker"),
++      tr("Disables lateral while a blinker is being activated. Only changes behavior of Always on Lateral."),
++      "../assets/img_experimental_white.svg",
++    },
++    // }} PFEIFER - AOL
+ #ifdef ENABLE_MAPS
+     {
+       "NavSettingTime24h",
+diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
+index 0dcf38ccf..bf50c9fd5 100644
+--- a/selfdrive/ui/qt/onroad.cc
++++ b/selfdrive/ui/qt/onroad.cc
+@@ -52,6 +52,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
+ 
+ void OnroadWindow::updateState(const UIState &s) {
+   QColor bgColor = bg_colors[s.status];
++  // PFEIFER - AOL {{
++  params = Params();
++  if(s.status == STATUS_DISENGAGED && params.getBool("LateralActive")){
++      bgColor = bg_colors[STATUS_LAT_ACTIVE];
++  }
++  // }} PFEIFER - AOL
++
+   Alert alert = Alert::get(*(s.sm), s.scene.started_frame);
+   if (s.sm->updated("controlsState") || !alert.equal({})) {
+     if (alert.type == "controlsUnresponsive") {
+diff --git a/selfdrive/ui/qt/onroad.h b/selfdrive/ui/qt/onroad.h
+index 73c2a3789..aaae3a1bd 100644
+--- a/selfdrive/ui/qt/onroad.h
++++ b/selfdrive/ui/qt/onroad.h
+@@ -123,6 +123,9 @@ private:
+   QColor bg = bg_colors[STATUS_DISENGAGED];
+   QWidget *map = nullptr;
+   QHBoxLayout* split;
++  // PFEIFER - AOL {{
++  Params params;
++  // }} PFEIFER - AOL
+ 
+ private slots:
+   void offroadTransition(bool offroad);
+diff --git a/selfdrive/ui/ui.h b/selfdrive/ui/ui.h
+index 2df047003..bda27f829 100644
+--- a/selfdrive/ui/ui.h
++++ b/selfdrive/ui/ui.h
+@@ -85,6 +85,9 @@ typedef enum UIStatus {
+   STATUS_ENGAGED,
+   STATUS_WARNING,
+   STATUS_ALERT,
++  // PFEIFER - AOL {{
++  STATUS_LAT_ACTIVE,
++  // }} PFEIFER - AOL
+ } UIStatus;
+ 
+ const QColor bg_colors [] = {
+@@ -93,6 +96,9 @@ const QColor bg_colors [] = {
+   [STATUS_ENGAGED] = QColor(0x17, 0x86, 0x44, 0xf1),
+   [STATUS_WARNING] = QColor(0xDA, 0x6F, 0x25, 0xf1),
+   [STATUS_ALERT] = QColor(0xC9, 0x22, 0x31, 0xf1),
++  // PFEIFER - AOL {{
++  [STATUS_LAT_ACTIVE] = QColor(0x6f, 0xc0, 0xc9, 0xf1),
++  // }} PFEIFER - AOL
+ };
+ 
+ typedef struct UIScene {
+-- 
+2.41.0
+

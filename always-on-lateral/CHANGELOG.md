@@ -1,4 +1,19 @@
-# MADS Changelog
+# Always On Lateral Changelog
+
+## 06/16/23
+* Rebrand to "Always On Lateral" as feature set isn't identical to "MADS"
+* Now requires openpilot to be engaged at least once after main is toggled on
+* Fixes for HKG stock long
+* Untested support for the following vehicles:
+    - Chrysler
+    - Ford
+    - GM
+    - Honda
+    - HKG can-fd
+    - Mazda
+    - Subaru
+    - Tesla
+    - Toyota
 
 ## 06/11/23
 * Improved panda safety code that ensures stock behavior when the alt experience
