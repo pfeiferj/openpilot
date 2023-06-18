@@ -36,7 +36,7 @@ describing the undesired behavior.
 
 * Panda: [pfeifer-always-on-lateral](https://github.com/pfeiferj/panda/tree/pfeifer-always-on-lateral)
 \-
-[diff](https://github.com/commaai/panda/compare/master...pfeiferj:openpilot:pfeifer-mads)
+[diff](https://github.com/commaai/panda/compare/master...pfeiferj:openpilot:pfeifer-always-on-lateral)
 
 ## Acknowledgments
 I used the following forks as references:
