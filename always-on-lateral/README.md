@@ -7,7 +7,11 @@ pressing the cruise cancel button and disable completely when the brake is
 pressed. Can also be configured to disable when blinkers are activated.
 
 ## Cars Supported
-Currently only hkg-can vehicles have been tested.
+I have only personally tested an HKG can vehicle.
+
+### Reported Working Cars
+The following cars were reported working by members of the community:
+* HKG can-fd
 
 ### Untested Cars
 The following cars _may_ be supported, but they have not been verified working.
@@ -20,7 +24,6 @@ describing the undesired behavior.
 * Ford
 * GM
 * Honda
-* HKG can-fd
 * Mazda
 * Subaru
 * Tesla
