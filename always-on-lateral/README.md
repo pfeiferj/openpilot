@@ -11,7 +11,8 @@ I have only personally tested an HKG can vehicle.
 
 ### Reported Working Cars
 The following cars were reported working by members of the community:
-* HKG can-fd
+* HKG can-fd (Thanks @hoomoose!)
+* Toyota (Thanks @FrogAi!)
 
 ### Untested Cars
 The following cars _may_ be supported, but they have not been verified working.
@@ -27,7 +28,6 @@ describing the undesired behavior.
 * Mazda
 * Subaru
 * Tesla
-* Toyota
 
 ## Branch
 * Openpilot: [pfeifer-always-on-lateral](https://github.com/pfeiferj/openpilot/tree/pfeifer-always-on-lateral)
