@@ -11,6 +11,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
 from openpilot.selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, \
                                                   TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
 
+# PFEIFER - GAB {{
+from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button
+# }} PFEIFER - GAB
+
 SteerControlType = car.CarParams.SteerControlType
 
 # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
@@ -174,6 +178,14 @@ class CarState(CarStateBase):
         self.distance_button = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
       else:
         self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
+
+    # PFEIFER - GAB {{
+    distance_button_pressed = False
+    if self.CP.carFingerprint in TSS2_CAR:
+      if 'DISTANCE' in cp_acc.vl["ACC_CONTROL"]:
+        distance_button_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"] == 1
+        gap_adjust_button.update(distance_button_pressed)
+    # }} PFEIFER - GAB
 
     return ret
 
