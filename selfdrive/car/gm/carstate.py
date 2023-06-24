@@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
 from openpilot.selfdrive.car.interfaces import CarStateBase
 from openpilot.selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD
 
+# PFEIFER - GAB {{
+from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button
+# }} PFEIFER - GAB
+
 TransmissionType = car.CarParams.TransmissionType
 NetworkLocation = car.CarParams.NetworkLocation
 STANDSTILL_THRESHOLD = 10 * 0.0311 * CV.KPH_TO_MS
@@ -28,6 +32,11 @@ class CarState(CarStateBase):
 
   def update(self, pt_cp, cam_cp, loopback_cp):
     ret = car.CarState.new_message()
+
+    # PFEIFER - GAB {{
+    distance_button_pressed = pt_cp.vl["ASCMSteeringButton"]["DistanceButton"] != 0
+    gap_adjust_button.update(distance_button_pressed)
+    # }} PFEIFER - GAB
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
