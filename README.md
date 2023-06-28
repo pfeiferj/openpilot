@@ -22,7 +22,8 @@ following are some popular forks I am personally aware of:
 * [Frogpilot](https://github.com/FrogAi/FrogPilot)
     - Primary focus on Toyota/Lexus and staying up to date with openpilot
       master.
-* [OPGM](https://github.com/opgm/openpilot)
+* [OPGM](https://github.com/opgm/openpilot) - 
+  [Discord](https://discord.com/channels/771493367246094347/978055164160266300)
     - Primary focus on adding support and qol improvements for GM vehicles.
 
 Still want to use something in this repo? Read on about the dragons...
