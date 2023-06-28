@@ -10,7 +10,6 @@ following are some popular forks I am personally aware of:
     - Supports all upstream cars with a focus on HKG.
 * [Twilsonco's Fork](https://github.com/twilsonco/openpilot) -
   [Discord](https://discord.com/channels/469524606043160576/884811574773157949)
-    - Primary focus on adding support for GM.
     - Improved torque control for most cars supported by sunnypilot.
 * [Alexandre Sato's Fork](https://github.com/AlexandreSato/openpilot/tree/personal3)
     - Primary focus on Toyota/Lexus.
@@ -23,6 +22,8 @@ following are some popular forks I am personally aware of:
 * [Frogpilot](https://github.com/FrogAi/FrogPilot)
     - Primary focus on Toyota/Lexus and staying up to date with openpilot
       master.
+* [OPGM](https://github.com/opgm/openpilot)
+    - Primary focus on adding support and qol improvements for GM vehicles.
 
 Still want to use something in this repo? Read on about the dragons...
 
