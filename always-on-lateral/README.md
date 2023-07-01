@@ -28,6 +28,7 @@ describing the undesired behavior.
 * Mazda
 * Subaru
 * Tesla
+* VW/Audi/Skoda
 
 ## Branch
 * Openpilot: [pfeifer-always-on-lateral](https://github.com/pfeiferj/openpilot/tree/pfeifer-always-on-lateral)

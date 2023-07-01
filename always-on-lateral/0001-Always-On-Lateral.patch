@@ -1,6 +1,6 @@
-From 2b0b6dade72a6b8992d1485d90b2b0d70058a675 Mon Sep 17 00:00:00 2001
+From 2f261c20bb8391352629599d0eb8ab4e5527ad11 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 16 Jun 2023 06:00:27 -0400
+Date: Fri, 30 Jun 2023 17:55:31 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -24,23 +24,24 @@ control.
  selfdrive/car/subaru/carstate.py        |   8 +
  selfdrive/car/tesla/carstate.py         |   8 +
  selfdrive/car/toyota/carstate.py        |   8 +
+ selfdrive/car/volkswagen/carstate.py    |   8 +
  selfdrive/controls/always_on_lateral.py | 210 ++++++++++++++++++++++++
  selfdrive/controls/controlsd.py         |  18 +-
  selfdrive/ui/qt/offroad/settings.cc     |  20 +++
  selfdrive/ui/qt/onroad.cc               |   7 +
  selfdrive/ui/qt/onroad.h                |   3 +
  selfdrive/ui/ui.h                       |   6 +
- 18 files changed, 370 insertions(+), 2 deletions(-)
+ 19 files changed, 378 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 0e6b64402..fe9dfe293 100644
+index 288de76b0..2ccd64471 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -202,6 +202,15 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
-     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
-     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
+@@ -203,6 +203,15 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
 +
 +    // PFEIFER - AOL {{
 +    {"AlwaysOnLateralEnabled", PERSISTENT},
@@ -54,12 +55,12 @@ index 0e6b64402..fe9dfe293 100644
  
  } // namespace
 diff --git a/panda b/panda
-index b56340590..187c66683 160000
+index a35e9a1ed..2c13fafca 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit b56340590485bba2428538259e020f176127458c
-+Subproject commit 187c66683f15acfec8901146f46881f4eb261f4c
+-Subproject commit a35e9a1edb1e685f00f4dd9d874043f56ea771fc
++Subproject commit 2c13fafcad48b6d9d6bd8771f6424bf846934b2f
 diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
 index fdc5aa338..fcbc4c931 100644
 --- a/selfdrive/car/chrysler/carstate.py
@@ -87,7 +88,7 @@ index fdc5aa338..fcbc4c931 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/ford/carstate.py b/selfdrive/car/ford/carstate.py
-index b76874932..7d5115af5 100644
+index dfa5c8f5b..229f83234 100644
 --- a/selfdrive/car/ford/carstate.py
 +++ b/selfdrive/car/ford/carstate.py
 @@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
@@ -252,7 +253,7 @@ index e5d743087..60cee81df 100644
      self.left_blinker_cnt = 0
      self.right_blinker_cnt = 0
 diff --git a/selfdrive/car/mazda/carstate.py b/selfdrive/car/mazda/carstate.py
-index 944d79809..947557b24 100644
+index af8830895..edca4ca46 100644
 --- a/selfdrive/car/mazda/carstate.py
 +++ b/selfdrive/car/mazda/carstate.py
 @@ -5,6 +5,10 @@ from opendbc.can.parser import CANParser
@@ -278,12 +279,12 @@ index 944d79809..947557b24 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/subaru/carstate.py b/selfdrive/car/subaru/carstate.py
-index 8ce31b184..d3c56d095 100644
+index 189c244ca..ba09cd26e 100644
 --- a/selfdrive/car/subaru/carstate.py
 +++ b/selfdrive/car/subaru/carstate.py
 @@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
  from opendbc.can.parser import CANParser
- from selfdrive.car.subaru.values import DBC, CAR, GLOBAL_GEN2, PREGLOBAL_CARS, SubaruFlags
+ from selfdrive.car.subaru.values import DBC, CAR, GLOBAL_GEN2, PREGLOBAL_CARS, CanBus, SubaruFlags
  
 +# PFEIFER - AOL {{
 +from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
@@ -330,12 +331,12 @@ index 0f373842f..9ad53eede 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 68adc2ee5..7b15ce1dc 100644
+index fbcacd74b..f06c283fe 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
-@@ -10,6 +10,10 @@ from opendbc.can.parser import CANParser
- from selfdrive.car.interfaces import CarStateBase
- from selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
+@@ -20,6 +20,10 @@ SteerControlType = car.CarParams.SteerControlType
+ #     and is a catch-all for LKA
+ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
  
 +# PFEIFER - AOL {{
 +from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
@@ -344,7 +345,7 @@ index 68adc2ee5..7b15ce1dc 100644
  
  class CarState(CarStateBase):
    def __init__(self, CP):
-@@ -30,6 +34,10 @@ class CarState(CarStateBase):
+@@ -40,6 +44,10 @@ class CarState(CarStateBase):
      self.acc_type = 1
      self.lkas_hud = {}
  
@@ -354,6 +355,32 @@ index 68adc2ee5..7b15ce1dc 100644
 +
    def update(self, cp, cp_cam):
      ret = car.CarState.new_message()
+ 
+diff --git a/selfdrive/car/volkswagen/carstate.py b/selfdrive/car/volkswagen/carstate.py
+index f3cd2808a..94dc821d1 100644
+--- a/selfdrive/car/volkswagen/carstate.py
++++ b/selfdrive/car/volkswagen/carstate.py
+@@ -6,6 +6,10 @@ from opendbc.can.parser import CANParser
+ from selfdrive.car.volkswagen.values import DBC, CANBUS, PQ_CARS, NetworkLocation, TransmissionType, GearShifter, \
+                                             CarControllerParams
+ 
++# PFEIFER - AOL {{
++from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++# }} PFEIFER - AOL
++
+ 
+ class CarState(CarStateBase):
+   def __init__(self, CP):
+@@ -15,6 +19,10 @@ class CarState(CarStateBase):
+     self.esp_hold_confirmation = False
+     self.upscale_lead_car_signal = False
+ 
++    # PFEIFER - AOL {{
++    AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
++    # }} PFEIFER - AOL
++
+   def create_button_events(self, pt_cp, buttons):
+     button_events = []
  
 diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
 new file mode 100644
@@ -572,7 +599,7 @@ index 000000000..5024c53fe
 +    return experience
 +
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index f2f9cef86..dfc183dfe 100755
+index b0721266a..0db4c956b 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
@@ -622,10 +649,10 @@ index f2f9cef86..dfc183dfe 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index e37e5a984..ed9d85637 100644
+index 6b8ca4c5d..70fed77dd 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -73,6 +73,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -69,6 +69,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -653,10 +680,10 @@ index e37e5a984..ed9d85637 100644
      {
        "NavSettingTime24h",
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 0dcf38ccf..bf50c9fd5 100644
+index edf0c2542..5b9b742a0 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -52,6 +52,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
+@@ -53,6 +53,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
  
  void OnroadWindow::updateState(const UIState &s) {
    QColor bgColor = bg_colors[s.status];
@@ -668,13 +695,13 @@ index 0dcf38ccf..bf50c9fd5 100644
 +  // }} PFEIFER - AOL
 +
    Alert alert = Alert::get(*(s.sm), s.scene.started_frame);
-   if (s.sm->updated("controlsState") || !alert.equal({})) {
-     if (alert.type == "controlsUnresponsive") {
+   alerts->updateAlert(alert);
+ 
 diff --git a/selfdrive/ui/qt/onroad.h b/selfdrive/ui/qt/onroad.h
-index 73c2a3789..aaae3a1bd 100644
+index 33a192166..9d77bbe60 100644
 --- a/selfdrive/ui/qt/onroad.h
 +++ b/selfdrive/ui/qt/onroad.h
-@@ -123,6 +123,9 @@ private:
+@@ -128,6 +128,9 @@ private:
    QColor bg = bg_colors[STATUS_DISENGAGED];
    QWidget *map = nullptr;
    QHBoxLayout* split;
@@ -685,29 +712,28 @@ index 73c2a3789..aaae3a1bd 100644
  private slots:
    void offroadTransition(bool offroad);
 diff --git a/selfdrive/ui/ui.h b/selfdrive/ui/ui.h
-index 2df047003..bda27f829 100644
+index 56df84fae..cfb454607 100644
 --- a/selfdrive/ui/ui.h
 +++ b/selfdrive/ui/ui.h
-@@ -85,6 +85,9 @@ typedef enum UIStatus {
+@@ -88,12 +88,18 @@ typedef enum UIStatus {
+   STATUS_DISENGAGED,
+   STATUS_OVERRIDE,
    STATUS_ENGAGED,
-   STATUS_WARNING,
-   STATUS_ALERT,
 +  // PFEIFER - AOL {{
 +  STATUS_LAT_ACTIVE,
 +  // }} PFEIFER - AOL
  } UIStatus;
  
  const QColor bg_colors [] = {
-@@ -93,6 +96,9 @@ const QColor bg_colors [] = {
+   [STATUS_DISENGAGED] = QColor(0x17, 0x33, 0x49, 0xc8),
+   [STATUS_OVERRIDE] = QColor(0x91, 0x9b, 0x95, 0xf1),
    [STATUS_ENGAGED] = QColor(0x17, 0x86, 0x44, 0xf1),
-   [STATUS_WARNING] = QColor(0xDA, 0x6F, 0x25, 0xf1),
-   [STATUS_ALERT] = QColor(0xC9, 0x22, 0x31, 0xf1),
 +  // PFEIFER - AOL {{
 +  [STATUS_LAT_ACTIVE] = QColor(0x6f, 0xc0, 0xc9, 0xf1),
 +  // }} PFEIFER - AOL
  };
  
- typedef struct UIScene {
+ static std::map<cereal::ControlsState::AlertStatus, QColor> alert_colors = {
 -- 
 2.41.0
 

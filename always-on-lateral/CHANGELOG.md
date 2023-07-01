@@ -1,5 +1,8 @@
 # Always On Lateral Changelog
 
+## 06/30/23
+* Untested support for VW/Audi/Skoda
+
 ## 06/16/23
 * Rebrand to "Always On Lateral" as feature set isn't identical to "MADS"
 * Now requires openpilot to be engaged at least once after main is toggled on

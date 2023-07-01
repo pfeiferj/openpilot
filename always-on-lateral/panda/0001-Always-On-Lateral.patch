@@ -1,4 +1,4 @@
-From 187c66683f15acfec8901146f46881f4eb261f4c Mon Sep 17 00:00:00 2001
+From 2c13fafcad48b6d9d6bd8771f6424bf846934b2f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Mon, 27 Mar 2023 21:31:12 -0400
 Subject: [PATCH] Always On Lateral
@@ -20,9 +20,11 @@ always on lateral is not enabled.
  board/safety/safety_subaru.h         |  6 ++++
  board/safety/safety_tesla.h          | 11 ++++++
  board/safety/safety_toyota.h         | 18 ++++++++++
+ board/safety/safety_volkswagen_mqb.h |  3 ++
+ board/safety/safety_volkswagen_pq.h  |  9 +++++
  board/safety_declarations.h          | 10 ++++++
  python/__init__.py                   |  4 +++
- 14 files changed, 137 insertions(+), 5 deletions(-)
+ 16 files changed, 149 insertions(+), 5 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
 index 4d7efd2a..4ab0d69a 100644
@@ -171,7 +173,7 @@ index 90c8a065..4edc7441 100644
    return &default_rx_checks;
  }
 diff --git a/board/safety/safety_ford.h b/board/safety/safety_ford.h
-index 93c1e3a1..dcbb3bb5 100644
+index b25262ca..d2ca5d80 100644
 --- a/board/safety/safety_ford.h
 +++ b/board/safety/safety_ford.h
 @@ -236,6 +236,12 @@ static int ford_rx_hook(CANPacket_t *to_push) {
@@ -278,7 +280,7 @@ index e17f1ff4..c09fe8c8 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index 4c83aed8..9911789c 100644
+index 447c1ea4..523f54e9 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
 @@ -100,6 +100,12 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
@@ -358,6 +360,40 @@ index 5ea6b6e1..6c7f65df 100644
      // enter controls on rising edge of ACC, exit controls on ACC off
      // exit controls on rising edge of gas press
      if (addr == 0x1D2) {
+diff --git a/board/safety/safety_volkswagen_mqb.h b/board/safety/safety_volkswagen_mqb.h
+index 4cd9c2ec..e1f8e951 100644
+--- a/board/safety/safety_volkswagen_mqb.h
++++ b/board/safety/safety_volkswagen_mqb.h
+@@ -158,6 +158,9 @@ static int volkswagen_mqb_rx_hook(CANPacket_t *to_push) {
+ 
+       if (!acc_main_on) {
+         controls_allowed = false;
++        // PFEIFER - AOL {{
++        lateral_controls_allowed = 0;
++        // }} PFEIFER - AOL
+       }
+     }
+ 
+diff --git a/board/safety/safety_volkswagen_pq.h b/board/safety/safety_volkswagen_pq.h
+index 7a909d4d..f9a2687e 100644
+--- a/board/safety/safety_volkswagen_pq.h
++++ b/board/safety/safety_volkswagen_pq.h
+@@ -124,6 +124,15 @@ static int volkswagen_pq_rx_hook(CANPacket_t *to_push) {
+       update_sample(&torque_driver, torque_driver_new);
+     }
+ 
++    // PFEIFER - AOL {{
++    if (addr == MSG_MOTOR_5) {
++      acc_main_on = GET_BIT(to_push, 50U);
++      if (!acc_main_on) {
++        lateral_controls_allowed = 0;
++      }
++    }
++    // }} PFEIFER - AOL
++
+     if (volkswagen_longitudinal) {
+       if (addr == MSG_MOTOR_5) {
+         // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
 diff --git a/board/safety_declarations.h b/board/safety_declarations.h
 index 393e5546..a868f9f1 100644
 --- a/board/safety_declarations.h
@@ -391,10 +427,10 @@ index 393e5546..a868f9f1 100644
 +#define ALT_EXP_AOL_DISABLE_DISENGAGE_LATERAL_ON_BRAKE 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index 68f01439..21fbb10a 100644
+index ffa0b1be..2d27f69f 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
-@@ -127,6 +127,10 @@ class ALTERNATIVE_EXPERIENCE:
+@@ -145,6 +145,10 @@ class ALTERNATIVE_EXPERIENCE:
    DISABLE_DISENGAGE_ON_GAS = 1
    DISABLE_STOCK_AEB = 2
    RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX = 8
