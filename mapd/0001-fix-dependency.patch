@@ -1,0 +1,27 @@
+From 5b047da819ee211864a171f271294847e6ef5682 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Sat, 17 Jun 2023 17:05:46 -0400
+Subject: [PATCH] fix dependency
+
+---
+ selfdrive/manager/process.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/selfdrive/manager/process.py b/selfdrive/manager/process.py
+index 7d0993188..304677670 100644
+--- a/selfdrive/manager/process.py
++++ b/selfdrive/manager/process.py
+@@ -23,6 +23,10 @@ from cereal import log
+ WATCHDOG_FN = "/dev/shm/wd_"
+ ENABLE_WATCHDOG = os.getenv("NO_WATCHDOG") is None
+ 
++# PFEIFER - MAPD {{
++import sys
++sys.path.append(os.path.join(BASEDIR, "third_party/mapd"))
++# }} PFEIFER - MAPD
+ 
+ def launcher(proc: str, name: str) -> None:
+   try:
+-- 
+2.41.0
+
