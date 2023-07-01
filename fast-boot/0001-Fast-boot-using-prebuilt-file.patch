@@ -1,4 +1,4 @@
-From aec6d3a65a1ac08dbee0ed89ceddca690ea10fbd Mon Sep 17 00:00:00 2001
+From 327aedd9c72cd5194beae74b264543855aeb3b43 Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
@@ -27,10 +27,10 @@ index 57242d644..e9ed3f35d 100644
    print("gone")
    time.sleep(5.0)
 diff --git a/launch_chffrplus.sh b/launch_chffrplus.sh
-index a91bd677a..a6f789e88 100755
+index 9fe9b1bd1..d48d3b721 100755
 --- a/launch_chffrplus.sh
 +++ b/launch_chffrplus.sh
-@@ -77,6 +77,12 @@ function launch {
+@@ -82,6 +82,12 @@ function launch {
    # write tmux scrollback to a file
    tmux capture-pane -pq -S-1000 > /tmp/launch_log
  
@@ -44,12 +44,12 @@ index a91bd677a..a6f789e88 100755
    cd selfdrive/manager
    ./build.py && ./manager.py
 diff --git a/selfdrive/thermald/thermald.py b/selfdrive/thermald/thermald.py
-index aa7897861..58fbab5f2 100755
+index 40b259a8d..86db8e667 100755
 --- a/selfdrive/thermald/thermald.py
 +++ b/selfdrive/thermald/thermald.py
-@@ -405,6 +405,11 @@ def thermald_thread(end_event, hw_queue):
- 
+@@ -428,6 +428,11 @@ def thermald_thread(end_event, hw_queue):
      count += 1
+     should_start_prev = should_start
  
 +    # PFEIFER - FB {{
 +    # Create the prebuilt file if it doesn't exist
@@ -84,7 +84,7 @@ index d25c8490f..6c9a74c05 100644
      params.putBool("DoReboot", true);
    });
 diff --git a/selfdrive/ui/qt/widgets/offroad_alerts.cc b/selfdrive/ui/qt/widgets/offroad_alerts.cc
-index ceb823fb2..0f1dcbdf7 100644
+index cdfa86c8e..4ad8d2d95 100644
 --- a/selfdrive/ui/qt/widgets/offroad_alerts.cc
 +++ b/selfdrive/ui/qt/widgets/offroad_alerts.cc
 @@ -3,6 +3,9 @@

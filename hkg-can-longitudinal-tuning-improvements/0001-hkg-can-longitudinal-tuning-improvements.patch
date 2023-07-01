@@ -1,4 +1,4 @@
-From 58daea2cbbd00786575742b25af4405026ef9e29 Mon Sep 17 00:00:00 2001
+From f9875f67fbf39ab1195f8eb5a828efedc1578290 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 11 Jun 2023 14:43:40 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements

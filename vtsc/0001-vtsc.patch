@@ -1,6 +1,6 @@
-From 6dda8b0f8386a4e5f0840602873f8187e4ff6574 Mon Sep 17 00:00:00 2001
+From 318a7e95fe8d3851e2b1162ce74967df1aa53372 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 10 Jun 2023 15:01:57 -0400
+Date: Sat, 24 Jun 2023 17:56:00 -0400
 Subject: [PATCH] vtsc
 
 ---
@@ -12,13 +12,13 @@ Subject: [PATCH] vtsc
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index be285c6aa..2e3c32147 100644
+index 288de76b0..50cefb617 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -203,6 +203,10 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
-     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
-     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
 +
 +    // PFEIFER - VTSC {{
 +    {"TurnVisionControl", PERSISTENT},
@@ -276,10 +276,10 @@ index 000000000..42eea4382
 +
 +vtsc = VisionTurnController()
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index a165f3414..e254cd7af 100644
+index 6b8ca4c5d..4e7d9aa57 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -73,6 +73,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },

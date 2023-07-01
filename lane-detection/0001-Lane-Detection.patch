@@ -1,6 +1,6 @@
-From 47de4dc26955dd53ab6656518e5ad581b1336fb2 Mon Sep 17 00:00:00 2001
+From 444ff8704c4242785c93aea46ad4828920fb2e21 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 17 Jun 2023 16:39:28 -0400
+Date: Sat, 24 Jun 2023 17:51:09 -0400
 Subject: [PATCH] Lane Detection
 
 Prevents lane changes whenever there is no lane detected.
@@ -14,13 +14,13 @@ Prevents lane changes whenever there is no lane detected.
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
-index d880db278..400e46384 100644
+index 288de76b0..49d1ee34b 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -203,6 +203,10 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
-     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
-     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
 +
 +    // PFEIFER - LD {{
 +    {"LaneDetection", PERSISTENT},
@@ -81,7 +81,7 @@ index 000000000..1a75abbbb
 +
 +ld = LaneDetection()
 diff --git a/selfdrive/controls/lib/desire_helper.py b/selfdrive/controls/lib/desire_helper.py
-index 4790b8f0e..bfce27281 100644
+index 4652b41c1..8f2e9e2ca 100644
 --- a/selfdrive/controls/lib/desire_helper.py
 +++ b/selfdrive/controls/lib/desire_helper.py
 @@ -1,6 +1,9 @@
@@ -94,8 +94,8 @@ index 4790b8f0e..bfce27281 100644
  
  LaneChangeState = log.LateralPlan.LaneChangeState
  LaneChangeDirection = log.LateralPlan.LaneChangeDirection
-@@ -71,6 +74,10 @@ class DesireHelper:
-           self.lane_change_state = LaneChangeState.off
+@@ -72,6 +75,10 @@ class DesireHelper:
+           self.lane_change_direction = LaneChangeDirection.none
          elif torque_applied and not blindspot_detected:
            self.lane_change_state = LaneChangeState.laneChangeStarting
 +          # PFEIFER - LD {{
@@ -130,10 +130,10 @@ index 591431242..349cb1900 100644
  
      self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index d9f200865..0b24c5025 100644
+index 6b8ca4c5d..3daecfcef 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -73,6 +73,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },

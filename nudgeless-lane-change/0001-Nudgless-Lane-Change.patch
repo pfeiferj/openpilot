@@ -1,6 +1,6 @@
-From ed77a60f4baee00a5665a6b764eb0f8f454a1e56 Mon Sep 17 00:00:00 2001
+From 227835cc59e6b1c14d3f152c18f16f6550019e5b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 17 Jun 2023 15:07:16 -0400
+Date: Sat, 24 Jun 2023 17:53:47 -0400
 Subject: [PATCH] Nudgless Lane Change
 
 Enables automatically changing lanes when the blinker is turned on.
@@ -11,13 +11,13 @@ Enables automatically changing lanes when the blinker is turned on.
  3 files changed, 25 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index d880db278..edc771a49 100644
+index 288de76b0..fe3be6ae4 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -203,6 +203,10 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"Offroad_UnofficialHardware", CLEAR_ON_MANAGER_START},
-     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
-     {"Offroad_Recalibration", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
 +
 +    // PFEIFER - NLC {{
 +    {"NudgelessLaneChange", PERSISTENT},
@@ -26,7 +26,7 @@ index d880db278..edc771a49 100644
  
  } // namespace
 diff --git a/selfdrive/controls/lib/desire_helper.py b/selfdrive/controls/lib/desire_helper.py
-index 4790b8f0e..7bcc74a4b 100644
+index 4652b41c1..87d7a0bcd 100644
 --- a/selfdrive/controls/lib/desire_helper.py
 +++ b/selfdrive/controls/lib/desire_helper.py
 @@ -1,6 +1,10 @@
@@ -51,8 +51,8 @@ index 4790b8f0e..7bcc74a4b 100644
 +
          if not one_blinker or below_lane_change_speed:
            self.lane_change_state = LaneChangeState.off
-         elif torque_applied and not blindspot_detected:
-@@ -92,6 +101,10 @@ class DesireHelper:
+           self.lane_change_direction = LaneChangeDirection.none
+@@ -93,6 +102,10 @@ class DesireHelper:
              self.lane_change_state = LaneChangeState.preLaneChange
            else:
              self.lane_change_state = LaneChangeState.off
@@ -64,10 +64,10 @@ index 4790b8f0e..7bcc74a4b 100644
      if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
        self.lane_change_timer = 0.0
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index d9f200865..38201b4be 100644
+index 6b8ca4c5d..6cd652776 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -73,6 +73,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
