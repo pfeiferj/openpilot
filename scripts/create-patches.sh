@@ -1,8 +1,10 @@
 #! /bin/bash
+set -e
 
 git checkout pfeifer-always-on-lateral
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/always-on-lateral/
+git submodule update
 cd panda
 git format-patch -1 HEAD
 mv *.patch ../../openpilot-patches/always-on-lateral/panda/

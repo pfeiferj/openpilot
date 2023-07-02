@@ -1,4 +1,5 @@
 #! /bin/bash
+set -e
 
 #git checkout lag-adjusted-curvature-velocity
 #git pull --rebase origin master
@@ -9,13 +10,31 @@ git pull --rebase origin master
 git checkout pfeifer-current-max-speed
 git pull --rebase origin master
 
-git checkout pfeifer-experimental-mode-toggle
+git checkout pfeifer-button-manager
 git pull --rebase origin master
 
-git checkout pfeifer-fast-boot
-git pull --rebase origin master
+git checkout pfeifer-gap-adjust-button
+git checkout -b pgab-tmp
+git checkout pfeifer-gap-adjust-button
+git reset --hard pfeifer-button-manager
+git cherry-pick pgab-tmp
+git branch -D pgab-tmp
+
+git checkout pfeifer-experimental-mode-toggle
+git checkout -b pemt-tmp
+git checkout pfeifer-experimental-mode-toggle
+git reset --hard pfeifer-gap-adjust-button
+git cherry-pick pemt-tmp
+git branch -D pemt-tmp
 
 git checkout pfeifer-gap-adjust-control
+git checkout -b pgac-tmp
+git checkout pfeifer-gap-adjust-control
+git reset --hard pfeifer-gap-adjust-button
+git cherry-pick pgac-tmp
+git branch -D pgac-tmp
+
+git checkout pfeifer-fast-boot
 git pull --rebase origin master
 
 git checkout pfeifer-hkg-long-control-tune
@@ -28,7 +47,11 @@ git checkout pfeifer-nudgeless-lane-change
 git pull --rebase origin master
 
 git checkout pfeifer-speed-limit-control
-git pull --rebase origin master
+git checkout -b pslc-tmp
+git checkout pfeifer-speed-limit-control
+git reset --hard pfeifer-gap-adjust-button
+git cherry-pick pslc-tmp
+git branch -D pslc-tmp
 
 git checkout pfeifer-vtsc
 git pull --rebase origin master
@@ -36,8 +59,3 @@ git pull --rebase origin master
 git checkout pfeifer-mapd
 git pull --rebase origin master
 
-git checkout pfeifer-button-manager
-git pull --rebase origin master
-
-git checkout pfeifer-gap-adjust-button
-git pull --rebase origin master

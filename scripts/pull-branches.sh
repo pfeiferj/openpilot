@@ -1,4 +1,5 @@
 #! /bin/bash
+set -e
 
 git checkout lag-adjusted-curvature-velocity
 git pull

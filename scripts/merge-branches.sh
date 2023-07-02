@@ -1,4 +1,5 @@
 #! /bin/bash
+set -e
 
 # allow union merges since patches are designed to not conflict in ways that
 # will cause bad union merges.
