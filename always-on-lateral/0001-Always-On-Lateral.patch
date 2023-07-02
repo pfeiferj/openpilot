@@ -1,6 +1,6 @@
-From 2f261c20bb8391352629599d0eb8ab4e5527ad11 Mon Sep 17 00:00:00 2001
+From 05154e15e321c6e6af8259bc08e97228a5e32aa7 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 30 Jun 2023 17:55:31 -0400
+Date: Sat, 1 Jul 2023 21:30:37 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -166,7 +166,7 @@ index 35d627990..35073b696 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 9bf2e0d4c..e52316e1e 100644
+index 32e2f8626..88bdf6765 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
@@ -680,7 +680,7 @@ index 6b8ca4c5d..70fed77dd 100644
      {
        "NavSettingTime24h",
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index edf0c2542..5b9b742a0 100644
+index f635e63a0..a548a5595 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
 @@ -53,6 +53,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
@@ -698,13 +698,13 @@ index edf0c2542..5b9b742a0 100644
    alerts->updateAlert(alert);
  
 diff --git a/selfdrive/ui/qt/onroad.h b/selfdrive/ui/qt/onroad.h
-index 33a192166..9d77bbe60 100644
+index c7e92fb9e..3a1695a09 100644
 --- a/selfdrive/ui/qt/onroad.h
 +++ b/selfdrive/ui/qt/onroad.h
-@@ -128,6 +128,9 @@ private:
-   QColor bg = bg_colors[STATUS_DISENGAGED];
+@@ -130,6 +130,9 @@ private:
    QWidget *map = nullptr;
    QHBoxLayout* split;
+   bool navDisabled = false;
 +  // PFEIFER - AOL {{
 +  Params params;
 +  // }} PFEIFER - AOL

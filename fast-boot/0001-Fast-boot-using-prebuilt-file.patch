@@ -1,4 +1,4 @@
-From 327aedd9c72cd5194beae74b264543855aeb3b43 Mon Sep 17 00:00:00 2001
+From 87363a42aa1ca5e0ffacc97c4e6988ae14cc731b Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
