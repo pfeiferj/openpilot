@@ -1,4 +1,4 @@
-From 05154e15e321c6e6af8259bc08e97228a5e32aa7 Mon Sep 17 00:00:00 2001
+From fa8d749dad99314756e622313623617255f0f42b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 1 Jul 2023 21:30:37 -0400
 Subject: [PATCH] Always On Lateral
@@ -12,7 +12,7 @@ will remain on after a brake press or the cancel button has been
 pressed. Pressing the cruise main button again will disable lateral
 control.
 ---
- common/params.cc                        |   9 +
+ common/params.cc                        |  10 ++
  panda                                   |   2 +-
  selfdrive/car/chrysler/carstate.py      |   8 +
  selfdrive/car/ford/carstate.py          |   8 +
@@ -25,26 +25,27 @@ control.
  selfdrive/car/tesla/carstate.py         |   8 +
  selfdrive/car/toyota/carstate.py        |   8 +
  selfdrive/car/volkswagen/carstate.py    |   8 +
- selfdrive/controls/always_on_lateral.py | 210 ++++++++++++++++++++++++
+ selfdrive/controls/always_on_lateral.py | 212 ++++++++++++++++++++++++
  selfdrive/controls/controlsd.py         |  18 +-
- selfdrive/ui/qt/offroad/settings.cc     |  20 +++
+ selfdrive/ui/qt/offroad/settings.cc     |  26 +++
  selfdrive/ui/qt/onroad.cc               |   7 +
  selfdrive/ui/qt/onroad.h                |   3 +
  selfdrive/ui/ui.h                       |   6 +
- 19 files changed, 378 insertions(+), 2 deletions(-)
+ 19 files changed, 387 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 288de76b0..2ccd64471 100644
+index 288de76b0..26684479e 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -203,6 +203,15 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -203,6 +203,16 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
 +
 +    // PFEIFER - AOL {{
 +    {"AlwaysOnLateralEnabled", PERSISTENT},
++    {"AlwaysOnLateralEnabledLock", PERSISTENT | CLEAR_ON_OFFROAD_TRANSITION},
 +    {"AlwaysOnLateralType", PERSISTENT},
 +    {"LateralAllowed", PERSISTENT},
 +    {"LateralActive", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
@@ -384,10 +385,10 @@ index f3cd2808a..94dc821d1 100644
  
 diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
 new file mode 100644
-index 000000000..5024c53fe
+index 000000000..337cf4222
 --- /dev/null
 +++ b/selfdrive/controls/always_on_lateral.py
-@@ -0,0 +1,210 @@
+@@ -0,0 +1,212 @@
 +# PFEIFER - AOL
 +
 +from cereal import log, car
@@ -448,6 +449,8 @@ index 000000000..5024c53fe
 +    self.op_active: bool = False
 +    self.aol_type: AlwaysOnLateralType = AlwaysOnLateralType.STOCK_OP
 +    self.prev_lat_active: bool = False
++
++    params.put_bool("AlwaysOnLateralEnabledLock", True) # locks toggle when onroad
 +
 +
 +
@@ -649,7 +652,7 @@ index b0721266a..0db4c956b 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 6b8ca4c5d..70fed77dd 100644
+index 6b8ca4c5d..0dfdda6bc 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -69,6 +69,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
@@ -679,6 +682,19 @@ index 6b8ca4c5d..70fed77dd 100644
  #ifdef ENABLE_MAPS
      {
        "NavSettingTime24h",
+@@ -139,6 +159,12 @@ void TogglesPanel::updateToggles() {
+                                   .arg(tr("New Driving Visualization"))
+                                   .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner."));
+ 
++  // PFEIFER - AOL {{
++  auto aol_toggle = toggles["AlwaysOnLateralEnabled"];
++  bool aol_locked = params.getBool("AlwaysOnLateralEnabledLock");
++  aol_toggle->setEnabled(!aol_locked);
++  // }} PFEIFER - AOL
++
+   const bool is_release = params.getBool("IsReleaseBranch");
+   auto cp_bytes = params.get("CarParamsPersistent");
+   if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
 index f635e63a0..a548a5595 100644
 --- a/selfdrive/ui/qt/onroad.cc

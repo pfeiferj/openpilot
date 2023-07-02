@@ -50,10 +50,9 @@ Alpha
 
 [Changelog](./CHANGELOG.md)
 
+* Should give pop up warnings to test in a safe environment before driving.
 * Some additional testing of keeping sync with panda may be needed.
 * Many cars are untested.
-* There may need to be a restart of the ignition if the always on later toggle
-  is enabled, needs further investigation.
 
 ## Comment Blocks Text
 PFEIFER - AOL

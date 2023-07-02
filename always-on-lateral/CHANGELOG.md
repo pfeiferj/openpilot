@@ -1,5 +1,8 @@
 # Always On Lateral Changelog
 
+## 07/01/23
+Always On Lateral toggle is disabled when on-road.
+
 ## 06/30/23
 * Untested support for VW/Audi/Skoda
 
