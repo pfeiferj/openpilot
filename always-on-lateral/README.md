@@ -13,6 +13,7 @@ I have only personally tested an HKG can vehicle.
 The following cars were reported working by members of the community:
 * HKG can-fd (Thanks @hoomoose!)
 * Toyota (Thanks @FrogAi!)
+* GM (Thanks [@OPGM Community!](https://discord.gg/G2xp9AH94U))
 
 ### Untested Cars
 The following cars _may_ be supported, but they have not been verified working.
@@ -23,7 +24,6 @@ describing the undesired behavior.
 
 * Chrysler
 * Ford
-* GM
 * Honda
 * Mazda
 * Subaru
