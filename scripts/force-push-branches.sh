@@ -1,7 +1,5 @@
 #! /bin/bash
 set -e
-#git checkout lag-adjusted-curvature-velocity
-#git pull --rebase origin master
 
 git checkout pfeifer-always-on-lateral
 git push --force

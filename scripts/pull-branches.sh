@@ -1,9 +1,6 @@
 #! /bin/bash
 set -e
 
-git checkout lag-adjusted-curvature-velocity
-git pull
-
 git checkout pfeifer-always-on-lateral
 git pull
 

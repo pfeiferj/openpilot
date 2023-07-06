@@ -6,8 +6,7 @@ set -e
 echo "*.py merge=union -text" >> .gitattributes
 echo "*.cc merge=union -text" >> .gitattributes
 
-# These two are most likely to have problems from upstream changes
-git merge lag-adjusted-curvature-velocity
+# This is most likely to have problems from upstream changes
 git merge pfeifer-always-on-lateral
 
 # The rest likely will not have trouble merging

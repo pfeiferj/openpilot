@@ -1,9 +1,6 @@
 #! /bin/bash
 set -e
 
-git checkout lag-adjusted-curvature-velocity
-git reset --hard origin/lag-adjusted-curvature-velocity
-
 git checkout pfeifer-always-on-lateral
 git reset --hard origin/pfeifer-always-on-lateral
 
