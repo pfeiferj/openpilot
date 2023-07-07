@@ -1,4 +1,4 @@
-From 6c70bd3c7610a64ac9f6b0a3f87fe3f375ba2062 Mon Sep 17 00:00:00 2001
+From 0397b2dc84b870c0e411e8baa79e86c34ba5308f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
@@ -26,7 +26,7 @@ index 288de76b0..af8683f40 100644
  
  } // namespace
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 418068a5c..d12a89452 100644
+index cfdca7509..66391cbdd 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -9,6 +9,10 @@ from selfdrive.car import STD_CARGO_KG, create_button_event, scale_tire_stiffnes
@@ -40,7 +40,7 @@ index 418068a5c..d12a89452 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -324,6 +328,11 @@ class CarInterface(CarInterfaceBase):
+@@ -328,6 +332,11 @@ class CarInterface(CarInterfaceBase):
  
        ret.buttonEvents = buttonEvents
  
