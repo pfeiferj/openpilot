@@ -1,6 +1,6 @@
-From fa8d749dad99314756e622313623617255f0f42b Mon Sep 17 00:00:00 2001
+From 3590975f0d6f99e06224b7846673254527ef6bac Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 1 Jul 2023 21:30:37 -0400
+Date: Thu, 6 Jul 2023 13:07:44 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -12,7 +12,7 @@ will remain on after a brake press or the cancel button has been
 pressed. Pressing the cruise main button again will disable lateral
 control.
 ---
- common/params.cc                        |  10 ++
+ common/params.cc                        |  13 ++
  panda                                   |   2 +-
  selfdrive/car/chrysler/carstate.py      |   8 +
  selfdrive/car/ford/carstate.py          |   8 +
@@ -25,20 +25,20 @@ control.
  selfdrive/car/tesla/carstate.py         |   8 +
  selfdrive/car/toyota/carstate.py        |   8 +
  selfdrive/car/volkswagen/carstate.py    |   8 +
- selfdrive/controls/always_on_lateral.py | 212 ++++++++++++++++++++++++
+ selfdrive/controls/always_on_lateral.py | 218 ++++++++++++++++++++++++
  selfdrive/controls/controlsd.py         |  18 +-
- selfdrive/ui/qt/offroad/settings.cc     |  26 +++
+ selfdrive/ui/qt/offroad/settings.cc     |  42 +++++
  selfdrive/ui/qt/onroad.cc               |   7 +
  selfdrive/ui/qt/onroad.h                |   3 +
  selfdrive/ui/ui.h                       |   6 +
- 19 files changed, 387 insertions(+), 2 deletions(-)
+ 19 files changed, 412 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 288de76b0..26684479e 100644
+index 288de76b0..9d5ef3ab9 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -203,6 +203,16 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -203,6 +203,19 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
@@ -46,6 +46,9 @@ index 288de76b0..26684479e 100644
 +    // PFEIFER - AOL {{
 +    {"AlwaysOnLateralEnabled", PERSISTENT},
 +    {"AlwaysOnLateralEnabledLock", PERSISTENT | CLEAR_ON_OFFROAD_TRANSITION},
++    {"AlwaysOnLateralEnabledConfirmed", PERSISTENT},
++    {"AlwaysOnLateralMainEnablesConfirmed", PERSISTENT},
++    {"AlwaysOnLateralMainEnables", PERSISTENT},
 +    {"AlwaysOnLateralType", PERSISTENT},
 +    {"LateralAllowed", PERSISTENT},
 +    {"LateralActive", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
@@ -56,12 +59,12 @@ index 288de76b0..26684479e 100644
  
  } // namespace
 diff --git a/panda b/panda
-index a35e9a1ed..2c13fafca 160000
+index 5285eec35..1565b3bf4 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit a35e9a1edb1e685f00f4dd9d874043f56ea771fc
-+Subproject commit 2c13fafcad48b6d9d6bd8771f6424bf846934b2f
+-Subproject commit 5285eec35ae290ad711f8a7fc7fc5af38c204d25
++Subproject commit 1565b3bf475a15d9a9993a0a718dcccc727602a9
 diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
 index fdc5aa338..fcbc4c931 100644
 --- a/selfdrive/car/chrysler/carstate.py
@@ -385,10 +388,10 @@ index f3cd2808a..94dc821d1 100644
  
 diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
 new file mode 100644
-index 000000000..337cf4222
+index 000000000..ae025c053
 --- /dev/null
 +++ b/selfdrive/controls/always_on_lateral.py
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,218 @@
 +# PFEIFER - AOL
 +
 +from cereal import log, car
@@ -431,6 +434,7 @@ index 000000000..337cf4222
 +
 +    # UI Toggles
 +    self.enabled: bool = False
++    self.main_enables: bool = False
 +    self.disengage_lat_on_brake: bool = False
 +    self.disengage_lat_on_blinker: bool = False
 +
@@ -499,8 +503,12 @@ index 000000000..337cf4222
 +    if self.aol_type == AlwaysOnLateralType.STOCK_OP:
 +      return self.op_active
 +    elif self.aol_type == AlwaysOnLateralType.CRUISE_STATE:
++      if self.main_enables:
++        return self.cruise_available
 +      return self.cruise_previously_engaged and self.cruise_available
 +    elif self.aol_type == AlwaysOnLateralType.BUTTON:
++      if self.main_enables:
++        return self.cruise_available and AlwaysOnLateral.get_lateral_allowed()
 +      return self.cruise_previously_engaged and self.cruise_available and AlwaysOnLateral.get_lateral_allowed()
 +
 +    # Should be unreachable
@@ -515,6 +523,7 @@ index 000000000..337cf4222
 +    self.handle_audible_alert(alert_manager, sm, lateral_allowed)
 +
 +    self.enabled = params.get_bool('AlwaysOnLateralEnabled')
++    self.main_enables = params.get_bool('AlwaysOnLateralMainEnables')
 +    self.disengage_lat_on_brake = params.get_bool('DisengageLatOnBrake')
 +    self.disengage_lat_on_blinker = params.get_bool('DisengageLatOnBlinker')
 +
@@ -545,7 +554,7 @@ index 000000000..337cf4222
 +
 +    # Require engaging cruise control at least once before keeping lateral on
 +    # This helps to prevent cruise faults in some cars
-+    if not self.cruise_previously_engaged:
++    if not self.cruise_previously_engaged and not self.main_enables:
 +      return False
 +
 +    # If car is in a gear that does not move forward do not engage lateral
@@ -593,12 +602,12 @@ index 000000000..337cf4222
 +  @property
 +  def alternative_experience(self):
 +    always_on_lateral_enabled = params.get_bool('AlwaysOnLateralEnabled')
-+    dlob = params.get_bool('DisengageLatOnBrake')
++    always_on_lateral_main_enables = params.get_bool('AlwaysOnLateralMainEnables')
 +    experience = 0
 +    if always_on_lateral_enabled:
 +      experience |= ALTERNATIVE_EXPERIENCE.ENABLE_ALWAYS_ON_LATERAL
-+    if not dlob:
-+      experience |= ALTERNATIVE_EXPERIENCE.AOL_DISABLE_DISENGAGE_LATERAL_ON_BRAKE
++    if not always_on_lateral_main_enables:
++      experience |= ALTERNATIVE_EXPERIENCE.AOL_ENABLE_ON_MAIN
 +    return experience
 +
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
@@ -652,10 +661,10 @@ index b0721266a..0db4c956b 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 6b8ca4c5d..0dfdda6bc 100644
+index 6b8ca4c5d..7e7cb25d8 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -69,6 +69,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -69,6 +69,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -663,7 +672,17 @@ index 6b8ca4c5d..0dfdda6bc 100644
 +    {
 +      "AlwaysOnLateralEnabled",
 +      tr("Always on Lateral"),
-+      tr("When enabled lateral control will be engaged even when longitudinal is not. Main cruise button toggles lateral control on and off."),
++      QString("<b>%1</b><br><br>%2")
++      .arg(tr("WARNING: Always on lateral has not been tested on all cars. You may receive cruise faults when disabling longitudinal control if this is not compatible with your car. Please test in a safe environment before using on road."))
++      .arg(tr("When enabled lateral control will remain engaged after longitudinal is disengaged. Main cruise button toggles lateral control off.")),
++      "../assets/img_experimental_white.svg",
++    },
++    {
++      "AlwaysOnLateralMainEnables",
++      tr("Main cruise engages AOL"),
++      QString("<b>%1</b><br><br>%2")
++      .arg(tr("WARNING: Engaging lateral upon toggling main cruise likely has issues with many cars. You may receive cruise faults upon pressing the main cruise button. Please test in a safe environment before using on road."))
++      .arg(tr("Engages Always on Lateral whenever main is pressed.")),
 +      "../assets/img_experimental_white.svg",
 +    },
 +    {
@@ -682,21 +701,34 @@ index 6b8ca4c5d..0dfdda6bc 100644
  #ifdef ENABLE_MAPS
      {
        "NavSettingTime24h",
-@@ -139,6 +159,12 @@ void TogglesPanel::updateToggles() {
+@@ -110,6 +140,10 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+   toggles["ExperimentalMode"]->setActiveIcon("../assets/img_experimental.svg");
+   toggles["ExperimentalMode"]->setConfirmation(true, true);
+   toggles["ExperimentalLongitudinalEnabled"]->setConfirmation(true, false);
++  // PFEIFER - AOL {{
++  toggles["AlwaysOnLateralEnabled"]->setConfirmation(true, true);
++  toggles["AlwaysOnLateralMainEnables"]->setConfirmation(true, true);
++  // }} PFEIFER - AOL
+ 
+   connect(toggles["ExperimentalLongitudinalEnabled"], &ToggleControl::toggleFlipped, [=]() {
+     updateToggles();
+@@ -139,6 +173,14 @@ void TogglesPanel::updateToggles() {
                                    .arg(tr("New Driving Visualization"))
                                    .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner."));
  
 +  // PFEIFER - AOL {{
 +  auto aol_toggle = toggles["AlwaysOnLateralEnabled"];
++  auto aol_main_toggle = toggles["AlwaysOnLateralMainEnables"];
 +  bool aol_locked = params.getBool("AlwaysOnLateralEnabledLock");
 +  aol_toggle->setEnabled(!aol_locked);
++  aol_main_toggle->setEnabled(!aol_locked);
 +  // }} PFEIFER - AOL
 +
    const bool is_release = params.getBool("IsReleaseBranch");
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index f635e63a0..a548a5595 100644
+index cdde614f0..8482742a5 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
 @@ -53,6 +53,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
@@ -728,10 +760,10 @@ index c7e92fb9e..3a1695a09 100644
  private slots:
    void offroadTransition(bool offroad);
 diff --git a/selfdrive/ui/ui.h b/selfdrive/ui/ui.h
-index 56df84fae..cfb454607 100644
+index cf5094371..f907665ac 100644
 --- a/selfdrive/ui/ui.h
 +++ b/selfdrive/ui/ui.h
-@@ -88,12 +88,18 @@ typedef enum UIStatus {
+@@ -92,12 +92,18 @@ typedef enum UIStatus {
    STATUS_DISENGAGED,
    STATUS_OVERRIDE,
    STATUS_ENGAGED,

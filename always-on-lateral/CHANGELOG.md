@@ -1,5 +1,22 @@
 # Always On Lateral Changelog
 
+## 07/07/23
+Panda:
+    * Remove lateral brake disable check from panda safety when AOL is enabled
+      due to it being a temporary override rather than permanent disable.
+    * Add an alt experience flag for immediately engaging lateral upon toggling
+      cruise main on.
+    * Fix for GM\_ASMC always on lateral: lateral\_controls\_allowed was not
+      being set to false after the main cruise button was toggled off.
+
+Openpilot:
+    * Add a toggle for engaging lateral immediately upon main cruise being
+      toggled on.
+    * Add warning to test always on lateral in a safe environment upon enabling
+      the setting.
+    * Add warning to test engaging always on lateral upon cruise main being
+      toggled in a safe environment upon enabling the setting.
+
 ## 07/01/23
 Always On Lateral toggle is disabled when on-road.
 
