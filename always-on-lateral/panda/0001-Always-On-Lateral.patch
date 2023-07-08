@@ -1,4 +1,4 @@
-From 1565b3bf475a15d9a9993a0a718dcccc727602a9 Mon Sep 17 00:00:00 2001
+From 5b9cda7bcfd8c8b7cd9a3591fbc4613f2c70dc2c Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Mon, 27 Mar 2023 21:31:12 -0400
 Subject: [PATCH] Always On Lateral
@@ -199,7 +199,7 @@ index b25262ca..a1671a93 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_gm.h b/board/safety/safety_gm.h
-index 76e55f0b..4edc0ad0 100644
+index 76e55f0b..36231e68 100644
 --- a/board/safety/safety_gm.h
 +++ b/board/safety/safety_gm.h
 @@ -112,6 +112,18 @@ static int gm_rx_hook(CANPacket_t *to_push) {
@@ -207,7 +207,7 @@ index 76e55f0b..4edc0ad0 100644
      }
  
 +    // PFEIFER - AOL {{
-+    if ((addr == 201) {
++    if (addr == 201) {
 +      bool cruise_available = GET_BIT(to_push, 29U) != 0U;
 +      if(!cruise_available) {
 +        lateral_controls_allowed = 0;

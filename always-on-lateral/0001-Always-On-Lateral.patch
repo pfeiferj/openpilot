@@ -1,4 +1,4 @@
-From 3590975f0d6f99e06224b7846673254527ef6bac Mon Sep 17 00:00:00 2001
+From 55248b31d65f2a34e3bdaa7f97f7d700ff46f837 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 6 Jul 2023 13:07:44 -0400
 Subject: [PATCH] Always On Lateral
@@ -59,12 +59,12 @@ index 288de76b0..9d5ef3ab9 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 5285eec35..1565b3bf4 160000
+index 5285eec35..5b9cda7bc 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
 -Subproject commit 5285eec35ae290ad711f8a7fc7fc5af38c204d25
-+Subproject commit 1565b3bf475a15d9a9993a0a718dcccc727602a9
++Subproject commit 5b9cda7bcfd8c8b7cd9a3591fbc4613f2c70dc2c
 diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
 index fdc5aa338..fcbc4c931 100644
 --- a/selfdrive/car/chrysler/carstate.py
