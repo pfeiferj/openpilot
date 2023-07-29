@@ -1,5 +1,9 @@
 # Always On Lateral Changelog
 
+## 07/28/23
+Openpilot:
+    * Add always\_on\_lateral.py to the release files list (thanks @nworby for the suggestion!)
+
 ## 07/07/23
 Panda:
     * Remove lateral brake disable check from panda safety when AOL is enabled

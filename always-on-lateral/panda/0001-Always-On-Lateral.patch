@@ -1,6 +1,6 @@
-From 5b9cda7bcfd8c8b7cd9a3591fbc4613f2c70dc2c Mon Sep 17 00:00:00 2001
+From 28723833e60fdf8c28d50026d31a51cc4abb8f5b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Mon, 27 Mar 2023 21:31:12 -0400
+Date: Sat, 15 Jul 2023 10:45:59 -0400
 Subject: [PATCH] Always On Lateral
 
 Safety code for Always On Lateral. On supported cars this allows lateral
@@ -179,10 +179,10 @@ index 90c8a065..4edc7441 100644
    return &default_rx_checks;
  }
 diff --git a/board/safety/safety_ford.h b/board/safety/safety_ford.h
-index b25262ca..a1671a93 100644
+index 4f71650c..744654ce 100644
 --- a/board/safety/safety_ford.h
 +++ b/board/safety/safety_ford.h
-@@ -236,6 +236,15 @@ static int ford_rx_hook(CANPacket_t *to_push) {
+@@ -264,6 +264,15 @@ static int ford_rx_hook(CANPacket_t *to_push) {
  
        // Signal: CcStat_D_Actl
        unsigned int cruise_state = GET_BYTE(to_push, 1) & 0x07U;
@@ -307,13 +307,13 @@ index e17f1ff4..b9da2fd0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index 447c1ea4..263f73e4 100644
+index 8127b6d6..34b1bd11 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -100,6 +100,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -110,6 +110,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
-     if ((addr == 0x240) && (bus == alt_bus)) {
+     if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_bus)) {
 +      // PFEIFER - AOL {{
 +      bool cruise_available = GET_BIT(to_push, 40U) != 0U;
 +      if (!cruise_available) {
@@ -352,7 +352,7 @@ index 676670aa..928e432e 100644
                                (cruise_state == 3) ||  // STANDSTILL
                                (cruise_state == 4) ||  // OVERRIDE
 diff --git a/board/safety/safety_toyota.h b/board/safety/safety_toyota.h
-index 5ea6b6e1..2df2e06c 100644
+index 0bc7f3c6..0c757668 100644
 --- a/board/safety/safety_toyota.h
 +++ b/board/safety/safety_toyota.h
 @@ -30,12 +30,18 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
@@ -440,7 +440,7 @@ index 7a909d4d..12cad771 100644
        if (addr == MSG_MOTOR_5) {
          // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
 diff --git a/board/safety_declarations.h b/board/safety_declarations.h
-index 393e5546..4bfc9e8b 100644
+index b2f0ea98..cfdacc76 100644
 --- a/board/safety_declarations.h
 +++ b/board/safety_declarations.h
 @@ -185,6 +185,7 @@ void safety_tick(const addr_checks *addr_checks);
@@ -472,10 +472,10 @@ index 393e5546..4bfc9e8b 100644
 +#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index ffa0b1be..78280d6c 100644
+index 5558a9ab..6df1e743 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
-@@ -145,6 +145,10 @@ class ALTERNATIVE_EXPERIENCE:
+@@ -144,6 +144,10 @@ class ALTERNATIVE_EXPERIENCE:
    DISABLE_DISENGAGE_ON_GAS = 1
    DISABLE_STOCK_AEB = 2
    RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX = 8

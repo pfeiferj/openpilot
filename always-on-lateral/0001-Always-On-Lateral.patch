@@ -1,6 +1,6 @@
-From 55248b31d65f2a34e3bdaa7f97f7d700ff46f837 Mon Sep 17 00:00:00 2001
+From 7e19176be172ef50be634854448991d4a472f039 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Thu, 6 Jul 2023 13:07:44 -0400
+Date: Mon, 24 Jul 2023 20:33:49 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -14,6 +14,7 @@ control.
 ---
  common/params.cc                        |  13 ++
  panda                                   |   2 +-
+ release/files_common                    |   2 +
  selfdrive/car/chrysler/carstate.py      |   8 +
  selfdrive/car/ford/carstate.py          |   8 +
  selfdrive/car/gm/carstate.py            |   8 +
@@ -31,14 +32,14 @@ control.
  selfdrive/ui/qt/onroad.cc               |   7 +
  selfdrive/ui/qt/onroad.h                |   3 +
  selfdrive/ui/ui.h                       |   6 +
- 19 files changed, 412 insertions(+), 2 deletions(-)
+ 20 files changed, 414 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 288de76b0..9d5ef3ab9 100644
+index 509d419d6..449195a08 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -203,6 +203,19 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -205,6 +205,19 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
@@ -59,12 +60,22 @@ index 288de76b0..9d5ef3ab9 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 5285eec35..5b9cda7bc 160000
+index ed8ff7e48..28723833e 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 5285eec35ae290ad711f8a7fc7fc5af38c204d25
-+Subproject commit 5b9cda7bcfd8c8b7cd9a3591fbc4613f2c70dc2c
+-Subproject commit ed8ff7e48ad41b5b7c0ce9df5bb2bb5024b6429d
++Subproject commit 28723833e60fdf8c28d50026d31a51cc4abb8f5b
+diff --git a/release/files_common b/release/files_common
+index a3b3b92f6..e91381620 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -598,3 +598,5 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/controls/always_on_lateral.py
 diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
 index fdc5aa338..fcbc4c931 100644
 --- a/selfdrive/car/chrysler/carstate.py
@@ -92,12 +103,12 @@ index fdc5aa338..fcbc4c931 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/ford/carstate.py b/selfdrive/car/ford/carstate.py
-index dfa5c8f5b..229f83234 100644
+index d9848096e..eb4407871 100644
 --- a/selfdrive/car/ford/carstate.py
 +++ b/selfdrive/car/ford/carstate.py
 @@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
  from selfdrive.car.ford.fordcan import CanBus
- from selfdrive.car.ford.values import DBC, CarControllerParams
+ from selfdrive.car.ford.values import CANFD_CAR, CarControllerParams, DBC
  
 +# PFEIFER - AOL {{
 +from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
@@ -242,10 +253,10 @@ index 32e2f8626..88bdf6765 100644
      ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
  
 diff --git a/selfdrive/car/interfaces.py b/selfdrive/car/interfaces.py
-index e5d743087..60cee81df 100644
+index ec9f4a0f0..124725e4e 100644
 --- a/selfdrive/car/interfaces.py
 +++ b/selfdrive/car/interfaces.py
-@@ -328,6 +328,10 @@ class CarStateBase(ABC):
+@@ -327,6 +327,10 @@ class CarStateBase(ABC):
      self.car_fingerprint = CP.carFingerprint
      self.out = car.CarState.new_message()
  
@@ -335,12 +346,12 @@ index 0f373842f..9ad53eede 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index fbcacd74b..f06c283fe 100644
+index b6ecbe5e5..08b543279 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
-@@ -20,6 +20,10 @@ SteerControlType = car.CarParams.SteerControlType
- #     and is a catch-all for LKA
- TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
+@@ -23,6 +23,10 @@ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
+ # - prolonged high driver torque: 17 (permanent)
+ PERM_STEER_FAULTS = (3, 17)
  
 +# PFEIFER - AOL {{
 +from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
@@ -349,7 +360,7 @@ index fbcacd74b..f06c283fe 100644
  
  class CarState(CarStateBase):
    def __init__(self, CP):
-@@ -40,6 +44,10 @@ class CarState(CarStateBase):
+@@ -43,6 +47,10 @@ class CarState(CarStateBase):
      self.acc_type = 1
      self.lkas_hud = {}
  
@@ -611,7 +622,7 @@ index 000000000..ae025c053
 +    return experience
 +
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index b0721266a..0db4c956b 100755
+index 601d34e94..f49f8953e 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
@@ -661,7 +672,7 @@ index b0721266a..0db4c956b 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 6b8ca4c5d..7e7cb25d8 100644
+index bb15e9d5b..8f3696d0e 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -69,6 +69,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
@@ -712,7 +723,7 @@ index 6b8ca4c5d..7e7cb25d8 100644
  
    connect(toggles["ExperimentalLongitudinalEnabled"], &ToggleControl::toggleFlipped, [=]() {
      updateToggles();
-@@ -139,6 +173,14 @@ void TogglesPanel::updateToggles() {
+@@ -144,6 +178,14 @@ void TogglesPanel::updateToggles() {
                                    .arg(tr("New Driving Visualization"))
                                    .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner."));
  
@@ -728,7 +739,7 @@ index 6b8ca4c5d..7e7cb25d8 100644
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index cdde614f0..8482742a5 100644
+index ef711afd5..4b61ad144 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
 @@ -53,6 +53,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
@@ -746,13 +757,13 @@ index cdde614f0..8482742a5 100644
    alerts->updateAlert(alert);
  
 diff --git a/selfdrive/ui/qt/onroad.h b/selfdrive/ui/qt/onroad.h
-index c7e92fb9e..3a1695a09 100644
+index 955ddf254..11a1fc068 100644
 --- a/selfdrive/ui/qt/onroad.h
 +++ b/selfdrive/ui/qt/onroad.h
 @@ -130,6 +130,9 @@ private:
+   QColor bg = bg_colors[STATUS_DISENGAGED];
    QWidget *map = nullptr;
    QHBoxLayout* split;
-   bool navDisabled = false;
 +  // PFEIFER - AOL {{
 +  Params params;
 +  // }} PFEIFER - AOL
@@ -760,10 +771,10 @@ index c7e92fb9e..3a1695a09 100644
  private slots:
    void offroadTransition(bool offroad);
 diff --git a/selfdrive/ui/ui.h b/selfdrive/ui/ui.h
-index cf5094371..f907665ac 100644
+index 572065d96..1f99bf55b 100644
 --- a/selfdrive/ui/ui.h
 +++ b/selfdrive/ui/ui.h
-@@ -92,12 +92,18 @@ typedef enum UIStatus {
+@@ -93,12 +93,18 @@ typedef enum UIStatus {
    STATUS_DISENGAGED,
    STATUS_OVERRIDE,
    STATUS_ENGAGED,
