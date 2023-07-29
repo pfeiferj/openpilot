@@ -1,6 +1,6 @@
-From 0b3424f0e722a95498a004c4e57afec5cdf39371 Mon Sep 17 00:00:00 2001
+From dd082a22669941df32a2b0138411ae67670bb832 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 24 Jun 2023 17:51:09 -0400
+Date: Fri, 28 Jul 2023 22:30:49 -0400
 Subject: [PATCH] Lane Detection
 
 Prevents lane changes whenever there is no lane detected.
@@ -14,13 +14,13 @@ Prevents lane changes whenever there is no lane detected.
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 509d419d6..91302785e 100644
+index e8ab42c0b..99fd6e2bf 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -205,6 +205,10 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - LD {{
 +    {"LaneDetection", PERSISTENT},
@@ -135,7 +135,7 @@ index 591431242..349cb1900 100644
  
      self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index bb15e9d5b..95602c637 100644
+index 94a673dd7..3040eebef 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

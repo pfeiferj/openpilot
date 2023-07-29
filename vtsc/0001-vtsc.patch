@@ -1,6 +1,6 @@
-From 3f16d0f0bf3c8c006cc1d9700f059f80e931440b Mon Sep 17 00:00:00 2001
+From 33b40619cfaf9ec7e9da75c9b7886129fe7c11da Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 24 Jun 2023 17:56:00 -0400
+Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
 
 ---
@@ -12,13 +12,13 @@ Subject: [PATCH] vtsc
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 509d419d6..a5656ca59 100644
+index e8ab42c0b..58b2fe03b 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -205,6 +205,10 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - VTSC {{
 +    {"TurnVisionControl", PERSISTENT},
@@ -280,7 +280,7 @@ index 000000000..fa784fd49
 +
 +vtsc = VisionTurnController()
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index bb15e9d5b..32d0762b7 100644
+index 94a673dd7..0405b8415 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

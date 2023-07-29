@@ -1,4 +1,4 @@
-From 1255dc96fc5f7a93313632534608d9d663185148 Mon Sep 17 00:00:00 2001
+From 1b5e37d2e5c5c5b8cf54f336b72402289f598d89 Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
@@ -46,10 +46,10 @@ index 9fe9b1bd1..41ca38d19 100755
    cd selfdrive/manager
    ./build.py && ./manager.py
 diff --git a/selfdrive/thermald/thermald.py b/selfdrive/thermald/thermald.py
-index 60961d3d8..18a65e9ae 100755
+index e76b202db..eae1b3bdf 100755
 --- a/selfdrive/thermald/thermald.py
 +++ b/selfdrive/thermald/thermald.py
-@@ -440,6 +440,11 @@ def thermald_thread(end_event, hw_queue):
+@@ -441,6 +441,11 @@ def thermald_thread(end_event, hw_queue):
      count += 1
      should_start_prev = should_start
  

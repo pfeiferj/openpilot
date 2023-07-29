@@ -1,6 +1,6 @@
-From 8d93c43b36f17419cc7245890fcb2770d6b8812c Mon Sep 17 00:00:00 2001
+From 2e56ea86e0584a0ca2830d96591ec6330c9a4d5a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 24 Jun 2023 17:53:47 -0400
+Date: Fri, 28 Jul 2023 22:32:15 -0400
 Subject: [PATCH] Nudgless Lane Change
 
 Enables automatically changing lanes when the blinker is turned on.
@@ -11,13 +11,13 @@ Enables automatically changing lanes when the blinker is turned on.
  3 files changed, 25 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 509d419d6..6bb8bc1e6 100644
+index e8ab42c0b..fc8c7310d 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -205,6 +205,10 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - NLC {{
 +    {"NudgelessLaneChange", PERSISTENT},
@@ -64,7 +64,7 @@ index 4652b41c1..87d7a0bcd 100644
      if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
        self.lane_change_timer = 0.0
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index bb15e9d5b..28238fd6a 100644
+index 94a673dd7..d1c3fbc9d 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

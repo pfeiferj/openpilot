@@ -1,4 +1,4 @@
-From ef4d94814f053605a5719ec2453c0a5658d91546 Mon Sep 17 00:00:00 2001
+From b9c6e6364abbd6a20110f364b0817518f2206328 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -232,26 +232,26 @@ index 000000000..dee8f649a
 2.41.0
 
 
-From b2ead8168b43fc04ce62962a826017ce6c5fbae9 Mon Sep 17 00:00:00 2001
+From 28b2dd1443de2905349598ad0d45358e3ba5e8d5 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
 
 ---
- common/params.cc                        | 4 ++++
- selfdrive/car/hyundai/interface.py      | 9 +++++++++
- selfdrive/controls/gap_adjust_button.py | 8 ++++++++
- 3 files changed, 21 insertions(+)
+ common/params.cc                        |  4 ++++
+ selfdrive/car/hyundai/interface.py      |  9 +++++++++
+ selfdrive/controls/gap_adjust_button.py | 11 +++++++++++
+ 3 files changed, 24 insertions(+)
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 509d419d6..2d74023d1 100644
+index e8ab42c0b..f09fbb2ab 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -205,6 +205,10 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - GAB {{
 +    {"GapAdjustButton", PERSISTENT},
@@ -288,11 +288,14 @@ index 66bf303de..62be75201 100644
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/controls/gap_adjust_button.py b/selfdrive/controls/gap_adjust_button.py
 new file mode 100644
-index 000000000..35d5d0c76
+index 000000000..16da137b1
 --- /dev/null
 +++ b/selfdrive/controls/gap_adjust_button.py
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,11 @@
 +# PFEIFER - GAB
++
++# Acknowledgements:
++# HKG button state was pulled from sunnypilot. https://github.com/sunnyhaibin/sunnypilot
 +
 +from selfdrive.controls.button_manager import Button, ButtonState
 +
@@ -304,7 +307,7 @@ index 000000000..35d5d0c76
 2.41.0
 
 
-From 6e1276729587c9f968fe297c94e7e6a7e20970c3 Mon Sep 17 00:00:00 2001
+From 5b42655c40d72c8c609c5b6a2b7b3e3deaba4e89 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:35:40 -0400
 Subject: [PATCH 3/3] gap adjust control
@@ -357,7 +360,7 @@ index dc5a5b628..97b75fa93 100644
      "Lead_Veh_Dep_Alert_USM": 2,
    }
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 601d34e94..24ee20753 100755
+index fe5bb3671..4bc2adba3 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
