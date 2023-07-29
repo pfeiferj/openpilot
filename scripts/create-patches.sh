@@ -58,4 +58,6 @@ git checkout pfeifer-gap-adjust-button
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/utils/gap-adjust-button/
 
-
+git checkout pfeifer-opweb
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/opweb/

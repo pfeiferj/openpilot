@@ -20,6 +20,7 @@ git merge pfeifer-nudgeless-lane-change
 git merge pfeifer-speed-limit-control
 git merge pfeifer-vtsc
 git merge pfeifer-mapd
+git merge pfeifer-opweb
 
 
 # checkout the .gitattributes file so future merges will not be affected

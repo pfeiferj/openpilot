@@ -56,3 +56,5 @@ git pull --rebase origin master
 git checkout pfeifer-mapd
 git pull --rebase origin master
 
+git checkout pfeifer-opweb
+git pull --rebase origin master
