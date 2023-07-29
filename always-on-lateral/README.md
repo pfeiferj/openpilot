@@ -46,13 +46,12 @@ I used the following forks as references:
 * [Alexandre Sato's Fork](https://github.com/AlexandreSato/openpilot/tree/personal3)
 
 ## Status
-Alpha
+Beta
 
 [Changelog](./CHANGELOG.md)
 
-* Should give pop up warnings to test in a safe environment before driving.
-* Some additional testing of keeping sync with panda may be needed.
-* Many cars are untested.
+* Many cars are untested. However, results so far suggest that remaining untested cars are likely to work.
+* Missing Nissan support
 
 ## Comment Blocks Text
 PFEIFER - AOL
