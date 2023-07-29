@@ -1,4 +1,4 @@
-From bf5d7397ec610a365851e2656a58b2a70e574e66 Mon Sep 17 00:00:00 2001
+From 1255dc96fc5f7a93313632534608d9d663185148 Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
@@ -6,11 +6,11 @@ Subject: [PATCH] Fast boot using prebuilt file
 Added prebuilt functionality that removes itself whenever the user installs updates to prevent installation failures.
 ---
  common/spinner.py                            |  4 +++-
- launch_chffrplus.sh                          |  6 ++++++
+ launch_chffrplus.sh                          |  8 ++++++++
  selfdrive/thermald/thermald.py               |  5 +++++
  selfdrive/ui/qt/offroad/software_settings.cc |  6 ++++++
  selfdrive/ui/qt/widgets/offroad_alerts.cc    | 11 ++++++++++-
- 5 files changed, 30 insertions(+), 2 deletions(-)
+ 5 files changed, 32 insertions(+), 2 deletions(-)
 
 diff --git a/common/spinner.py b/common/spinner.py
 index 57242d644..e9ed3f35d 100644
@@ -27,14 +27,16 @@ index 57242d644..e9ed3f35d 100644
    print("gone")
    time.sleep(5.0)
 diff --git a/launch_chffrplus.sh b/launch_chffrplus.sh
-index 9fe9b1bd1..d48d3b721 100755
+index 9fe9b1bd1..41ca38d19 100755
 --- a/launch_chffrplus.sh
 +++ b/launch_chffrplus.sh
-@@ -82,6 +82,12 @@ function launch {
+@@ -82,6 +82,14 @@ function launch {
    # write tmux scrollback to a file
    tmux capture-pane -pq -S-1000 > /tmp/launch_log
  
 +  # PFEIFER - FB {{
++  # Fastboot Acknowledgements:
++  # Fastboot changes were (nearly) directly copied from frogpilot. Thanks FrogAi! https://github.com/frogAi/FrogPilot
 +  if [ -f "$BASEDIR/prebuilt" ]; then
 +    python /data/openpilot/common/spinner.py &
 +  fi

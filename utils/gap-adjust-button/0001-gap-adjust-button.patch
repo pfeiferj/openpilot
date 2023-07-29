@@ -1,13 +1,13 @@
-From b2ead8168b43fc04ce62962a826017ce6c5fbae9 Mon Sep 17 00:00:00 2001
+From 845864d1a9d9bcec4383da3123f9110b3f0c8df6 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
 
 ---
- common/params.cc                        | 4 ++++
- selfdrive/car/hyundai/interface.py      | 9 +++++++++
- selfdrive/controls/gap_adjust_button.py | 8 ++++++++
- 3 files changed, 21 insertions(+)
+ common/params.cc                        |  4 ++++
+ selfdrive/car/hyundai/interface.py      |  9 +++++++++
+ selfdrive/controls/gap_adjust_button.py | 11 +++++++++++
+ 3 files changed, 24 insertions(+)
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -54,11 +54,14 @@ index 66bf303de..62be75201 100644
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/controls/gap_adjust_button.py b/selfdrive/controls/gap_adjust_button.py
 new file mode 100644
-index 000000000..35d5d0c76
+index 000000000..16da137b1
 --- /dev/null
 +++ b/selfdrive/controls/gap_adjust_button.py
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,11 @@
 +# PFEIFER - GAB
++
++# Acknowledgements:
++# HKG button state was pulled from sunnypilot. https://github.com/sunnyhaibin/sunnypilot
 +
 +from selfdrive.controls.button_manager import Button, ButtonState
 +

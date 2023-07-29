@@ -1,4 +1,4 @@
-From 56a6320f85005a4de7d1b6e671e0799698d2d7d9 Mon Sep 17 00:00:00 2001
+From 3f16d0f0bf3c8c006cc1d9700f059f80e931440b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:56:00 -0400
 Subject: [PATCH] vtsc
@@ -6,9 +6,9 @@ Subject: [PATCH] vtsc
 ---
  common/params.cc                              |   4 +
  .../controls/lib/longitudinal_planner.py      |  15 ++
- selfdrive/controls/vtsc.py                    | 210 ++++++++++++++++++
+ selfdrive/controls/vtsc.py                    | 214 ++++++++++++++++++
  selfdrive/ui/qt/offroad/settings.cc           |   8 +
- 4 files changed, 237 insertions(+)
+ 4 files changed, 241 insertions(+)
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -61,11 +61,15 @@ index a9c3cc780..75c90177a 100755
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/vtsc.py b/selfdrive/controls/vtsc.py
 new file mode 100644
-index 000000000..42eea4382
+index 000000000..fa784fd49
 --- /dev/null
 +++ b/selfdrive/controls/vtsc.py
-@@ -0,0 +1,210 @@
+@@ -0,0 +1,214 @@
 +# PFEIFER - VTSC
++
++# Acknowledgements:
++# This code is a rewrite of the move-fast teams vtsc implementation. (https://github.com/move-fast/openpilot) Huge thanks to them for the initial implementation.
++# I also used sunnypilot as a reference. (https://github.com/sunnyhaibin/sunnypilot) Big thanks for sunny's amazing work
 +
 +import numpy as np
 +from common.numpy_fast import clip

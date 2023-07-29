@@ -1,4 +1,4 @@
-From a4089df705b35eb891202f366ce5dbe96fd189c0 Mon Sep 17 00:00:00 2001
+From 0b3424f0e722a95498a004c4e57afec5cdf39371 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:51:09 -0400
 Subject: [PATCH] Lane Detection
@@ -6,11 +6,11 @@ Subject: [PATCH] Lane Detection
 Prevents lane changes whenever there is no lane detected.
 ---
  common/params.cc                          |  4 ++
- selfdrive/controls/lane_detection.py      | 46 +++++++++++++++++++++++
+ selfdrive/controls/lane_detection.py      | 51 +++++++++++++++++++++++
  selfdrive/controls/lib/desire_helper.py   |  7 ++++
  selfdrive/controls/lib/lateral_planner.py |  6 +++
  selfdrive/ui/qt/offroad/settings.cc       |  8 ++++
- 5 files changed, 71 insertions(+)
+ 5 files changed, 76 insertions(+)
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -30,10 +30,15 @@ index 509d419d6..91302785e 100644
  } // namespace
 diff --git a/selfdrive/controls/lane_detection.py b/selfdrive/controls/lane_detection.py
 new file mode 100644
-index 000000000..1a75abbbb
+index 000000000..5940ba095
 --- /dev/null
 +++ b/selfdrive/controls/lane_detection.py
-@@ -0,0 +1,46 @@
+@@ -0,0 +1,51 @@
++# PFEIFER - LD
++
++# Acknowledgements:
++# Lane detection logic was pulled from frogpilot. A huge thanks to FrogAi! https://github.com/FrogAi/FrogPilot
++
 +import numpy as np
 +from common.params import Params
 +params = Params()
