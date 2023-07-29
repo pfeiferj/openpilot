@@ -1,6 +1,6 @@
-From 7e19176be172ef50be634854448991d4a472f039 Mon Sep 17 00:00:00 2001
+From 761df13eb8504ce0ba654b2b5ec9b0a1c9a1f501 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Mon, 24 Jul 2023 20:33:49 -0400
+Date: Fri, 28 Jul 2023 22:27:02 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -19,30 +19,30 @@ control.
  selfdrive/car/ford/carstate.py          |   8 +
  selfdrive/car/gm/carstate.py            |   8 +
  selfdrive/car/honda/carstate.py         |   8 +
- selfdrive/car/hyundai/carstate.py       |  29 ++++
+ selfdrive/car/hyundai/carstate.py       |  29 +++
  selfdrive/car/interfaces.py             |   4 +
  selfdrive/car/mazda/carstate.py         |   8 +
  selfdrive/car/subaru/carstate.py        |   8 +
  selfdrive/car/tesla/carstate.py         |   8 +
  selfdrive/car/toyota/carstate.py        |   8 +
  selfdrive/car/volkswagen/carstate.py    |   8 +
- selfdrive/controls/always_on_lateral.py | 218 ++++++++++++++++++++++++
+ selfdrive/controls/always_on_lateral.py | 230 ++++++++++++++++++++++++
  selfdrive/controls/controlsd.py         |  18 +-
  selfdrive/ui/qt/offroad/settings.cc     |  42 +++++
  selfdrive/ui/qt/onroad.cc               |   7 +
  selfdrive/ui/qt/onroad.h                |   3 +
  selfdrive/ui/ui.h                       |   6 +
- 20 files changed, 414 insertions(+), 2 deletions(-)
+ 20 files changed, 426 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 509d419d6..449195a08 100644
+index e8ab42c0b..aa4fb3409 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -205,6 +205,19 @@ std::unordered_map<std::string, uint32_t> keys = {
-     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+@@ -206,6 +206,19 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - AOL {{
 +    {"AlwaysOnLateralEnabled", PERSISTENT},
@@ -399,11 +399,20 @@ index f3cd2808a..94dc821d1 100644
  
 diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
 new file mode 100644
-index 000000000..ae025c053
+index 000000000..69d5ba546
 --- /dev/null
 +++ b/selfdrive/controls/always_on_lateral.py
-@@ -0,0 +1,218 @@
+@@ -0,0 +1,230 @@
 +# PFEIFER - AOL
++
++# Acknowledgements:
++# Huge thanks to the following forks, much of my initial implementation used these as a reference:
++#   * Sunnypilot - https://github.com/sunnyhaibin/sunnypilot
++#   * Ghostpilot - https://github.com/spektor56/ghostpilot
++#   * Alexander Sato's fork - https://github.com/AlexandreSato/openpilot/tree/personal3
++#
++# Another huge thanks goes out to Frogai. Working with him on Toyota support lead to a pretty generic method to support
++# nearly every brand. https://github.com/frogAi/FrogPilot
 +
 +from cereal import log, car
 +from common.params import Params, put_bool_nonblocking
@@ -414,9 +423,6 @@ index 000000000..ae025c053
 +
 +State = log.ControlsState.OpenpilotState
 +ACTIVE_STATES = (State.enabled, State.softDisabling, State.overriding)
-+
-+# Speeds below this will deactivate lateral controls
-+STOP_SPEED = 0.5 # m/s
 +
 +params = Params()
 +mem_params = Params("/dev/shm/params")
@@ -464,6 +470,7 @@ index 000000000..ae025c053
 +    self.op_active: bool = False
 +    self.aol_type: AlwaysOnLateralType = AlwaysOnLateralType.STOCK_OP
 +    self.prev_lat_active: bool = False
++    self.calibrated: bool = False
 +
 +    params.put_bool("AlwaysOnLateralEnabledLock", True) # locks toggle when onroad
 +
@@ -549,6 +556,7 @@ index 000000000..ae025c053
 +    self.standstill = car_state.vEgo <= max(car_params.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or car_state.standstill
 +    self.steer_fault = car_state.steerFaultTemporary or car_state.steerFaultPermanent
 +    self.invalid_gear = car_state.gearShifter not in [car.CarState.GearShifter.drive, car.CarState.GearShifter.sport, car.CarState.GearShifter.low, car.CarState.GearShifter.eco]
++    self.calibrated = self.sm['liveCalibration'].calStatus == log.LiveCalibrationData.Status.calibrated
 +
 +    # Always allow lateral when controls are allowed
 +    if any(ps.controlsAllowed for ps in panda_states) and not lateral_allowed:
@@ -574,6 +582,10 @@ index 000000000..ae025c053
 +
 +    # If there is a steer fault lat is not available
 +    if self.steer_fault:
++      return False
++
++    # If OP is not calibrated lat is not available
++    if not self.calibrated:
 +      return False
 +
 +    # Disable lateral when vehicle is stopped to prevent "twitching" steering wheel
@@ -622,7 +634,7 @@ index 000000000..ae025c053
 +    return experience
 +
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 601d34e94..f49f8953e 100755
+index fe5bb3671..bf8c2c732 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
@@ -672,7 +684,7 @@ index 601d34e94..f49f8953e 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index bb15e9d5b..8f3696d0e 100644
+index 94a673dd7..a37700a18 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -69,6 +69,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
@@ -723,9 +735,9 @@ index bb15e9d5b..8f3696d0e 100644
  
    connect(toggles["ExperimentalLongitudinalEnabled"], &ToggleControl::toggleFlipped, [=]() {
      updateToggles();
-@@ -144,6 +178,14 @@ void TogglesPanel::updateToggles() {
-                                   .arg(tr("New Driving Visualization"))
-                                   .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner."));
+@@ -146,6 +180,14 @@ void TogglesPanel::updateToggles() {
+                                   .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner. "
+                                           "When a navigation destination is set and the driving model is using it as input, the driving path on the map will turn green."));
  
 +  // PFEIFER - AOL {{
 +  auto aol_toggle = toggles["AlwaysOnLateralEnabled"];
@@ -739,7 +751,7 @@ index bb15e9d5b..8f3696d0e 100644
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index ef711afd5..4b61ad144 100644
+index 0c126304d..74ec0da5d 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
 @@ -53,6 +53,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
@@ -757,10 +769,10 @@ index ef711afd5..4b61ad144 100644
    alerts->updateAlert(alert);
  
 diff --git a/selfdrive/ui/qt/onroad.h b/selfdrive/ui/qt/onroad.h
-index 955ddf254..11a1fc068 100644
+index 0dd95877a..dec7ec909 100644
 --- a/selfdrive/ui/qt/onroad.h
 +++ b/selfdrive/ui/qt/onroad.h
-@@ -130,6 +130,9 @@ private:
+@@ -146,6 +146,9 @@ private:
    QColor bg = bg_colors[STATUS_DISENGAGED];
    QWidget *map = nullptr;
    QHBoxLayout* split;
