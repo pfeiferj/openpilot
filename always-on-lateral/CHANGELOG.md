@@ -2,6 +2,10 @@
 
 ## 07/28/23
 Openpilot:
+    * Disable lateral whenever openpilot is not calibrated
+
+## 07/28/23
+Openpilot:
     * Add always\_on\_lateral.py to the release files list (thanks @nworby for the suggestion!)
 
 ## 07/07/23
