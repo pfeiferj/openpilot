@@ -1,4 +1,4 @@
-From 28b59e2f461d10644217eca13efcdc8c2d49aaf4 Mon Sep 17 00:00:00 2001
+From d1f0a599022c6e499386fd140c7825f09c05124d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 17:05:46 -0400
 Subject: [PATCH] fix dependency

@@ -1,4 +1,4 @@
-From 0397b2dc84b870c0e411e8baa79e86c34ba5308f Mon Sep 17 00:00:00 2001
+From b2ead8168b43fc04ce62962a826017ce6c5fbae9 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
@@ -11,10 +11,10 @@ Subject: [PATCH] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 288de76b0..af8683f40 100644
+index 509d419d6..2d74023d1 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -203,6 +203,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -205,6 +205,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
@@ -26,7 +26,7 @@ index 288de76b0..af8683f40 100644
  
  } // namespace
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index cfdca7509..66391cbdd 100644
+index 66bf303de..62be75201 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -9,6 +9,10 @@ from selfdrive.car import STD_CARGO_KG, create_button_event, scale_tire_stiffnes

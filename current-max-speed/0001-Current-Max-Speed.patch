@@ -1,4 +1,4 @@
-From 30b97a3b37047c6227f511cf5eb6a880b6830764 Mon Sep 17 00:00:00 2001
+From 45fb4525157be060c37666d7755e415a320b2b2f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:48:02 -0400
 Subject: [PATCH] Current Max Speed
@@ -15,10 +15,10 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 288de76b0..328d3143b 100644
+index 509d419d6..7748e5e29 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -203,6 +203,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -205,6 +205,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
@@ -30,7 +30,7 @@ index 288de76b0..328d3143b 100644
  
  } // namespace
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index b0721266a..c33c5c69e 100755
+index 601d34e94..7df97a1ab 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -27,6 +27,9 @@ from selfdrive.controls.lib.events import Events, ET
