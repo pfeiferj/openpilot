@@ -1,27 +1,33 @@
-From d32f6bf6000981d2d521fa7805143d04ed36eefa Mon Sep 17 00:00:00 2001
+From 207fb850b427352b411975a0d165e4ca430b3d5e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Tue, 11 Jul 2023 18:00:58 -0400
+Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
 
 ---
- selfdrive/manager/process_config.py           |  4 +
- selfdrive/opwebd/__init__.py                  |  0
- selfdrive/opwebd/opwebd.py                    | 92 +++++++++++++++++++
- selfdrive/opwebd/static/hls.min.js            |  2 +
- selfdrive/opwebd/static/htmx.min.js           |  1 +
- selfdrive/opwebd/static/tailwind.min.js       | 63 +++++++++++++
- selfdrive/opwebd/templates/base.html          | 26 ++++++
- selfdrive/opwebd/templates/head.html          |  3 +
- selfdrive/opwebd/templates/pages/index.html   |  5 +
- selfdrive/opwebd/templates/pages/params.html  |  5 +
- selfdrive/opwebd/templates/pages/videos.html  | 25 +++++
- selfdrive/opwebd/templates/params/params.html | 20 ++++
- .../opwebd/templates/route/playlist.m3u8      | 12 +++
- selfdrive/opwebd/templates/route/route.html   |  4 +
- .../opwebd/templates/route/segments.html      | 26 ++++++
- selfdrive/opwebd/templates/video/video.html   |  3 +
- selfdrive/opwebd/templates/wheel.html         |  3 +
- 17 files changed, 294 insertions(+)
+ selfdrive/manager/process_config.py           |   4 +
+ selfdrive/opwebd/__init__.py                  |   0
+ selfdrive/opwebd/opwebd.py                    | 276 ++++++++++++++++++
+ selfdrive/opwebd/static/hls.min.js            |   2 +
+ selfdrive/opwebd/static/htmx.min.js           |   1 +
+ selfdrive/opwebd/static/tailwind.min.js       |  63 ++++
+ selfdrive/opwebd/templates/base.html          |  28 ++
+ selfdrive/opwebd/templates/head.html          |   3 +
+ selfdrive/opwebd/templates/log/logs.html      |  35 +++
+ selfdrive/opwebd/templates/pages/index.html   |  15 +
+ selfdrive/opwebd/templates/pages/logs.html    |  20 ++
+ selfdrive/opwebd/templates/pages/params.html  |  12 +
+ selfdrive/opwebd/templates/pages/update.html  |   6 +
+ selfdrive/opwebd/templates/pages/videos.html  |  28 ++
+ selfdrive/opwebd/templates/params/params.html |  20 ++
+ selfdrive/opwebd/templates/params/tabs.html   |  17 ++
+ .../opwebd/templates/route/playlist.m3u8      |  12 +
+ selfdrive/opwebd/templates/route/route.html   |   4 +
+ .../opwebd/templates/route/segments.html      |  26 ++
+ .../opwebd/templates/update/update_card.html  |  24 ++
+ .../opwebd/templates/update/version_card.html |  14 +
+ selfdrive/opwebd/templates/video/video.html   |   3 +
+ selfdrive/opwebd/templates/wheel.html         |   3 +
+ 23 files changed, 616 insertions(+)
  create mode 100644 selfdrive/opwebd/__init__.py
  create mode 100644 selfdrive/opwebd/opwebd.py
  create mode 100644 selfdrive/opwebd/static/hls.min.js
@@ -29,13 +35,19 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/static/tailwind.min.js
  create mode 100644 selfdrive/opwebd/templates/base.html
  create mode 100644 selfdrive/opwebd/templates/head.html
+ create mode 100644 selfdrive/opwebd/templates/log/logs.html
  create mode 100644 selfdrive/opwebd/templates/pages/index.html
+ create mode 100644 selfdrive/opwebd/templates/pages/logs.html
  create mode 100644 selfdrive/opwebd/templates/pages/params.html
+ create mode 100644 selfdrive/opwebd/templates/pages/update.html
  create mode 100644 selfdrive/opwebd/templates/pages/videos.html
  create mode 100644 selfdrive/opwebd/templates/params/params.html
+ create mode 100644 selfdrive/opwebd/templates/params/tabs.html
  create mode 100644 selfdrive/opwebd/templates/route/playlist.m3u8
  create mode 100644 selfdrive/opwebd/templates/route/route.html
  create mode 100644 selfdrive/opwebd/templates/route/segments.html
+ create mode 100644 selfdrive/opwebd/templates/update/update_card.html
+ create mode 100644 selfdrive/opwebd/templates/update/version_card.html
  create mode 100644 selfdrive/opwebd/templates/video/video.html
  create mode 100644 selfdrive/opwebd/templates/wheel.html
 
@@ -59,102 +71,286 @@ new file mode 100644
 index 000000000..e69de29bb
 diff --git a/selfdrive/opwebd/opwebd.py b/selfdrive/opwebd/opwebd.py
 new file mode 100644
-index 000000000..02dcd1ab2
+index 000000000..6c5bc2abb
 --- /dev/null
 +++ b/selfdrive/opwebd/opwebd.py
-@@ -0,0 +1,92 @@
-+from flask import Flask, render_template, request, send_from_directory
+@@ -0,0 +1,276 @@
++from flask import Flask, render_template, request, send_from_directory, Response
 +import os
 +from common.params import Params
 +import datetime
++import subprocess
 +params = Params()
++# temporarily set mem_params as params. We will change this later if we detect
++# a mem params path
++mem_params = params
 +keys = params.all_keys()
 +
 +dir_path = os.path.dirname(os.path.realpath(__file__))
++
++CAPNP_LOG_PATH = "/data/openpilot/cereal/log.capnp"
++
++MAX_MEM_PARAMS_CHECKS = 5
++_mem_params_checks = 0
++_has_mem_params = False
++
++IS_AGNOS = os.path.exists("/AGNOS")
 +SEGMENTS_DIR = "/data/media/0/realdata"
-+#SEGMENTS_DIR = os.path.join(dir_path, "video")
++if not IS_AGNOS:
++    _has_mem_params = True
++    mem_params = Params("/dev/shm/params")
++    SEGMENTS_DIR = os.path.join(dir_path, "video")
++    CAPNP_LOG_PATH = "./cereal/log.capnp"
++    if not os.path.exists(SEGMENTS_DIR):
++        os.mkdir(SEGMENTS_DIR)
++
++
++def has_mem_params() -> bool:
++    # I know, I know, globals... I promise it's fine
++    global _has_mem_params
++    global _mem_params_checks
++    global mem_params
++
++    if _has_mem_params:
++        return True
++
++    if _mem_params_checks < MAX_MEM_PARAMS_CHECKS:
++        _mem_params_checks += 1
++        _has_mem_params = os.path.exists("/dev/shm/params")
++
++    if _has_mem_params:
++        mem_params = Params("/dev/shm/params")
++    return _has_mem_params
++
 +
 +app = Flask(__name__)
 +
++
 +@app.route("/")
 +def index():
-+  return render_template('pages/index.html')
++    dirs = ["--".join(dir.split("--")[:-1])
++            for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
++    dirs = set(dirs)
++    dirs = list(dirs)
++    dirs.sort()
++    dirs.reverse()
++    return render_template('pages/index.html', route=dirs[0])
++
++
++@app.route("/update")
++def update_page():
++    return render_template('pages/update.html')
++
 +
 +@app.route("/params")
 +def params_page():
-+  return render_template('pages/params.html')
++    location = request.args.get('location', 'data')
++
++    p = params
++    if location == 'mem':
++        p = mem_params
++    parameters = [(key.decode('utf-8'), str(p.get(key))) for key in keys]
++
++    return render_template('pages/params.html', params=parameters, location=location, has_mem_params=has_mem_params())
++
++
++@app.route("/logs")
++def logs_page():
++    dirs = ["--".join(dir.split("--")[:-1])
++            for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
++    dirs = set(dirs)
++    dirs = list(dirs)
++    dirs.sort()
++    dirs.reverse()
++    return render_template('pages/logs.html', options=dirs)
++
++
++@app.route("/logs.html")
++def logs_table():
++    route = request.args.get('route', '')
++    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
++    dirs.sort(key=sortSegments)
++    return render_template('log/logs.html', segments=dirs)
++
++
++@app.route("/logs/json")
++def json_logs():
++    log = request.args.get('log', '')
++    filename = log.replace("/", "-") + ".json"
++    # TODO: this isn't really safe, but good enough for now because we aren't serving to the internet
++    with open(os.path.join(SEGMENTS_DIR, log), "rb") as file:
++      data = subprocess.run(["capnp", "convert", "binary:json", CAPNP_LOG_PATH, "Event"], input=file.read(), capture_output=True)
++      return Response(data.stdout,
++                      mimetype="text/plain",
++                      headers={"Content-Disposition":
++                               "attachment;filename=" + filename})
++
 +
 +@app.route("/videos")
 +def video_page():
-+  dirs = [ "--".join(dir.split("--")[:-1]) for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0 ]
-+  dirs = set(dirs)
-+  dirs = list(dirs)
-+  dirs.sort()
-+  return render_template('pages/videos.html', options=dirs)
++    dirs = ["--".join(dir.split("--")[:-1])
++            for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
++    dirs = set(dirs)
++    dirs = list(dirs)
++    dirs.sort()
++    dirs.reverse()
++    return render_template('pages/videos.html', options=dirs)
++
 +
 +@app.route("/route.html")
 +def route_partial():
-+  route = request.args.get('route', '')
-+  return render_template('route/route.html', route=route)
++    route = request.args.get('route', '')
++    return render_template('route/route.html', route=route)
++
 +
 +def sortSegments(segment):
-+  return int(segment.split("--")[-1])
++    return int(segment.split("--")[-1])
++
 +
 +@app.route("/route/<route>/playlist.m3u8")
 +def playlist_partial(route):
-+  dirs = [ dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route) ]
-+  dirs.sort(key=sortSegments)
-+  idx = 0
-+  segments = []
-+  for dir in dirs:
-+    probe = os.popen(f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"')
-+    duration = float(probe.read().strip())
-+    duration = "{:.3f}".format(duration)
-+    segments.append((idx, duration, f"/video/{dir}/qcamera.ts"))
-+    idx+=1
-+  return render_template('route/playlist.m3u8', segments=segments)
++    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
++    dirs.sort(key=sortSegments)
++    idx = 0
++    segments = []
++    for dir in dirs:
++        probe = os.popen(
++            f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"')
++        duration = float(probe.read().strip())
++        duration = "{:.3f}".format(duration)
++        segments.append((idx, duration, f"/video/{dir}/qcamera.ts"))
++        idx += 1
++    return render_template('route/playlist.m3u8', segments=segments)
++
 +
 +@app.route("/video.html")
 +def video_partial():
-+  route = request.args.get('route', '')
-+  return render_template('video/video.html', route=route)
++    route = request.args.get('route', '')
++    return render_template('video/video.html', route=route)
 +
-+@app.route("/params.html")
-+def params_partial():
-+  parameters = [(key.decode('utf-8'), str(params.get(key))) for key in keys]
-+  return render_template('params/params.html', params=parameters)
 +
 +@app.route("/route/segments.html")
 +def segments_partial():
-+  route = request.args.get('route', '')
-+  dirs = [ dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route) ]
-+  dirs.sort(key=sortSegments)
-+  idx = 0
-+  segments = []
-+  t = 0
-+  for dir in dirs:
-+    probe = os.popen(f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"')
-+    duration = float(probe.read().strip())
-+    links = os.listdir(os.path.join(SEGMENTS_DIR, dir))
-+    links = [(dir, link) for link in links]
-+    segments.append({
-+      "name": dir,
-+      "time": str(datetime.timedelta(seconds=t)),
-+      "links": links
-+    })
-+    t += duration
-+    idx+=1
-+  return render_template('route/segments.html', segments=segments)
++    route = request.args.get('route', '')
++    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
++    dirs.sort(key=sortSegments)
++    idx = 0
++    segments = []
++    t = 0
++    for dir in dirs:
++        probe = os.popen(
++            f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"'
++        )
++        duration = float(probe.read().strip())
++        links = os.listdir(os.path.join(SEGMENTS_DIR, dir))
++        links = [(dir, link) for link in links if link.endswith("hevc") or link.endswith("ts")]
++        segments.append({
++            "name": dir,
++            "time": str(datetime.timedelta(seconds=t)),
++            "links": links
++        })
++        t += duration
++        idx += 1
++    return render_template('route/segments.html', segments=segments)
++
 +
 +@app.route('/video/<path:path>')
 +def send_report(path):
 +    return send_from_directory(SEGMENTS_DIR, path, as_attachment=True)
 +
++
++@app.post('/update/install')
++def install_update():
++    if os.path.exists("/data/openpilot/prebuilt"):
++        os.remove("/data/openpilot/prebuilt")
++    params.put_bool("DoReboot", True)
++    return "triggered"
++
++
++@app.post('/update/check')
++def check_for_update():
++    subprocess.run(["pkill", "-SIGUSR1", "-f", "selfdrive.updated"])
++    return "triggered"
++
++
++@app.post('/update/download')
++def download_update():
++    subprocess.run(["pkill", "-SIGHUP", "-f", "selfdrive.updated"])
++    return "triggered"
++
++
++@app.route('/update/status')
++def update_status():
++    updater_state = (params.get("UpdaterState") or b'').decode()
++    if updater_state != "idle":
++        return updater_state
++
++    update_failed_count = int((params.get("UpdateFailedCount") or "0").decode())
++    if update_failed_count > 0:
++        return "failed"
++    if params.get_bool("UpdaterFetchAvailable"):
++        return "available"
++
++    return (params.get("LastUpdateTime") or "").decode()
++
++
++@app.route('/update/update_card')
++def update_card():
++    button_text = "Check For Update"
++    button_link = "/update/check"
++    if params.get_bool("UpdaterFetchAvailable"):
++        button_text = "Download Update"
++        button_link = "/update/download"
++
++    downloaded = params.get_bool("UpdateAvailable")
++
++    version = (params.get("UpdaterNewDescription") or b'').decode()
++    branch = (params.get("UpdaterTargetBranch") or b'').decode()
++    state = (params.get("UpdaterState") or b'').decode()
++    last_check = (params.get("LastUpdateTime") or b'').decode()
++    release_notes = (params.get("UpdaterNewReleaseNotes") or b'').decode()
++    update_failed_count = (params.get("UpdateFailedCount") or b"0").decode()
++
++    return render_template(
++        'update/update_card.html',
++        button_text=button_text,
++        button_link=button_link,
++        install_button=downloaded,
++        version=version,
++        branch=branch,
++        state=state,
++        last_check=last_check,
++        release_notes=release_notes,
++        failure_count=update_failed_count,
++    )
++
++
++@app.route('/update/version_card')
++def version_card():
++    version = (params.get("UpdaterCurrentDescription") or b'').decode()
++    repo = (params.get("GitRemote") or b'').decode()
++    branch = (params.get("GitBranch") or b'').decode()
++    install_date = (params.get("InstallDate") or b'').decode()
++    release_notes = (params.get("UpdaterCurrentReleaseNotes") or b'').decode()
++    commit = (params.get("GitCommit") or b'').decode()
++
++    return render_template(
++        'update/version_card.html',
++        version=version,
++        repo=repo,
++        branch=branch,
++        install_date=install_date,
++        release_notes=release_notes,
++        commit=commit
++    )
++
++
 +def main():
-+  app.run(host="0.0.0.0", port=5050)
++    app.run(host="0.0.0.0", port=5050)
++
 +
 +if __name__ == '__main__':
-+  main()
++    main()
 diff --git a/selfdrive/opwebd/static/hls.min.js b/selfdrive/opwebd/static/hls.min.js
 new file mode 100644
 index 000000000..88202e5aa
@@ -242,10 +438,10 @@ index 000000000..c3df33698
 +/*! https://mths.be/cssesc v3.0.0 by @mathias */
 diff --git a/selfdrive/opwebd/templates/base.html b/selfdrive/opwebd/templates/base.html
 new file mode 100644
-index 000000000..97a08e281
+index 000000000..078c9d54f
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/base.html
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,28 @@
 +<!DOCTYPE html>
 +<html lang="en">
 +  <head>
@@ -254,7 +450,7 @@ index 000000000..97a08e281
 +  </head>
 +  <body class="bg-white dark:bg-slate-800">
 +    <header class="bg-gray-200 dark:bg-slate-900 text-slate-900 dark:text-white">
-+      <nav class="mx-auto flex max-w-7xl items-center justify-between p-6 px-8" aria-label="Global">
++      <nav hx-boost="true" class="mx-auto flex max-w-7xl items-center justify-between p-6 px-8" aria-label="Global">
 +        <div class="flex items-center gap-x-12">
 +          <a href="/" class="-m-1.5 p-1.5">
 +            <span class="sr-only">Openpilot</span>
@@ -263,11 +459,13 @@ index 000000000..97a08e281
 +          <div class="flex gap-x-12">
 +            <a href="/params" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Params</a>
 +            <a href="/videos" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Videos</a>
++            <a href="/logs" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Logs</a>
++            <a href="/update" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Update</a>
 +          </div>
 +        </div>
 +      </nav>
 +    </header>
-+    <div id="content" class="mx-auto max-w-7xl flex justify-between bg-white dark:bg-slate-800 text-slate-900 dark:text-white pt-8">
++    <div id="content" class="mx-auto max-w-7xl justify-between bg-white dark:bg-slate-800 text-slate-900 dark:text-white pt-8">
 +      {% block content %}{% endblock %}
 +    </div>
 +  </body>
@@ -281,43 +479,142 @@ index 000000000..d2d87bae0
 +<script src="/static/htmx.min.js"></script>
 +<script src="/static/tailwind.min.js"></script>
 +<script src="/static/hls.min.js"></script>
+diff --git a/selfdrive/opwebd/templates/log/logs.html b/selfdrive/opwebd/templates/log/logs.html
+new file mode 100644
+index 000000000..ab8ebc557
+--- /dev/null
++++ b/selfdrive/opwebd/templates/log/logs.html
+@@ -0,0 +1,35 @@
++<div class="mt-4 flow-root w-full">
++  <p class="mb-4">
++    Note: conversion for json download is slow. May take up to 3 minutes for rlog to start downloading in json
++  </p>
++  <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
++    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
++      <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
++        <table class="min-w-full divide-y divide-black">
++          <thead class="bg-gray-200 dark:bg-slate-900">
++            <tr>
++              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Name</th>
++              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Raw Logs</th>
++              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">JSON Logs</th>
++            </tr>
++          </thead>
++          <tbody class="divide-y divide-slate-900 bg-gray-50 dark:bg-slate-700">
++            {% for segment in segments %}
++            <tr>
++              <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-800 dark:text-gray-100 text-left">{{segment}}</td>
++              <td class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300">
++                <a href="/video/{{segment}}/rlog">rlog</a>
++                <a href="/video/{{segment}}/qlog">qlog</a>
++              </td>
++              <td class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300">
++                <a href="/logs/json?log={{segment}}/rlog">rlog</a>
++                <a href="/logs/json?log={{segment}}/qlog">qlog</a>
++              </td>
++            </tr>
++            {% endfor %}
++          </tbody>
++        </table>
++      </div>
++    </div>
++  </div>
++</div>
 diff --git a/selfdrive/opwebd/templates/pages/index.html b/selfdrive/opwebd/templates/pages/index.html
 new file mode 100644
-index 000000000..b41b7a53f
+index 000000000..dc2c9c402
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/index.html
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,15 @@
 +{% extends 'base.html' %}
-+{% block title %}Index{% endblock title %}
++{% block title %}Home{% endblock title %}
 +{% block content %}
-+  <h1>Welcome to Openpilot Web!</h2>
++<div id="video-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/video.html?route={{route}}" hx-trigger="load"></div>
++<div id="segment-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/route/segments.html?route={{route}}" hx-trigger="load"></div>
++<script>
++  htmx.onLoad(function(elt) {
++    if(elt.id == 'my_video_1') {
++      var hls = new Hls();
++      hls.loadSource(elt.children[0].src);
++      hls.attachMedia(elt);
++    }
++  })
++</script>
++{% endblock content %}
+diff --git a/selfdrive/opwebd/templates/pages/logs.html b/selfdrive/opwebd/templates/pages/logs.html
+new file mode 100644
+index 000000000..ccf35aeda
+--- /dev/null
++++ b/selfdrive/opwebd/templates/pages/logs.html
+@@ -0,0 +1,20 @@
++{% extends 'base.html' %}
++{% block title %}Logs{% endblock title %}
++{% block content %}
++<div class="flex flex-col w-full">
++  <div class="flex flex-row w-full">
++    <label for="route" class="ml-8 block text-sm font-medium leading-6 text-slate-600 dark:text-gray-400">Route</label>
++  </div>
++  <div class="flex flex-row w-full">
++    <select id="route" name="route" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" hx-get="/logs.html" hx-target="#logs">
++      <option></option>
++      {% for option in options %}
++      <option value="{{option}}">{{option}}</option>
++      {% endfor %}
++    </select>
++  </div>
++
++  <div class="w-full items-center justify-between p-6 px-8 flex flex-row" id="logs">
++  </div>
++</div>
 +{% endblock content %}
 diff --git a/selfdrive/opwebd/templates/pages/params.html b/selfdrive/opwebd/templates/pages/params.html
 new file mode 100644
-index 000000000..a27d41c17
+index 000000000..34c3183f0
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/params.html
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,12 @@
 +{% extends 'base.html' %}
 +{% block title %}Params{% endblock title %}
 +{% block content %}
-+  <div hx-get="/params.html" hx-trigger="load" class="w-full items-center justify-between p-6 px-8">Loading Params</div>
++<div class="flex-root w-full">
++  {% if has_mem_params %}
++  {% include 'params/tabs.html' %}
++  {% endif %}
++  <div class="w-full flex-row items-center justify-between p-6 px-8">
++    {% include 'params/params.html' %}
++  </div>
++</div>
++{% endblock content %}
+diff --git a/selfdrive/opwebd/templates/pages/update.html b/selfdrive/opwebd/templates/pages/update.html
+new file mode 100644
+index 000000000..fa468ae5a
+--- /dev/null
++++ b/selfdrive/opwebd/templates/pages/update.html
+@@ -0,0 +1,6 @@
++{% extends 'base.html' %}
++{% block title %}Update{% endblock title %}
++{% block content %}
++  <div id="version-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/update/version_card" hx-trigger="load, every 10s"></div>
++  <div id="update-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/update/update_card" hx-trigger="load, every 2s"></div>
 +{% endblock content %}
 diff --git a/selfdrive/opwebd/templates/pages/videos.html b/selfdrive/opwebd/templates/pages/videos.html
 new file mode 100644
-index 000000000..74694c89f
+index 000000000..41633e864
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/videos.html
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,28 @@
 +{% extends 'base.html' %}
 +{% block title %}Videos{% endblock title %}
 +{% block content %}
 +<div class="flex flex-col w-full">
 +  <div class="flex flex-row w-full">
-+    <select name="route" class="text-black" hx-get="/route.html" hx-target="#video">
++    <label for="route" class="ml-8 block text-sm font-medium leading-6 text-slate-600 dark:text-gray-400">Route</label>
++  </div>
++  <div class="flex flex-row w-full">
++    <select id="route" name="route" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" hx-get="/route.html" hx-target="#video">
 +      <option></option>
 +      {% for option in options %}
-+        <option value="{{option}}">{{option}}</option>
++      <option value="{{option}}">{{option}}</option>
 +      {% endfor %}
 +    </select>
 +  </div>
@@ -360,6 +657,29 @@ index 000000000..bca56b562
 +    </table>
 +  </div>
 +</div>
+diff --git a/selfdrive/opwebd/templates/params/tabs.html b/selfdrive/opwebd/templates/params/tabs.html
+new file mode 100644
+index 000000000..e5a4be38c
+--- /dev/null
++++ b/selfdrive/opwebd/templates/params/tabs.html
+@@ -0,0 +1,17 @@
++<div class="flex-row w-full mb-4 -my-4">
++  <div class="border-b border-gray-200">
++    <nav hx-boost="true" class="-mb-px flex" aria-label="Tabs">
++      <!-- Current: "border-indigo-500 text-indigo-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
++      {% if location == "data" %}
++      <a href="/params?location=data" class="border-indigo-500 text-indigo-600 dark:text-indigo-400 w-1/2 border-b-2 py-4 px-1 text-center text-sm font-medium" aria-current="page">Data Params</a>
++      {% else %}
++      <a href="/params?location=data" class="border-transparent text-gray-600 dark:text-gray-400 hover:border-gray-300 hover:text-gray-800 dark:hover:text-gray-100 w-1/2 border-b-2 py-4 px-1 text-center text-sm font-medium">Data Params</a>
++      {% endif %}
++      {% if location == "mem" %}
++      <a href="/params?location=mem" class="border-indigo-500 text-indigo-600 dark:text-indigo-400 w-1/2 border-b-2 py-4 px-1 text-center text-sm font-medium" aria-current="page">Memory Params</a>
++      {% else %}
++      <a href="/params?location=mem" class="border-transparent text-gray-600 dark:text-gray-400 hover:border-gray-300 hover:text-gray-800 dark:hover:text-gray-100 w-1/2 border-b-2 py-4 px-1 text-center text-sm font-medium">Memory Params</a>
++      {% endif %}
++    </nav>
++  </div>
++</div>
 diff --git a/selfdrive/opwebd/templates/route/playlist.m3u8 b/selfdrive/opwebd/templates/route/playlist.m3u8
 new file mode 100644
 index 000000000..d408fe6ad
@@ -390,14 +710,14 @@ index 000000000..287f561cf
 +</div>
 diff --git a/selfdrive/opwebd/templates/route/segments.html b/selfdrive/opwebd/templates/route/segments.html
 new file mode 100644
-index 000000000..6027dcbf7
+index 000000000..6f897c5b6
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/route/segments.html
 @@ -0,0 +1,26 @@
-+<div class="mt-8 flow-root w-full">
++<div class="flow-root w-full">
 +  <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-+    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-+      <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
++    <div class="inline-block min-w-full align-middle">
++      <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg w-full">
 +        <table class="min-w-full divide-y divide-black">
 +          <thead class="bg-gray-200 dark:bg-slate-900">
 +            <tr>
@@ -418,6 +738,56 @@ index 000000000..6027dcbf7
 +        </table>
 +      </div>
 +    </div>
++  </div>
++</div>
+diff --git a/selfdrive/opwebd/templates/update/update_card.html b/selfdrive/opwebd/templates/update/update_card.html
+new file mode 100644
+index 000000000..99c55abd4
+--- /dev/null
++++ b/selfdrive/opwebd/templates/update/update_card.html
+@@ -0,0 +1,24 @@
++<div class="w-full divide-y divide-gray-200 overflow-hidden rounded-lg bg-gray-50 dark:bg-slate-700 text-slate-600 dark:text-gray-300 shadow">
++  <div class="px-4 py-5 sm:px-6">
++    Updater
++  </div>
++  <div class="px-4 py-5 sm:p-6">
++    <div class="mb-4 h-12">
++      {% if state == "idle" %}
++      <button class="rounded shadow-sm ring-1 ring-inset ring-gray-300 p-2" hx-post="{{button_link}}" hx-swap="delete">{{button_text}}</button>
++      {% endif %}
++
++      {% if install_button %}
++      <button class="rounded shadow-sm ring-1 ring-inset ring-gray-300 p-2" hx-post="/update/install" hx-swap="delete">Install Update</button>
++      {% endif %}
++    </div>
++
++    <div>Version: {{version}}</div>
++    <div>Branch: {{branch}}</div>
++    <div>Updater State: {{state}}</div>
++    <div>Last Check: {{last_check}}</div>
++    <div>Failure Count: {{failure_count}}</div>
++    <div>Release Notes:</div>
++    <div>{{release_notes}}</div>
++  </div>
++</div>
+diff --git a/selfdrive/opwebd/templates/update/version_card.html b/selfdrive/opwebd/templates/update/version_card.html
+new file mode 100644
+index 000000000..33b4da681
+--- /dev/null
++++ b/selfdrive/opwebd/templates/update/version_card.html
+@@ -0,0 +1,14 @@
++<div class="w-full divide-y divide-gray-200 overflow-hidden rounded-lg bg-gray-50 dark:bg-slate-700 text-slate-600 dark:text-gray-300 shadow">
++  <div class="px-4 py-5 sm:px-6">
++    Current Version
++  </div>
++  <div class="px-4 py-5 sm:p-6">
++    <div>Version: {{version}}</div>
++    <div>Install Date: {{install_date}}</div>
++    <div>Repo: {{repo}}</div>
++    <div>Branch: {{branch}}</div>
++    <div>Commit: {{commit}}</div>
++    <div>Release Notes:</div>
++    <div>{{release_notes}}</div>
 +  </div>
 +</div>
 diff --git a/selfdrive/opwebd/templates/video/video.html b/selfdrive/opwebd/templates/video/video.html
