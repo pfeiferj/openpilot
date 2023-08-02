@@ -82,6 +82,10 @@ procs = [
   PythonProcess("uploader", "system.loggerd.uploader", always_run),
   PythonProcess("statsd", "selfdrive.statsd", always_run),
 
+  # PFEIFER - OPWEB {{
+  PythonProcess("opwebd", "selfdrive.opwebd.opwebd", always_run),
+  # }} PFEIFER - OPWEB
+
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
   PythonProcess("webrtcd", "system.webrtc.webrtcd", notcar),

@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Update{% endblock title %}
+{% block content %}
+  <div id="version-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/update/version_card" hx-trigger="load, every 10s"></div>
+  <div id="update-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/update/update_card" hx-trigger="load, every 2s"></div>
+{% endblock content %}

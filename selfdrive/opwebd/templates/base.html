@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+{% set links = [
+  ['/params', 'Params'],
+  ['/videos', 'Videos'],
+  ['/logs', 'Logs'],
+  ['/settings', 'Settings'],
+  ['/update', 'Update']
+  ] %}
+<html lang="en">
+  <head>
+    <title>{% block title %}{% endblock %} - Openpilot</title>
+    {% include 'head.html' %}
+  </head>
+  <body class="bg-white dark:bg-slate-800 text-2xl lg:text-sm">
+    <header class="bg-gray-200 dark:bg-slate-900 text-slate-900 dark:text-white">
+      <nav hx-boost="true" class="mx-auto max-w-7xl items-center justify-between p-6 px-8" aria-label="Global">
+        <div class="flex w-100 items-center gap-x-12">
+          <button hx-on="click: toggleMenu()" type="button" class="lg:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+            <span class="absolute -inset-0.5"></span>
+            <span class="sr-only">Open main menu</span>
+            <svg id="closed-button" class="block h-16 w-16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <svg id="opened-button" class="hidden h-16 w-16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <a href="/" class="-m-1.5 p-1.5">
+            <span class="sr-only">Openpilot</span>
+            {% include 'wheel.html' %}
+          </a>
+          <div class="hidden lg:flex gap-x-12">
+            {% for link in links %}
+            <a href="{{ link[0] }}" class="font-semibold leading-6 text-slate-900 dark:text-gray-400">{{ link[1] }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="hidden w-100 lg:hidden" id="mobile-menu">
+          <div class="space-y-1 px-2 pb-3 pt-2">
+            {% for link in links %}
+            <a href="{{ link[0] }}" class="text-slate-900 dark:text-gray-400 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-6xl font-medium">{{ link[1] }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div id="content" class="mx-auto max-w-7xl justify-between bg-white dark:bg-slate-800 text-slate-900 dark:text-white pt-8">
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

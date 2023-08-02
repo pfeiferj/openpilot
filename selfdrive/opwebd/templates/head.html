@@ -1,0 +1,56 @@
+<script src="/static/htmx.min.js"></script>
+<script src="/static/tailwind.min.js"></script>
+<script src="/static/hls.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+   crossorigin=""/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+<style>
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  filter: invert(90%) hue-rotate(200deg) brightness(85%) contrast(85%);
+}
+.leaflet-interactive {
+  stroke: #5870bc !important
+}
+.leaflet-container {
+  background-color: #2f2f2b !important
+}
+.leaflet-control-layers {
+  display: none !important
+}
+</style>
+<script>
+  let menuOpen = false;
+  function toggleMenu() {
+    menuOpen = !menuOpen
+    let closedButton = document.getElementById('closed-button')
+    let openedButton = document.getElementById('opened-button')
+    let mobileMenu = document.getElementById('mobile-menu')
+    if(menuOpen) {
+      closedButton.classList.remove('block')
+      closedButton.classList.add('hidden')
+
+      openedButton.classList.remove('hidden')
+      openedButton.classList.add('block')
+      mobileMenu.classList.remove('hidden')
+      mobileMenu.classList.add('flex')
+    } else {
+      closedButton.classList.remove('hidden')
+      closedButton.classList.add('block')
+
+      openedButton.classList.remove('block')
+      openedButton.classList.add('hidden')
+      mobileMenu.classList.remove('flex')
+      mobileMenu.classList.add('hidden')
+    }
+  }
+  setTimeout(() => {
+    document.body.addEventListener('htmx:pushedIntoHistory', () => {
+      menuOpen = false
+    });
+  },0);
+</script>

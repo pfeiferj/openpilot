@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Videos{% endblock title %}
+{% block content %}
+<div class="flex flex-col w-full">
+  <div class="flex flex-row w-full">
+    <label for="route" class="ml-8 block font-medium leading-6 text-slate-600 dark:text-gray-400">Route</label>
+  </div>
+  <div class="flex flex-row w-full">
+    <select id="route" name="route" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:sm:leading-6" hx-get="/video/route" hx-target="#video">
+      <option></option>
+      {% for option in options %}
+      <option value="{{option}}">{{option}}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="w-full flex flex-row" id="video">
+  </div>
+</div>
+<script>
+  htmx.onLoad(function(elt) {
+    if(elt.id == 'my_video_1') {
+      var hls = new Hls();
+      hls.loadSource(elt.children[0].src);
+      hls.attachMedia(elt);
+    }
+  })
+</script>
+{% endblock content %}

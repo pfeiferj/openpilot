@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Params{% endblock title %}
+{% block content %}
+<div class="flex-root w-full">
+  {% if has_mem_params %}
+  {% include 'params/tabs.html' %}
+  {% endif %}
+  <div class="w-full flex-row items-center justify-between p-6 px-8">
+    {% include 'params/params.html' %}
+  </div>
+</div>
+{% endblock content %}

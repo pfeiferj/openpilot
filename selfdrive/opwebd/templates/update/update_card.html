@@ -1,0 +1,24 @@
+<div class="w-full divide-y divide-gray-200 overflow-hidden rounded-lg bg-gray-50 dark:bg-slate-700 text-slate-600 dark:text-gray-300 shadow">
+  <div class="px-4 py-5 sm:px-6">
+    Updater
+  </div>
+  <div class="px-4 py-5 sm:p-6">
+    <div class="mb-4 h-12">
+      {% if state == "idle" %}
+      <button class="rounded shadow-sm ring-1 ring-inset ring-gray-300 p-2" hx-post="{{button_link}}" hx-swap="delete">{{button_text}}</button>
+      {% endif %}
+
+      {% if install_button %}
+      <button class="rounded shadow-sm ring-1 ring-inset ring-gray-300 p-2" hx-post="/update/install" hx-swap="delete">Install Update</button>
+      {% endif %}
+    </div>
+
+    <div>Version: {{version}}</div>
+    <div>Branch: {{branch}}</div>
+    <div>Updater State: {{state}}</div>
+    <div>Last Check: {{last_check}}</div>
+    <div>Failure Count: {{failure_count}}</div>
+    <div>Release Notes:</div>
+    <div>{{release_notes}}</div>
+  </div>
+</div>

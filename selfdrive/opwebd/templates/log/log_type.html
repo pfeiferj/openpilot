@@ -1,0 +1,11 @@
+<div class="py-4" hx-boost="true">
+  {% for event in events %}
+  <div>
+    <pre>{{event}}</pre>
+  </div>
+  <hr class="mt-4 mb-4" />
+  {% endfor %}
+  {% if next_page %}
+  <button hx-get="{{next_page}}" hx-target="#events" hx-swap="innerHTML show:top">Next</button>
+  {% endif %}
+</div>
