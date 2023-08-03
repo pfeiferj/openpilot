@@ -1,5 +1,9 @@
 # Always On Lateral Changelog
 
+## 08/03/23
+Panda:
+    * Add missing comment block (thanks @nworby for the find!)
+
 ## 07/28/23
 Openpilot:
     * Disable lateral whenever openpilot is not calibrated

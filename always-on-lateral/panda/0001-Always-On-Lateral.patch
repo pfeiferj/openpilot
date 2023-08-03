@@ -1,4 +1,4 @@
-From 28723833e60fdf8c28d50026d31a51cc4abb8f5b Mon Sep 17 00:00:00 2001
+From 1d515b34cdaffc02e357bf39302b3d7a54db3758 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 15 Jul 2023 10:45:59 -0400
 Subject: [PATCH] Always On Lateral
@@ -22,9 +22,9 @@ always on lateral is not enabled.
  board/safety/safety_toyota.h         | 21 +++++++++++
  board/safety/safety_volkswagen_mqb.h |  8 ++++
  board/safety/safety_volkswagen_pq.h  | 12 ++++++
- board/safety_declarations.h          | 10 +++++
+ board/safety_declarations.h          | 12 ++++++
  python/__init__.py                   |  4 ++
- 16 files changed, 192 insertions(+), 5 deletions(-)
+ 16 files changed, 194 insertions(+), 5 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
 index 4d7efd2a..1b661ea2 100644
@@ -440,18 +440,20 @@ index 7a909d4d..12cad771 100644
        if (addr == MSG_MOTOR_5) {
          // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
 diff --git a/board/safety_declarations.h b/board/safety_declarations.h
-index b2f0ea98..cfdacc76 100644
+index b2f0ea98..978dd533 100644
 --- a/board/safety_declarations.h
 +++ b/board/safety_declarations.h
-@@ -185,6 +185,7 @@ void safety_tick(const addr_checks *addr_checks);
+@@ -185,6 +185,9 @@ void safety_tick(const addr_checks *addr_checks);
  
  // This can be set by the safety hooks
  bool controls_allowed = false;
++// PFEIFER - AOL {{
 +bool lateral_controls_allowed = false;
++// }} PFEIFER - AOL
  bool relay_malfunction = false;
  bool gas_interceptor_detected = false;
  int gas_interceptor_prev = 0;
-@@ -199,6 +200,10 @@ struct sample_t vehicle_speed;
+@@ -199,6 +202,10 @@ struct sample_t vehicle_speed;
  bool vehicle_moving = false;
  bool acc_main_on = false;  // referred to as "ACC off" in ISO 15622:2018
  int cruise_button_prev = 0;
@@ -462,7 +464,7 @@ index b2f0ea98..cfdacc76 100644
  bool safety_rx_checks_invalid = false;
  
  // for safety modes with torque steering control
-@@ -241,3 +246,8 @@ int alternative_experience = 0;
+@@ -241,3 +248,8 @@ int alternative_experience = 0;
  uint32_t safety_mode_cnt = 0U;
  // allow 1s of transition timeout after relay changes state before assessing malfunctioning
  const uint32_t RELAY_TRNS_TIMEOUT = 1U;
