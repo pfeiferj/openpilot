@@ -1,4 +1,4 @@
-From 207fb850b427352b411975a0d165e4ca430b3d5e Mon Sep 17 00:00:00 2001
+From 77f8490b40db2280d399ade0cb8d7f6812aabc33 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -6,28 +6,32 @@ Subject: [PATCH] opweb
 ---
  selfdrive/manager/process_config.py           |   4 +
  selfdrive/opwebd/__init__.py                  |   0
- selfdrive/opwebd/opwebd.py                    | 276 ++++++++++++++++++
+ selfdrive/opwebd/opwebd.py                    | 337 ++++++++++++++++++
  selfdrive/opwebd/static/hls.min.js            |   2 +
  selfdrive/opwebd/static/htmx.min.js           |   1 +
  selfdrive/opwebd/static/tailwind.min.js       |  63 ++++
- selfdrive/opwebd/templates/base.html          |  28 ++
+ selfdrive/opwebd/templates/base.html          |  29 ++
  selfdrive/opwebd/templates/head.html          |   3 +
- selfdrive/opwebd/templates/log/logs.html      |  35 +++
- selfdrive/opwebd/templates/pages/index.html   |  15 +
- selfdrive/opwebd/templates/pages/logs.html    |  20 ++
+ selfdrive/opwebd/templates/log/log_type.html  |  11 +
+ selfdrive/opwebd/templates/log/logs.html      |  37 ++
+ selfdrive/opwebd/templates/pages/index.html   |  19 +
+ selfdrive/opwebd/templates/pages/log.html     |  20 ++
+ selfdrive/opwebd/templates/pages/logs.html    |  23 ++
  selfdrive/opwebd/templates/pages/params.html  |  12 +
+ .../opwebd/templates/pages/settings.html      |  24 ++
  selfdrive/opwebd/templates/pages/update.html  |   6 +
  selfdrive/opwebd/templates/pages/videos.html  |  28 ++
  selfdrive/opwebd/templates/params/params.html |  20 ++
- selfdrive/opwebd/templates/params/tabs.html   |  17 ++
- .../opwebd/templates/route/playlist.m3u8      |  12 +
- selfdrive/opwebd/templates/route/route.html   |   4 +
- .../opwebd/templates/route/segments.html      |  26 ++
+ selfdrive/opwebd/templates/params/tabs.html   |  17 +
+ .../opwebd/templates/settings/toggle.html     |   5 +
  .../opwebd/templates/update/update_card.html  |  24 ++
  .../opwebd/templates/update/version_card.html |  14 +
+ .../opwebd/templates/video/playlist.m3u8      |  12 +
+ selfdrive/opwebd/templates/video/route.html   |   4 +
+ .../opwebd/templates/video/segments.html      |  36 ++
  selfdrive/opwebd/templates/video/video.html   |   3 +
  selfdrive/opwebd/templates/wheel.html         |   3 +
- 23 files changed, 616 insertions(+)
+ 27 files changed, 757 insertions(+)
  create mode 100644 selfdrive/opwebd/__init__.py
  create mode 100644 selfdrive/opwebd/opwebd.py
  create mode 100644 selfdrive/opwebd/static/hls.min.js
@@ -35,19 +39,23 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/static/tailwind.min.js
  create mode 100644 selfdrive/opwebd/templates/base.html
  create mode 100644 selfdrive/opwebd/templates/head.html
+ create mode 100644 selfdrive/opwebd/templates/log/log_type.html
  create mode 100644 selfdrive/opwebd/templates/log/logs.html
  create mode 100644 selfdrive/opwebd/templates/pages/index.html
+ create mode 100644 selfdrive/opwebd/templates/pages/log.html
  create mode 100644 selfdrive/opwebd/templates/pages/logs.html
  create mode 100644 selfdrive/opwebd/templates/pages/params.html
+ create mode 100644 selfdrive/opwebd/templates/pages/settings.html
  create mode 100644 selfdrive/opwebd/templates/pages/update.html
  create mode 100644 selfdrive/opwebd/templates/pages/videos.html
  create mode 100644 selfdrive/opwebd/templates/params/params.html
  create mode 100644 selfdrive/opwebd/templates/params/tabs.html
- create mode 100644 selfdrive/opwebd/templates/route/playlist.m3u8
- create mode 100644 selfdrive/opwebd/templates/route/route.html
- create mode 100644 selfdrive/opwebd/templates/route/segments.html
+ create mode 100644 selfdrive/opwebd/templates/settings/toggle.html
  create mode 100644 selfdrive/opwebd/templates/update/update_card.html
  create mode 100644 selfdrive/opwebd/templates/update/version_card.html
+ create mode 100644 selfdrive/opwebd/templates/video/playlist.m3u8
+ create mode 100644 selfdrive/opwebd/templates/video/route.html
+ create mode 100644 selfdrive/opwebd/templates/video/segments.html
  create mode 100644 selfdrive/opwebd/templates/video/video.html
  create mode 100644 selfdrive/opwebd/templates/wheel.html
 
@@ -71,15 +79,17 @@ new file mode 100644
 index 000000000..e69de29bb
 diff --git a/selfdrive/opwebd/opwebd.py b/selfdrive/opwebd/opwebd.py
 new file mode 100644
-index 000000000..6c5bc2abb
+index 000000000..985e6a3f5
 --- /dev/null
 +++ b/selfdrive/opwebd/opwebd.py
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,337 @@
 +from flask import Flask, render_template, request, send_from_directory, Response
 +import os
 +from common.params import Params
 +import datetime
 +import subprocess
++from cereal import log
++import json
 +params = Params()
 +# temporarily set mem_params as params. We will change this later if we detect
 +# a mem params path
@@ -104,6 +114,7 @@ index 000000000..6c5bc2abb
 +    if not os.path.exists(SEGMENTS_DIR):
 +        os.mkdir(SEGMENTS_DIR)
 +
++TOGGLE_PARAMS = ["TurnVisionControl", "CarSpeedLimitControl", "MapSpeedLimitControl", "NudgelessLaneChange", "LaneDetection", "AlwaysOnLateralEnabled", "ExperimentalMode", "AlwaysOnLateralMainEnablesConfirmed", "ExperimentalLongitudinalEnabled", "DisengageLatOnBrake", "DisengageOnAccelerator", "AlwaysOnLateralMainEnables"]
 +
 +def has_mem_params() -> bool:
 +    # I know, I know, globals... I promise it's fine
@@ -154,6 +165,51 @@ index 000000000..6c5bc2abb
 +    return render_template('pages/params.html', params=parameters, location=location, has_mem_params=has_mem_params())
 +
 +
++@app.route("/settings")
++def settings_page():
++    toggle_keys = [key.decode('utf-8') for key in keys if key.decode('utf-8') in TOGGLE_PARAMS]
++    return render_template('pages/settings.html', keys=toggle_keys)
++
++
++@app.route("/params/toggle", methods=['GET', 'PUT'])
++def param_toggle():
++    key = request.args.get('key', '')
++    p = params
++    val = p.get_bool(key)
++    if request.method == 'PUT':
++        p.put_bool(key, not val)
++        val = not val
++    bg = "bg-indigo-600" if val else "bg-gray-200"
++    translate = "translate-x-5" if val else "translate-x-0"
++    checked = str(val).lower()
++
++    return render_template('settings/toggle.html', checked=checked, bg=bg, translate=translate, key=key)
++
++
++@app.route("/log")
++def log_page():
++    path = request.args.get('path', '')
++    event_types = list(log.Event.schema.union_fields)
++    return render_template('pages/log.html', path=path, options=event_types)
++
++@app.route("/log/<segment>/<log_file>/type")
++def log_type(segment, log_file):
++    event_type = request.args.get('event_type', '')
++    page = int(request.args.get('page', '1'))
++    full_path = os.path.join(SEGMENTS_DIR, segment, log_file)
++    file = open(full_path, "rb")
++    events = log.Event.read_multiple(file)
++    filtered_events = [e for e in events if event_type == e.which()]
++    events_slice = filtered_events[page*10-10:page*10]
++    str_events = [json.dumps(e.to_dict(), indent=2, default=lambda ev : ev.hex()) for e in events_slice]
++
++    next_page=None
++    if len(str_events) == 10:
++      next_page = f"/log/{segment}/{log_file}/type?event_type={event_type}&page={page+1}"
++
++    return render_template('log/log_type.html', events=str_events, next_page=next_page)
++
++
 +@app.route("/logs")
 +def logs_page():
 +    dirs = ["--".join(dir.split("--")[:-1])
@@ -165,7 +221,7 @@ index 000000000..6c5bc2abb
 +    return render_template('pages/logs.html', options=dirs)
 +
 +
-+@app.route("/logs.html")
++@app.route("/logs/segments")
 +def logs_table():
 +    route = request.args.get('route', '')
 +    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
@@ -175,15 +231,17 @@ index 000000000..6c5bc2abb
 +
 +@app.route("/logs/json")
 +def json_logs():
-+    log = request.args.get('log', '')
-+    filename = log.replace("/", "-") + ".json"
++    log_file = request.args.get('log', '')
++    filename = log_file.replace("/", "-") + ".json"
 +    # TODO: this isn't really safe, but good enough for now because we aren't serving to the internet
-+    with open(os.path.join(SEGMENTS_DIR, log), "rb") as file:
-+      data = subprocess.run(["capnp", "convert", "binary:json", CAPNP_LOG_PATH, "Event"], input=file.read(), capture_output=True)
-+      return Response(data.stdout,
-+                      mimetype="text/plain",
-+                      headers={"Content-Disposition":
-+                               "attachment;filename=" + filename})
++    file = open(os.path.join(SEGMENTS_DIR, log_file), "rb")
++    events = log.Event.read_multiple(file)
++    dict_events = [e.to_dict() for e in events]
++    data = json.dumps(dict_events, indent=2, default=lambda ev : ev.hex())
++    return Response(data,
++                    mimetype="text/json",
++                    headers={"Content-Disposition":
++                             "attachment;filename=" + filename})
 +
 +
 +@app.route("/videos")
@@ -197,17 +255,17 @@ index 000000000..6c5bc2abb
 +    return render_template('pages/videos.html', options=dirs)
 +
 +
-+@app.route("/route.html")
++@app.route("/video/route")
 +def route_partial():
 +    route = request.args.get('route', '')
-+    return render_template('route/route.html', route=route)
++    return render_template('video/route.html', route=route)
 +
 +
 +def sortSegments(segment):
 +    return int(segment.split("--")[-1])
 +
 +
-+@app.route("/route/<route>/playlist.m3u8")
++@app.route("/video/<route>/playlist.m3u8")
 +def playlist_partial(route):
 +    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
 +    dirs.sort(key=sortSegments)
@@ -218,20 +276,21 @@ index 000000000..6c5bc2abb
 +            f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"')
 +        duration = float(probe.read().strip())
 +        duration = "{:.3f}".format(duration)
-+        segments.append((idx, duration, f"/video/{dir}/qcamera.ts"))
++        segments.append((idx, duration, f"/file/{dir}/qcamera.ts"))
 +        idx += 1
-+    return render_template('route/playlist.m3u8', segments=segments)
++    return render_template('video/playlist.m3u8', segments=segments)
 +
 +
-+@app.route("/video.html")
++@app.route("/video")
 +def video_partial():
 +    route = request.args.get('route', '')
 +    return render_template('video/video.html', route=route)
 +
 +
-+@app.route("/route/segments.html")
++@app.route("/video/segments")
 +def segments_partial():
 +    route = request.args.get('route', '')
++    show_conversion = not request.args.get('hide_conversion', False)
 +    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
 +    dirs.sort(key=sortSegments)
 +    idx = 0
@@ -242,21 +301,31 @@ index 000000000..6c5bc2abb
 +            f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"'
 +        )
 +        duration = float(probe.read().strip())
-+        links = os.listdir(os.path.join(SEGMENTS_DIR, dir))
-+        links = [(dir, link) for link in links if link.endswith("hevc") or link.endswith("ts")]
++        all_links = os.listdir(os.path.join(SEGMENTS_DIR, dir))
++        links = [(dir, link) for link in all_links if link.endswith("hevc") or link.endswith("ts")]
++        converted_links = [(dir, link) for link in all_links if link.endswith("mp4")]
 +        segments.append({
 +            "name": dir,
-+            "time": str(datetime.timedelta(seconds=t)),
-+            "links": links
++            "time": str(datetime.timedelta(seconds=int(t))),
++            "links": links,
++            "converted_links": converted_links
 +        })
 +        t += duration
 +        idx += 1
-+    return render_template('route/segments.html', segments=segments)
++    return render_template('video/segments.html', segments=segments, show_conversion=show_conversion)
 +
 +
-+@app.route('/video/<path:path>')
++@app.route('/file/<path:path>')
 +def send_report(path):
 +    return send_from_directory(SEGMENTS_DIR, path, as_attachment=True)
++
++
++@app.route('/video-convert/<path:path>')
++def convert_video(path):
++    input_path = os.path.join(SEGMENTS_DIR, path)
++    output_path = os.path.join(SEGMENTS_DIR, path + ".mp4")
++    subprocess.Popen(["ffmpeg", "-i", input_path, output_path])
++    return "triggered"
 +
 +
 +@app.post('/update/install')
@@ -438,10 +507,10 @@ index 000000000..c3df33698
 +/*! https://mths.be/cssesc v3.0.0 by @mathias */
 diff --git a/selfdrive/opwebd/templates/base.html b/selfdrive/opwebd/templates/base.html
 new file mode 100644
-index 000000000..078c9d54f
+index 000000000..df6382aa1
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/base.html
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +<!DOCTYPE html>
 +<html lang="en">
 +  <head>
@@ -460,6 +529,7 @@ index 000000000..078c9d54f
 +            <a href="/params" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Params</a>
 +            <a href="/videos" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Videos</a>
 +            <a href="/logs" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Logs</a>
++            <a href="/settings" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Settings</a>
 +            <a href="/update" class="text-sm font-semibold leading-6 text-slate-900 dark:text-gray-400">Update</a>
 +          </div>
 +        </div>
@@ -479,18 +549,32 @@ index 000000000..d2d87bae0
 +<script src="/static/htmx.min.js"></script>
 +<script src="/static/tailwind.min.js"></script>
 +<script src="/static/hls.min.js"></script>
+diff --git a/selfdrive/opwebd/templates/log/log_type.html b/selfdrive/opwebd/templates/log/log_type.html
+new file mode 100644
+index 000000000..4527a9381
+--- /dev/null
++++ b/selfdrive/opwebd/templates/log/log_type.html
+@@ -0,0 +1,11 @@
++<div class="py-4" hx-boost="true">
++  {% for event in events %}
++  <div>
++    <pre>{{event}}</pre>
++  </div>
++  <hr class="mt-4 mb-4" />
++  {% endfor %}
++  {% if next_page %}
++  <button hx-get="{{next_page}}" hx-target="#events" hx-swap="innerHTML show:top">Next</button>
++  {% endif %}
++</div>
 diff --git a/selfdrive/opwebd/templates/log/logs.html b/selfdrive/opwebd/templates/log/logs.html
 new file mode 100644
-index 000000000..ab8ebc557
+index 000000000..1fdf989df
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/log/logs.html
-@@ -0,0 +1,35 @@
-+<div class="mt-4 flow-root w-full">
-+  <p class="mb-4">
-+    Note: conversion for json download is slow. May take up to 3 minutes for rlog to start downloading in json
-+  </p>
-+  <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-+    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+@@ -0,0 +1,37 @@
++<div class="flow-root w-full">
++  <div class="overflow-x-auto">
++    <div class="inline-block min-w-full align-middle">
 +      <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
 +        <table class="min-w-full divide-y divide-black">
 +          <thead class="bg-gray-200 dark:bg-slate-900">
@@ -498,6 +582,7 @@ index 000000000..ab8ebc557
 +              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Name</th>
 +              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Raw Logs</th>
 +              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">JSON Logs</th>
++              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">View Logs</th>
 +            </tr>
 +          </thead>
 +          <tbody class="divide-y divide-slate-900 bg-gray-50 dark:bg-slate-700">
@@ -512,6 +597,10 @@ index 000000000..ab8ebc557
 +                <a href="/logs/json?log={{segment}}/rlog">rlog</a>
 +                <a href="/logs/json?log={{segment}}/qlog">qlog</a>
 +              </td>
++              <td class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300">
++                <a href="/log?path={{segment}}/rlog">rlog</a>
++                <a href="/log?path={{segment}}/qlog">qlog</a>
++              </td>
 +            </tr>
 +            {% endfor %}
 +          </tbody>
@@ -522,15 +611,19 @@ index 000000000..ab8ebc557
 +</div>
 diff --git a/selfdrive/opwebd/templates/pages/index.html b/selfdrive/opwebd/templates/pages/index.html
 new file mode 100644
-index 000000000..dc2c9c402
+index 000000000..0d2bda1d7
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/index.html
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,19 @@
 +{% extends 'base.html' %}
 +{% block title %}Home{% endblock title %}
 +{% block content %}
-+<div id="video-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/video.html?route={{route}}" hx-trigger="load"></div>
-+<div id="segment-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/route/segments.html?route={{route}}" hx-trigger="load"></div>
++<div id="video-card" class="grid grid-cols-1 w-full mb-2 p-2 place-items-center float-left" hx-get="/video?route={{route}}" hx-trigger="load"></div>
++<p class="px-2 py-4 w-full text-center">
++Note: conversion for json download is slow. May take up to 3 minutes for rlog to start downloading in json
++</p>
++<div id="segment-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/video/segments?route={{route}}&hide_conversion=true" hx-trigger="load"></div>
++<div id="logs-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/logs/segments?route={{route}}" hx-trigger="load"></div>
 +<script>
 +  htmx.onLoad(function(elt) {
 +    if(elt.id == 'my_video_1') {
@@ -541,12 +634,38 @@ index 000000000..dc2c9c402
 +  })
 +</script>
 +{% endblock content %}
+diff --git a/selfdrive/opwebd/templates/pages/log.html b/selfdrive/opwebd/templates/pages/log.html
+new file mode 100644
+index 000000000..7a1cea916
+--- /dev/null
++++ b/selfdrive/opwebd/templates/pages/log.html
+@@ -0,0 +1,20 @@
++{% extends 'base.html' %}
++{% block title %}Log{% endblock title %}
++{% block content %}
++<div class="flex flex-col w-full">
++  <h1 class="px-8">Log: <span class="text-slate-600 dark:text-gray-400">{{path}}</span></h1>
++  <div class="flex flex-row w-full">
++    <label for="event-type" class="px-8 block text-sm font-medium leading-6 text-slate-600 dark:text-gray-400">Event Type</label>
++  </div>
++  <div class="flex flex-row w-full">
++    <select id="event-type" name="event_type" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" hx-get="/log/{{path}}/type" hx-target="#events">
++      <option></option>
++      {% for option in options %}
++      <option value="{{option}}">{{option}}</option>
++      {% endfor %}
++    </select>
++  </div>
++  <div class="w-full items-center justify-between px-8 flex flex-row" id="events">
++  </div>
++</div>
++{% endblock content %}
 diff --git a/selfdrive/opwebd/templates/pages/logs.html b/selfdrive/opwebd/templates/pages/logs.html
 new file mode 100644
-index 000000000..ccf35aeda
+index 000000000..8c1c23130
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/logs.html
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,23 @@
 +{% extends 'base.html' %}
 +{% block title %}Logs{% endblock title %}
 +{% block content %}
@@ -555,15 +674,18 @@ index 000000000..ccf35aeda
 +    <label for="route" class="ml-8 block text-sm font-medium leading-6 text-slate-600 dark:text-gray-400">Route</label>
 +  </div>
 +  <div class="flex flex-row w-full">
-+    <select id="route" name="route" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" hx-get="/logs.html" hx-target="#logs">
++    <select id="route" name="route" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" hx-get="/logs/segments" hx-target="#logs">
 +      <option></option>
 +      {% for option in options %}
 +      <option value="{{option}}">{{option}}</option>
 +      {% endfor %}
 +    </select>
 +  </div>
++  <p class="p-6 px-8">
++    Note: conversion for json download is slow. May take up to 3 minutes for rlog to start downloading in json
++  </p>
 +
-+  <div class="w-full items-center justify-between p-6 px-8 flex flex-row" id="logs">
++  <div class="w-full items-center justify-between px-8 flex flex-row" id="logs">
 +  </div>
 +</div>
 +{% endblock content %}
@@ -585,6 +707,36 @@ index 000000000..34c3183f0
 +  </div>
 +</div>
 +{% endblock content %}
+diff --git a/selfdrive/opwebd/templates/pages/settings.html b/selfdrive/opwebd/templates/pages/settings.html
+new file mode 100644
+index 000000000..48c6afd29
+--- /dev/null
++++ b/selfdrive/opwebd/templates/pages/settings.html
+@@ -0,0 +1,24 @@
++{% extends 'base.html' %}
++{% block title %}Settings{% endblock title %}
++{% block content %}
++<div class="flow-root overflow-x-auto">
++  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
++    <table class="min-w-full divide-y divide-black">
++      <thead class="bg-gray-200 dark:bg-slate-900">
++        <tr>
++          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Name</th>
++          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Toggle</th>
++        </tr>
++      </thead>
++      <tbody class="divide-y divide-slate-900 bg-gray-50 dark:bg-slate-700">
++        {% for key in keys %}
++        <tr>
++          <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-800 dark:text-gray-100 text-left">{{key}}</td>
++          <td id="{{key}}-toggle" hx-get="/params/toggle?key={{key}}" hx-trigger="load" class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300"></td>
++        </tr>
++        {% endfor %}
++      </tbody>
++    </table>
++  </div>
++</div>
++{% endblock content %}
 diff --git a/selfdrive/opwebd/templates/pages/update.html b/selfdrive/opwebd/templates/pages/update.html
 new file mode 100644
 index 000000000..fa468ae5a
@@ -599,7 +751,7 @@ index 000000000..fa468ae5a
 +{% endblock content %}
 diff --git a/selfdrive/opwebd/templates/pages/videos.html b/selfdrive/opwebd/templates/pages/videos.html
 new file mode 100644
-index 000000000..41633e864
+index 000000000..439d65f16
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/videos.html
 @@ -0,0 +1,28 @@
@@ -611,7 +763,7 @@ index 000000000..41633e864
 +    <label for="route" class="ml-8 block text-sm font-medium leading-6 text-slate-600 dark:text-gray-400">Route</label>
 +  </div>
 +  <div class="flex flex-row w-full">
-+    <select id="route" name="route" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" hx-get="/route.html" hx-target="#video">
++    <select id="route" name="route" class="ml-8 mt-2 block bg-gray-50 dark:bg-slate-700 rounded-md border-0 py-1.5 pl-3 pr-10 text-slate-600 dark:text-gray-100 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" hx-get="/video/route" hx-target="#video">
 +      <option></option>
 +      {% for option in options %}
 +      <option value="{{option}}">{{option}}</option>
@@ -633,11 +785,11 @@ index 000000000..41633e864
 +{% endblock content %}
 diff --git a/selfdrive/opwebd/templates/params/params.html b/selfdrive/opwebd/templates/params/params.html
 new file mode 100644
-index 000000000..bca56b562
+index 000000000..492930c91
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/params/params.html
 @@ -0,0 +1,20 @@
-+<div class="flow-root -mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
++<div class="flow-root overflow-x-auto">
 +  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
 +    <table class="min-w-full divide-y divide-black">
 +      <thead class="bg-gray-200 dark:bg-slate-900">
@@ -659,13 +811,13 @@ index 000000000..bca56b562
 +</div>
 diff --git a/selfdrive/opwebd/templates/params/tabs.html b/selfdrive/opwebd/templates/params/tabs.html
 new file mode 100644
-index 000000000..e5a4be38c
+index 000000000..5ce2c1190
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/params/tabs.html
 @@ -0,0 +1,17 @@
-+<div class="flex-row w-full mb-4 -my-4">
++<div class="flex-row w-full mb-4 px-8">
 +  <div class="border-b border-gray-200">
-+    <nav hx-boost="true" class="-mb-px flex" aria-label="Tabs">
++    <nav hx-boost="true" class="flex" aria-label="Tabs">
 +      <!-- Current: "border-indigo-500 text-indigo-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
 +      {% if location == "data" %}
 +      <a href="/params?location=data" class="border-indigo-500 text-indigo-600 dark:text-indigo-400 w-1/2 border-b-2 py-4 px-1 text-center text-sm font-medium" aria-current="page">Data Params</a>
@@ -680,66 +832,17 @@ index 000000000..e5a4be38c
 +    </nav>
 +  </div>
 +</div>
-diff --git a/selfdrive/opwebd/templates/route/playlist.m3u8 b/selfdrive/opwebd/templates/route/playlist.m3u8
+diff --git a/selfdrive/opwebd/templates/settings/toggle.html b/selfdrive/opwebd/templates/settings/toggle.html
 new file mode 100644
-index 000000000..d408fe6ad
+index 000000000..2980069e2
 --- /dev/null
-+++ b/selfdrive/opwebd/templates/route/playlist.m3u8
-@@ -0,0 +1,12 @@
-+#EXTM3U
-+#EXT-X-VERSION:3
-+#EXT-X-TARGETDURATION:61
-+#EXT-X-MEDIA-SEQUENCE:0
-+#EXT-X-PLAYLIST-TYPE:VOD
-+
-+{% for segment in segments %}
-+#EXTINF:{{segment[1]}},{{segment[0]}}
-+{{segment[2]}}
-+{% endfor %}
-+
-+#EXT-X-ENDLIST
-diff --git a/selfdrive/opwebd/templates/route/route.html b/selfdrive/opwebd/templates/route/route.html
-new file mode 100644
-index 000000000..287f561cf
---- /dev/null
-+++ b/selfdrive/opwebd/templates/route/route.html
-@@ -0,0 +1,4 @@
-+<div class="flex flex-col w-full">
-+  <div hx-get="/video.html?route={{route}}" hx-trigger="load" class="w-full items-center justify-between p-6 px-8 flex flex-row">Loading Video</div>
-+  <div hx-get="/route/segments.html?route={{route}}" hx-trigger="load" class="w-full items-center justify-between p-6 px-8 flex flex-row">Loading Segments</div>
-+</div>
-diff --git a/selfdrive/opwebd/templates/route/segments.html b/selfdrive/opwebd/templates/route/segments.html
-new file mode 100644
-index 000000000..6f897c5b6
---- /dev/null
-+++ b/selfdrive/opwebd/templates/route/segments.html
-@@ -0,0 +1,26 @@
-+<div class="flow-root w-full">
-+  <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-+    <div class="inline-block min-w-full align-middle">
-+      <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg w-full">
-+        <table class="min-w-full divide-y divide-black">
-+          <thead class="bg-gray-200 dark:bg-slate-900">
-+            <tr>
-+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Name</th>
-+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Time</th>
-+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Downloads</th>
-+            </tr>
-+          </thead>
-+          <tbody class="divide-y divide-slate-900 bg-gray-50 dark:bg-slate-700">
-+            {% for segment in segments %}
-+            <tr>
-+              <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-800 dark:text-gray-100 text-left">{{segment.name}}</td>
-+              <td class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300">{{segment.time}}</td>
-+              <td class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300">{% for link in segment.links %}<a href="/video/{{link[0]}}/{{link[1]}}">{{link[1]}}</a> {% endfor %}</td>
-+            </tr>
-+            {% endfor %}
-+          </tbody>
-+        </table>
-+      </div>
-+    </div>
-+  </div>
-+</div>
++++ b/selfdrive/opwebd/templates/settings/toggle.html
+@@ -0,0 +1,5 @@
++<button type="button" hx-target="#{{key}}-toggle" hx-put="/params/toggle?key={{key}}" class="{{bg}} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="{{checked}}">
++  <span class="sr-only">Use setting</span>
++  <!-- Enabled: "translate-x-5", Not Enabled: "translate-x-0" -->
++  <span aria-hidden="true" class="{{translate}} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
++</button>
 diff --git a/selfdrive/opwebd/templates/update/update_card.html b/selfdrive/opwebd/templates/update/update_card.html
 new file mode 100644
 index 000000000..99c55abd4
@@ -790,14 +893,84 @@ index 000000000..33b4da681
 +    <div>{{release_notes}}</div>
 +  </div>
 +</div>
+diff --git a/selfdrive/opwebd/templates/video/playlist.m3u8 b/selfdrive/opwebd/templates/video/playlist.m3u8
+new file mode 100644
+index 000000000..d408fe6ad
+--- /dev/null
++++ b/selfdrive/opwebd/templates/video/playlist.m3u8
+@@ -0,0 +1,12 @@
++#EXTM3U
++#EXT-X-VERSION:3
++#EXT-X-TARGETDURATION:61
++#EXT-X-MEDIA-SEQUENCE:0
++#EXT-X-PLAYLIST-TYPE:VOD
++
++{% for segment in segments %}
++#EXTINF:{{segment[1]}},{{segment[0]}}
++{{segment[2]}}
++{% endfor %}
++
++#EXT-X-ENDLIST
+diff --git a/selfdrive/opwebd/templates/video/route.html b/selfdrive/opwebd/templates/video/route.html
+new file mode 100644
+index 000000000..fb71ccb5d
+--- /dev/null
++++ b/selfdrive/opwebd/templates/video/route.html
+@@ -0,0 +1,4 @@
++<div class="flex flex-col w-full">
++  <div hx-get="/video?route={{route}}" hx-trigger="load" class="w-full items-center justify-between p-6 px-8 flex flex-row">Loading Video</div>
++  <div hx-get="/video/segments?route={{route}}" hx-trigger="load" class="w-full items-center justify-between p-6 px-8 flex flex-row">Loading Segments</div>
++</div>
+diff --git a/selfdrive/opwebd/templates/video/segments.html b/selfdrive/opwebd/templates/video/segments.html
+new file mode 100644
+index 000000000..40f207f7b
+--- /dev/null
++++ b/selfdrive/opwebd/templates/video/segments.html
+@@ -0,0 +1,36 @@
++<div class="flow-root w-full">
++  <div class="overflow-x-auto">
++    <div class="inline-block min-w-full align-middle">
++      <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg w-full">
++        <table class="min-w-full divide-y divide-black">
++          <thead class="bg-gray-200 dark:bg-slate-900">
++            <tr>
++              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Name</th>
++              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Time</th>
++              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-600 dark:text-gray-400">Downloads</th>
++            </tr>
++          </thead>
++          <tbody class="divide-y divide-slate-900 bg-gray-50 dark:bg-slate-700">
++            {% for segment in segments %}
++            <tr>
++              <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-800 dark:text-gray-100 text-left">{{segment.name}}</td>
++              <td class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300">{{segment.time}}</td>
++              <td class="break-all px-3 py-4 text-sm text-slate-600 dark:text-gray-300">
++                {% for link in segment.links %}<a class="whitespace-nowrap" href="/file/{{link[0]}}/{{link[1]}}">{{link[1]}}</a> {% endfor %}
++                {% if segment.converted_links|length > 0 %}
++                <br />
++                {% for link in segment.converted_links %}<a class="whitespace-nowrap" href="/file/{{link[0]}}/{{link[1]}}">{{link[1]}}</a> {% endfor %}
++                {% endif %}
++                {% if show_conversion %}
++                <br />
++                {% for link in segment.links %}<a class="whitespace-nowrap" hx-get="/video-convert/{{link[0]}}/{{link[1]}}">[Convert {{link[1]}}]</a> {% endfor %}
++                {% endif %}
++              </td>
++            </tr>
++            {% endfor %}
++          </tbody>
++        </table>
++      </div>
++    </div>
++  </div>
++</div>
 diff --git a/selfdrive/opwebd/templates/video/video.html b/selfdrive/opwebd/templates/video/video.html
 new file mode 100644
-index 000000000..6724f6ce7
+index 000000000..5a972e8d2
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/video/video.html
 @@ -0,0 +1,3 @@
 +<video id="my_video_1" class="video-js rounded-lg" width="526" height="330" hx-trigger="loadHls()" hx-target="none" controls>
-+  <source src="/route/{{route}}/playlist.m3u8" type="application/x-mpegURL">
++  <source src="/video/{{route}}/playlist.m3u8" type="application/x-mpegURL">
 +</video>
 diff --git a/selfdrive/opwebd/templates/wheel.html b/selfdrive/opwebd/templates/wheel.html
 new file mode 100644
