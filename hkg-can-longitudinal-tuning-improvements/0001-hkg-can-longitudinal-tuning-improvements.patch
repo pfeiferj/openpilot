@@ -1,4 +1,4 @@
-From f0b548dca41f888bd4f505967024addc89886f8a Mon Sep 17 00:00:00 2001
+From 7ef08262cfd0d1eab252e9faa8af49ecb5624e56 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 11 Jun 2023 14:43:40 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -10,10 +10,10 @@ Subject: [PATCH] hkg-can longitudinal tuning improvements
  3 files changed, 21 insertions(+), 8 deletions(-)
 
 diff --git a/selfdrive/car/hyundai/carcontroller.py b/selfdrive/car/hyundai/carcontroller.py
-index 11ff2fb6e..5c1642b8f 100644
+index ff23d43f0..e35d3dfa3 100644
 --- a/selfdrive/car/hyundai/carcontroller.py
 +++ b/selfdrive/car/hyundai/carcontroller.py
-@@ -175,10 +175,18 @@ class CarController:
+@@ -169,10 +169,18 @@ class CarController:
                self.last_button_frame = self.frame
  
        if self.frame % 2 == 0 and self.CP.openpilotLongitudinalControl:

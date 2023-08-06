@@ -1,4 +1,4 @@
-From a95f3e3af83d95100d0eec4a475c9a47cecc1cff Mon Sep 17 00:00:00 2001
+From 81d26f5f1434454f73bb4138baadea6228ee3318 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 14:19:30 -0400
 Subject: [PATCH] mapd
@@ -175,10 +175,10 @@ index 000000000..de3b306cc
 +    with TextWindow(error) as t:
 +      t.wait_for_exit()
 diff --git a/selfdrive/manager/process.py b/selfdrive/manager/process.py
-index 7d0993188..304677670 100644
+index 76a49eda5..4c268596a 100644
 --- a/selfdrive/manager/process.py
 +++ b/selfdrive/manager/process.py
-@@ -23,6 +23,10 @@ from cereal import log
+@@ -22,6 +22,10 @@ from cereal import log
  WATCHDOG_FN = "/dev/shm/wd_"
  ENABLE_WATCHDOG = os.getenv("NO_WATCHDOG") is None
  
@@ -190,10 +190,10 @@ index 7d0993188..304677670 100644
  def launcher(proc: str, name: str) -> None:
    try:
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 71f63175f..fed8e7390 100644
+index f151a51d1..b3cf16e0c 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -71,6 +71,10 @@ procs = [
+@@ -70,6 +70,10 @@ procs = [
    PythonProcess("uploader", "system.loggerd.uploader", offroad=True),
    PythonProcess("statsd", "selfdrive.statsd", offroad=True),
  

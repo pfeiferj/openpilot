@@ -1,6 +1,6 @@
-From eb8ae161ee6edc0180eeba5be988d610144f6340 Mon Sep 17 00:00:00 2001
+From 40d76d5a847b35beec0d653f3b90b3de32f5d8d6 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 28 Jul 2023 22:27:02 -0400
+Date: Sun, 6 Aug 2023 15:53:39 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -60,17 +60,17 @@ index e8ab42c0b..aa4fb3409 100644
  
  } // namespace
 diff --git a/panda b/panda
-index ed8ff7e48..1d515b34c 160000
+index 1950ba6f8..2c36c266c 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit ed8ff7e48ad41b5b7c0ce9df5bb2bb5024b6429d
-+Subproject commit 1d515b34cdaffc02e357bf39302b3d7a54db3758
+-Subproject commit 1950ba6f83b2ccf31a609fb6eca6aed5e4840252
++Subproject commit 2c36c266cb486e6ccf57b7aef1d453630001c1ca
 diff --git a/release/files_common b/release/files_common
-index a3b3b92f6..e91381620 100644
+index b66a076b2..c8f604079 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -598,3 +598,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -594,3 +594,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -129,7 +129,7 @@ index d9848096e..eb4407871 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index 2f9c95287..85a63a273 100644
+index 69d34c09c..5840ee927 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
@@ -751,12 +751,12 @@ index 94a673dd7..a37700a18 100644
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 0c126304d..74ec0da5d 100644
+index a435dd27c..0c199dc8e 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -53,6 +53,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
+@@ -57,6 +57,13 @@ void OnroadWindow::updateState(const UIState &s) {
+   }
  
- void OnroadWindow::updateState(const UIState &s) {
    QColor bgColor = bg_colors[s.status];
 +  // PFEIFER - AOL {{
 +  params = Params();

@@ -1,4 +1,4 @@
-From ead83062254a231ec112fd6902afc5c474ff16f9 Mon Sep 17 00:00:00 2001
+From 9ecd65e48846018a5535ab944f054a7e7ba3ebc6 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:29:00 -0400
 Subject: [PATCH] Current Max Speed
@@ -99,10 +99,10 @@ index 000000000..c0042b3b6
 +
 +cms = CurrentMaxSpeed()
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index a9c3cc780..156a745a0 100755
+index b6ac7bec9..ec5935e6c 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -16,6 +16,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
+@@ -17,6 +17,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
  from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
  from system.swaglog import cloudlog
  
@@ -113,7 +113,7 @@ index a9c3cc780..156a745a0 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -135,6 +139,10 @@ class LongitudinalPlanner:
+@@ -136,6 +140,10 @@ class LongitudinalPlanner:
      x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
      self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=self.personality)
  

@@ -1,4 +1,4 @@
-From 77f8490b40db2280d399ade0cb8d7f6812aabc33 Mon Sep 17 00:00:00 2001
+From 48e40260040319621a91d8bfc66cf6d6c28c30bf Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -60,10 +60,10 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/templates/wheel.html
 
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 71f63175f..8906e1179 100644
+index f151a51d1..e3aa360b8 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -71,6 +71,10 @@ procs = [
+@@ -70,6 +70,10 @@ procs = [
    PythonProcess("uploader", "system.loggerd.uploader", offroad=True),
    PythonProcess("statsd", "selfdrive.statsd", offroad=True),
  

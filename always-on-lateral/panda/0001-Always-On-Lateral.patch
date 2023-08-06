@@ -1,6 +1,6 @@
-From 1d515b34cdaffc02e357bf39302b3d7a54db3758 Mon Sep 17 00:00:00 2001
+From 2c36c266cb486e6ccf57b7aef1d453630001c1ca Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 15 Jul 2023 10:45:59 -0400
+Date: Sun, 6 Aug 2023 15:53:01 -0400
 Subject: [PATCH] Always On Lateral
 
 Safety code for Always On Lateral. On supported cars this allows lateral
@@ -222,7 +222,7 @@ index 76e55f0b..36231e68 100644
        brake_pressed = GET_BIT(to_push, 40U) != 0U;
      }
 diff --git a/board/safety/safety_honda.h b/board/safety/safety_honda.h
-index e8100cad..33413c24 100644
+index 83e671a5..e4247314 100644
 --- a/board/safety/safety_honda.h
 +++ b/board/safety/safety_honda.h
 @@ -143,7 +143,15 @@ static int honda_rx_hook(CANPacket_t *to_push) {
@@ -307,13 +307,13 @@ index e17f1ff4..b9da2fd0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index 8127b6d6..34b1bd11 100644
+index 438a0fba..fbf7d38e 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -110,6 +110,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -114,6 +114,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
-     if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_bus)) {
+     if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {
 +      // PFEIFER - AOL {{
 +      bool cruise_available = GET_BIT(to_push, 40U) != 0U;
 +      if (!cruise_available) {
@@ -474,10 +474,10 @@ index b2f0ea98..978dd533 100644
 +#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index 5558a9ab..6df1e743 100644
+index 6c714ca3..ba1c089f 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
-@@ -144,6 +144,10 @@ class ALTERNATIVE_EXPERIENCE:
+@@ -143,6 +143,10 @@ class ALTERNATIVE_EXPERIENCE:
    DISABLE_DISENGAGE_ON_GAS = 1
    DISABLE_STOCK_AEB = 2
    RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX = 8
