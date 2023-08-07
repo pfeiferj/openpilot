@@ -1,38 +1,53 @@
-From 48e40260040319621a91d8bfc66cf6d6c28c30bf Mon Sep 17 00:00:00 2001
+From 06becfd94e7f4652dc9bdd7309cf7040ed7e7989 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
 
 ---
- selfdrive/manager/process_config.py           |   4 +
- selfdrive/opwebd/__init__.py                  |   0
- selfdrive/opwebd/opwebd.py                    | 337 ++++++++++++++++++
- selfdrive/opwebd/static/hls.min.js            |   2 +
- selfdrive/opwebd/static/htmx.min.js           |   1 +
- selfdrive/opwebd/static/tailwind.min.js       |  63 ++++
- selfdrive/opwebd/templates/base.html          |  29 ++
- selfdrive/opwebd/templates/head.html          |   3 +
- selfdrive/opwebd/templates/log/log_type.html  |  11 +
- selfdrive/opwebd/templates/log/logs.html      |  37 ++
- selfdrive/opwebd/templates/pages/index.html   |  19 +
- selfdrive/opwebd/templates/pages/log.html     |  20 ++
- selfdrive/opwebd/templates/pages/logs.html    |  23 ++
- selfdrive/opwebd/templates/pages/params.html  |  12 +
- .../opwebd/templates/pages/settings.html      |  24 ++
- selfdrive/opwebd/templates/pages/update.html  |   6 +
- selfdrive/opwebd/templates/pages/videos.html  |  28 ++
- selfdrive/opwebd/templates/params/params.html |  20 ++
- selfdrive/opwebd/templates/params/tabs.html   |  17 +
- .../opwebd/templates/settings/toggle.html     |   5 +
- .../opwebd/templates/update/update_card.html  |  24 ++
- .../opwebd/templates/update/version_card.html |  14 +
- .../opwebd/templates/video/playlist.m3u8      |  12 +
- selfdrive/opwebd/templates/video/route.html   |   4 +
- .../opwebd/templates/video/segments.html      |  36 ++
- selfdrive/opwebd/templates/video/video.html   |   3 +
- selfdrive/opwebd/templates/wheel.html         |   3 +
- 27 files changed, 757 insertions(+)
+ selfdrive/manager/process_config.py           |  4 +
+ selfdrive/opwebd/__init__.py                  |  0
+ selfdrive/opwebd/components/__init__.py       |  0
+ selfdrive/opwebd/components/home.py           | 16 ++++
+ selfdrive/opwebd/components/log.py            | 63 +++++++++++++
+ selfdrive/opwebd/components/params.py         | 50 ++++++++++
+ selfdrive/opwebd/components/settings.py       | 27 ++++++
+ selfdrive/opwebd/components/update.py         | 92 +++++++++++++++++++
+ selfdrive/opwebd/components/video.py          | 80 ++++++++++++++++
+ selfdrive/opwebd/opwebd.py                    | 25 +++++
+ selfdrive/opwebd/static/hls.min.js            |  2 +
+ selfdrive/opwebd/static/htmx.min.js           |  1 +
+ selfdrive/opwebd/static/tailwind.min.js       | 63 +++++++++++++
+ selfdrive/opwebd/templates/base.html          | 29 ++++++
+ selfdrive/opwebd/templates/head.html          |  3 +
+ selfdrive/opwebd/templates/log/log_type.html  | 11 +++
+ selfdrive/opwebd/templates/log/logs.html      | 37 ++++++++
+ selfdrive/opwebd/templates/pages/index.html   | 19 ++++
+ selfdrive/opwebd/templates/pages/log.html     | 20 ++++
+ selfdrive/opwebd/templates/pages/logs.html    | 23 +++++
+ selfdrive/opwebd/templates/pages/params.html  | 12 +++
+ .../opwebd/templates/pages/settings.html      | 24 +++++
+ selfdrive/opwebd/templates/pages/update.html  |  6 ++
+ selfdrive/opwebd/templates/pages/videos.html  | 28 ++++++
+ selfdrive/opwebd/templates/params/params.html | 20 ++++
+ selfdrive/opwebd/templates/params/tabs.html   | 17 ++++
+ .../opwebd/templates/settings/toggle.html     |  5 +
+ .../opwebd/templates/update/update_card.html  | 24 +++++
+ .../opwebd/templates/update/version_card.html | 14 +++
+ .../opwebd/templates/video/playlist.m3u8      | 12 +++
+ selfdrive/opwebd/templates/video/route.html   |  4 +
+ .../opwebd/templates/video/segments.html      | 36 ++++++++
+ selfdrive/opwebd/templates/video/video.html   |  3 +
+ selfdrive/opwebd/templates/wheel.html         |  3 +
+ selfdrive/opwebd/utils.py                     | 14 +++
+ 35 files changed, 787 insertions(+)
  create mode 100644 selfdrive/opwebd/__init__.py
+ create mode 100644 selfdrive/opwebd/components/__init__.py
+ create mode 100644 selfdrive/opwebd/components/home.py
+ create mode 100644 selfdrive/opwebd/components/log.py
+ create mode 100644 selfdrive/opwebd/components/params.py
+ create mode 100644 selfdrive/opwebd/components/settings.py
+ create mode 100644 selfdrive/opwebd/components/update.py
+ create mode 100644 selfdrive/opwebd/components/video.py
  create mode 100644 selfdrive/opwebd/opwebd.py
  create mode 100644 selfdrive/opwebd/static/hls.min.js
  create mode 100644 selfdrive/opwebd/static/htmx.min.js
@@ -58,6 +73,7 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/templates/video/segments.html
  create mode 100644 selfdrive/opwebd/templates/video/video.html
  create mode 100644 selfdrive/opwebd/templates/wheel.html
+ create mode 100644 selfdrive/opwebd/utils.py
 
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
 index f151a51d1..e3aa360b8 100644
@@ -77,44 +93,125 @@ index f151a51d1..e3aa360b8 100644
 diff --git a/selfdrive/opwebd/__init__.py b/selfdrive/opwebd/__init__.py
 new file mode 100644
 index 000000000..e69de29bb
-diff --git a/selfdrive/opwebd/opwebd.py b/selfdrive/opwebd/opwebd.py
+diff --git a/selfdrive/opwebd/components/__init__.py b/selfdrive/opwebd/components/__init__.py
 new file mode 100644
-index 000000000..985e6a3f5
+index 000000000..e69de29bb
+diff --git a/selfdrive/opwebd/components/home.py b/selfdrive/opwebd/components/home.py
+new file mode 100644
+index 000000000..310b089ce
 --- /dev/null
-+++ b/selfdrive/opwebd/opwebd.py
-@@ -0,0 +1,337 @@
-+from flask import Flask, render_template, request, send_from_directory, Response
++++ b/selfdrive/opwebd/components/home.py
+@@ -0,0 +1,16 @@
++from flask import Flask, render_template
 +import os
-+from common.params import Params
-+import datetime
-+import subprocess
-+from cereal import log
++from ..utils import SEGMENTS_DIR
++
++
++def route_home(app: Flask):
++
++    @app.route("/")
++    def index():
++        dirs = ["--".join(dir.split("--")[:-1])
++                for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
++        dirs = set(dirs)
++        dirs = list(dirs)
++        dirs.sort()
++        dirs.reverse()
++        return render_template('pages/index.html', route=dirs[0])
+diff --git a/selfdrive/opwebd/components/log.py b/selfdrive/opwebd/components/log.py
+new file mode 100644
+index 000000000..7e06d568f
+--- /dev/null
++++ b/selfdrive/opwebd/components/log.py
+@@ -0,0 +1,63 @@
++from flask import Flask, render_template, request, Response
 +import json
++import os
++from cereal import log
++from ..utils import SEGMENTS_DIR, sortSegments
++
++
++def route_log(app: Flask):
++
++    @app.route("/log")
++    def log_page():
++        path = request.args.get('path', '')
++        event_types = list(log.Event.schema.union_fields)
++        event_types.sort()
++        return render_template('pages/log.html', path=path, options=event_types)
++
++    @app.route("/log/<segment>/<log_file>/type")
++    def log_type(segment, log_file):
++        event_type = request.args.get('event_type', '')
++        page = int(request.args.get('page', '1'))
++        full_path = os.path.join(SEGMENTS_DIR, segment, log_file)
++        file = open(full_path, "rb")
++        events = log.Event.read_multiple(file)
++        filtered_events = [e for e in events if event_type == e.which()]
++        events_slice = filtered_events[page*10-10:page*10]
++        str_events = [json.dumps(e.to_dict(), indent=2, default=lambda ev : ev.hex()) for e in events_slice]
++
++        next_page=None
++        if len(str_events) == 10:
++          next_page = f"/log/{segment}/{log_file}/type?event_type={event_type}&page={page+1}"
++
++        return render_template('log/log_type.html', events=str_events, next_page=next_page)
++
++    @app.route("/logs")
++    def logs_page():
++        dirs = ["--".join(dir.split("--")[:-1])
++                for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
++        dirs = set(dirs)
++        dirs = list(dirs)
++        dirs.sort()
++        dirs.reverse()
++        return render_template('pages/logs.html', options=dirs)
++
++    @app.route("/logs/segments")
++    def logs_table():
++        route = request.args.get('route', '')
++        dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
++        dirs.sort(key=sortSegments)
++        return render_template('log/logs.html', segments=dirs)
++
++    @app.route("/logs/json")
++    def json_logs():
++        log_file = request.args.get('log', '')
++        filename = log_file.replace("/", "-") + ".json"
++        # TODO: this isn't really safe, but good enough for now because we aren't serving to the internet
++        file = open(os.path.join(SEGMENTS_DIR, log_file), "rb")
++        events = log.Event.read_multiple(file)
++        events = [e.to_dict() for e in events]
++        events = json.dumps(events, indent=2, default=lambda x: "")
++        return Response(events,
++                        mimetype="text/json",
++                        headers={"Content-Disposition":
++                                 "attachment;filename=" + filename})
+diff --git a/selfdrive/opwebd/components/params.py b/selfdrive/opwebd/components/params.py
+new file mode 100644
+index 000000000..b98701543
+--- /dev/null
++++ b/selfdrive/opwebd/components/params.py
+@@ -0,0 +1,50 @@
++import os
++from flask import Flask, render_template, request
++from common.params import Params
++
++MAX_MEM_PARAMS_CHECKS = 5
++_mem_params_checks = 0
++_has_mem_params = False
++
 +params = Params()
 +# temporarily set mem_params as params. We will change this later if we detect
 +# a mem params path
 +mem_params = params
 +keys = params.all_keys()
 +
-+dir_path = os.path.dirname(os.path.realpath(__file__))
-+
-+CAPNP_LOG_PATH = "/data/openpilot/cereal/log.capnp"
-+
-+MAX_MEM_PARAMS_CHECKS = 5
-+_mem_params_checks = 0
-+_has_mem_params = False
-+
 +IS_AGNOS = os.path.exists("/AGNOS")
-+SEGMENTS_DIR = "/data/media/0/realdata"
 +if not IS_AGNOS:
 +    _has_mem_params = True
 +    mem_params = Params("/dev/shm/params")
-+    SEGMENTS_DIR = os.path.join(dir_path, "video")
-+    CAPNP_LOG_PATH = "./cereal/log.capnp"
-+    if not os.path.exists(SEGMENTS_DIR):
-+        os.mkdir(SEGMENTS_DIR)
 +
-+TOGGLE_PARAMS = ["TurnVisionControl", "CarSpeedLimitControl", "MapSpeedLimitControl", "NudgelessLaneChange", "LaneDetection", "AlwaysOnLateralEnabled", "ExperimentalMode", "AlwaysOnLateralMainEnablesConfirmed", "ExperimentalLongitudinalEnabled", "DisengageLatOnBrake", "DisengageOnAccelerator", "AlwaysOnLateralMainEnables"]
 +
 +def has_mem_params() -> bool:
 +    # I know, I know, globals... I promise it's fine
@@ -134,284 +231,258 @@ index 000000000..985e6a3f5
 +    return _has_mem_params
 +
 +
++def route_params(app: Flask):
++
++    @app.route("/params")
++    def params_page():
++        location = request.args.get('location', 'data')
++
++        p = params
++        if location == 'mem':
++            p = mem_params
++        parameters = [(key.decode('utf-8'), str(p.get(key))) for key in keys]
++
++        return render_template('pages/params.html', params=parameters, location=location, has_mem_params=has_mem_params())
+diff --git a/selfdrive/opwebd/components/settings.py b/selfdrive/opwebd/components/settings.py
+new file mode 100644
+index 000000000..949af4336
+--- /dev/null
++++ b/selfdrive/opwebd/components/settings.py
+@@ -0,0 +1,27 @@
++from flask import Flask, render_template, request
++from common.params import Params
++
++params = Params()
++keys = params.all_keys()
++
++
++def route_settings(app: Flask):
++
++    @app.route("/settings")
++    def settings_page():
++        toggle_keys = [key.decode('utf-8') for key in keys if params.get(key) in [b'0', b'1']]
++        return render_template('pages/settings.html', keys=toggle_keys)
++
++    @app.route("/params/toggle", methods=['GET', 'PUT'])
++    def param_toggle():
++        key = request.args.get('key', '')
++        p = params
++        val = p.get_bool(key)
++        if request.method == 'PUT':
++            p.put_bool(key, not val)
++            val = not val
++        bg = "bg-indigo-600" if val else "bg-gray-200"
++        translate = "translate-x-5" if val else "translate-x-0"
++        checked = str(val).lower()
++
++        return render_template('settings/toggle.html', checked=checked, bg=bg, translate=translate, key=key)
+diff --git a/selfdrive/opwebd/components/update.py b/selfdrive/opwebd/components/update.py
+new file mode 100644
+index 000000000..abf6b03e4
+--- /dev/null
++++ b/selfdrive/opwebd/components/update.py
+@@ -0,0 +1,92 @@
++from flask import Flask, render_template
++from common.params import Params
++import os
++import subprocess
++
++params = Params()
++
++
++def route_update(app: Flask):
++    @app.route("/update")
++    def update_page():
++        return render_template('pages/update.html')
++
++    @app.post('/update/install')
++    def install_update():
++        if os.path.exists("/data/openpilot/prebuilt"):
++            os.remove("/data/openpilot/prebuilt")
++        params.put_bool("DoReboot", True)
++        return "triggered"
++
++    @app.post('/update/check')
++    def check_for_update():
++        subprocess.run(["pkill", "-SIGUSR1", "-f", "selfdrive.updated"])
++        return "triggered"
++
++    @app.post('/update/download')
++    def download_update():
++        subprocess.run(["pkill", "-SIGHUP", "-f", "selfdrive.updated"])
++        return "triggered"
++
++    @app.route('/update/status')
++    def update_status():
++        updater_state = (params.get("UpdaterState") or b'').decode()
++        if updater_state != "idle":
++            return updater_state
++
++        update_failed_count = int((params.get("UpdateFailedCount") or "0").decode())
++        if update_failed_count > 0:
++            return "failed"
++        if params.get_bool("UpdaterFetchAvailable"):
++            return "available"
++
++        return (params.get("LastUpdateTime") or "").decode()
++
++    @app.route('/update/update_card')
++    def update_card():
++        button_text = "Check For Update"
++        button_link = "/update/check"
++        if params.get_bool("UpdaterFetchAvailable"):
++            button_text = "Download Update"
++            button_link = "/update/download"
++
++        downloaded = params.get_bool("UpdateAvailable")
++
++        version = (params.get("UpdaterNewDescription") or b'').decode()
++        branch = (params.get("UpdaterTargetBranch") or b'').decode()
++        state = (params.get("UpdaterState") or b'').decode()
++        last_check = (params.get("LastUpdateTime") or b'').decode()
++        release_notes = (params.get("UpdaterNewReleaseNotes") or b'').decode()
++        update_failed_count = (params.get("UpdateFailedCount") or b"0").decode()
++
++        return render_template(
++            'update/update_card.html',
++            button_text=button_text,
++            button_link=button_link,
++            install_button=downloaded,
++            version=version,
++            branch=branch,
++            state=state,
++            last_check=last_check,
++            release_notes=release_notes,
++            failure_count=update_failed_count,
++        )
++
++    @app.route('/update/version_card')
++    def version_card():
++        version = (params.get("UpdaterCurrentDescription") or b'').decode()
++        repo = (params.get("GitRemote") or b'').decode()
++        branch = (params.get("GitBranch") or b'').decode()
++        install_date = (params.get("InstallDate") or b'').decode()
++        release_notes = (params.get("UpdaterCurrentReleaseNotes") or b'').decode()
++        commit = (params.get("GitCommit") or b'').decode()
++
++        return render_template(
++            'update/version_card.html',
++            version=version,
++            repo=repo,
++            branch=branch,
++            install_date=install_date,
++            release_notes=release_notes,
++            commit=commit
++        )
+diff --git a/selfdrive/opwebd/components/video.py b/selfdrive/opwebd/components/video.py
+new file mode 100644
+index 000000000..83752a506
+--- /dev/null
++++ b/selfdrive/opwebd/components/video.py
+@@ -0,0 +1,80 @@
++import os
++from flask import Flask, render_template, request, send_from_directory
++import datetime
++import subprocess
++from ..utils import SEGMENTS_DIR, sortSegments
++
++
++def route_video(app: Flask):
++    @app.route("/videos")
++    def video_page():
++        dirs = ["--".join(dir.split("--")[:-1])
++                for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
++        dirs = set(dirs)
++        dirs = list(dirs)
++        dirs.sort()
++        dirs.reverse()
++        return render_template('pages/videos.html', options=dirs)
++
++    @app.route("/video/route")
++    def route_partial():
++        route = request.args.get('route', '')
++        return render_template('video/route.html', route=route)
++
++    @app.route("/video/<route>/playlist.m3u8")
++    def playlist_partial(route):
++        dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
++        dirs.sort(key=sortSegments)
++        idx = 0
++        segments = []
++        for dir in dirs:
++            probe = os.popen(
++                f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"')
++            duration = float(probe.read().strip())
++            duration = "{:.3f}".format(duration)
++            segments.append((idx, duration, f"/file/{dir}/qcamera.ts"))
++            idx += 1
++        return render_template('video/playlist.m3u8', segments=segments)
++
++    @app.route("/video")
++    def video_partial():
++        route = request.args.get('route', '')
++        return render_template('video/video.html', route=route)
++
++    @app.route("/video/segments")
++    def segments_partial():
++        route = request.args.get('route', '')
++        show_conversion = not request.args.get('hide_conversion', False)
++        dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
++        dirs.sort(key=sortSegments)
++        idx = 0
++        segments = []
++        t = 0
++        for dir in dirs:
++            probe = os.popen(
++                f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"'
++            )
++            duration = float(probe.read().strip())
++            all_links = os.listdir(os.path.join(SEGMENTS_DIR, dir))
++            links = [(dir, link) for link in all_links if link.endswith("hevc") or link.endswith("ts")]
++            converted_links = [(dir, link) for link in all_links if link.endswith("mp4")]
++            segments.append({
++                "name": dir,
++                "time": str(datetime.timedelta(seconds=int(t))),
++                "links": links,
++                "converted_links": converted_links
++            })
++            t += duration
++            idx += 1
++        return render_template('video/segments.html', segments=segments, show_conversion=show_conversion)
++
++    @app.route('/video-convert/<path:path>')
++    def convert_video(path):
++        input_path = os.path.join(SEGMENTS_DIR, path)
++        output_path = os.path.join(SEGMENTS_DIR, path + ".mp4")
++        subprocess.Popen(["ffmpeg", "-i", input_path, output_path])
++        return "triggered"
++
++    @app.route('/file/<path:path>')
++    def send_report(path):
++        return send_from_directory(SEGMENTS_DIR, path, as_attachment=True)
+diff --git a/selfdrive/opwebd/opwebd.py b/selfdrive/opwebd/opwebd.py
+new file mode 100644
+index 000000000..aa127a147
+--- /dev/null
++++ b/selfdrive/opwebd/opwebd.py
+@@ -0,0 +1,25 @@
++from flask import Flask
++from .components.home import route_home
++from .components.log import route_log
++from .components.params import route_params
++from .components.settings import route_settings
++from .components.update import route_update
++from .components.video import route_video
++
++
 +app = Flask(__name__)
 +
-+
-+@app.route("/")
-+def index():
-+    dirs = ["--".join(dir.split("--")[:-1])
-+            for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
-+    dirs = set(dirs)
-+    dirs = list(dirs)
-+    dirs.sort()
-+    dirs.reverse()
-+    return render_template('pages/index.html', route=dirs[0])
-+
-+
-+@app.route("/update")
-+def update_page():
-+    return render_template('pages/update.html')
-+
-+
-+@app.route("/params")
-+def params_page():
-+    location = request.args.get('location', 'data')
-+
-+    p = params
-+    if location == 'mem':
-+        p = mem_params
-+    parameters = [(key.decode('utf-8'), str(p.get(key))) for key in keys]
-+
-+    return render_template('pages/params.html', params=parameters, location=location, has_mem_params=has_mem_params())
-+
-+
-+@app.route("/settings")
-+def settings_page():
-+    toggle_keys = [key.decode('utf-8') for key in keys if key.decode('utf-8') in TOGGLE_PARAMS]
-+    return render_template('pages/settings.html', keys=toggle_keys)
-+
-+
-+@app.route("/params/toggle", methods=['GET', 'PUT'])
-+def param_toggle():
-+    key = request.args.get('key', '')
-+    p = params
-+    val = p.get_bool(key)
-+    if request.method == 'PUT':
-+        p.put_bool(key, not val)
-+        val = not val
-+    bg = "bg-indigo-600" if val else "bg-gray-200"
-+    translate = "translate-x-5" if val else "translate-x-0"
-+    checked = str(val).lower()
-+
-+    return render_template('settings/toggle.html', checked=checked, bg=bg, translate=translate, key=key)
-+
-+
-+@app.route("/log")
-+def log_page():
-+    path = request.args.get('path', '')
-+    event_types = list(log.Event.schema.union_fields)
-+    return render_template('pages/log.html', path=path, options=event_types)
-+
-+@app.route("/log/<segment>/<log_file>/type")
-+def log_type(segment, log_file):
-+    event_type = request.args.get('event_type', '')
-+    page = int(request.args.get('page', '1'))
-+    full_path = os.path.join(SEGMENTS_DIR, segment, log_file)
-+    file = open(full_path, "rb")
-+    events = log.Event.read_multiple(file)
-+    filtered_events = [e for e in events if event_type == e.which()]
-+    events_slice = filtered_events[page*10-10:page*10]
-+    str_events = [json.dumps(e.to_dict(), indent=2, default=lambda ev : ev.hex()) for e in events_slice]
-+
-+    next_page=None
-+    if len(str_events) == 10:
-+      next_page = f"/log/{segment}/{log_file}/type?event_type={event_type}&page={page+1}"
-+
-+    return render_template('log/log_type.html', events=str_events, next_page=next_page)
-+
-+
-+@app.route("/logs")
-+def logs_page():
-+    dirs = ["--".join(dir.split("--")[:-1])
-+            for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
-+    dirs = set(dirs)
-+    dirs = list(dirs)
-+    dirs.sort()
-+    dirs.reverse()
-+    return render_template('pages/logs.html', options=dirs)
-+
-+
-+@app.route("/logs/segments")
-+def logs_table():
-+    route = request.args.get('route', '')
-+    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
-+    dirs.sort(key=sortSegments)
-+    return render_template('log/logs.html', segments=dirs)
-+
-+
-+@app.route("/logs/json")
-+def json_logs():
-+    log_file = request.args.get('log', '')
-+    filename = log_file.replace("/", "-") + ".json"
-+    # TODO: this isn't really safe, but good enough for now because we aren't serving to the internet
-+    file = open(os.path.join(SEGMENTS_DIR, log_file), "rb")
-+    events = log.Event.read_multiple(file)
-+    dict_events = [e.to_dict() for e in events]
-+    data = json.dumps(dict_events, indent=2, default=lambda ev : ev.hex())
-+    return Response(data,
-+                    mimetype="text/json",
-+                    headers={"Content-Disposition":
-+                             "attachment;filename=" + filename})
-+
-+
-+@app.route("/videos")
-+def video_page():
-+    dirs = ["--".join(dir.split("--")[:-1])
-+            for dir in os.listdir(SEGMENTS_DIR) if dir.find("--") >= 0]
-+    dirs = set(dirs)
-+    dirs = list(dirs)
-+    dirs.sort()
-+    dirs.reverse()
-+    return render_template('pages/videos.html', options=dirs)
-+
-+
-+@app.route("/video/route")
-+def route_partial():
-+    route = request.args.get('route', '')
-+    return render_template('video/route.html', route=route)
-+
-+
-+def sortSegments(segment):
-+    return int(segment.split("--")[-1])
-+
-+
-+@app.route("/video/<route>/playlist.m3u8")
-+def playlist_partial(route):
-+    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
-+    dirs.sort(key=sortSegments)
-+    idx = 0
-+    segments = []
-+    for dir in dirs:
-+        probe = os.popen(
-+            f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"')
-+        duration = float(probe.read().strip())
-+        duration = "{:.3f}".format(duration)
-+        segments.append((idx, duration, f"/file/{dir}/qcamera.ts"))
-+        idx += 1
-+    return render_template('video/playlist.m3u8', segments=segments)
-+
-+
-+@app.route("/video")
-+def video_partial():
-+    route = request.args.get('route', '')
-+    return render_template('video/video.html', route=route)
-+
-+
-+@app.route("/video/segments")
-+def segments_partial():
-+    route = request.args.get('route', '')
-+    show_conversion = not request.args.get('hide_conversion', False)
-+    dirs = [dir for dir in os.listdir(SEGMENTS_DIR) if dir.startswith(route)]
-+    dirs.sort(key=sortSegments)
-+    idx = 0
-+    segments = []
-+    t = 0
-+    for dir in dirs:
-+        probe = os.popen(
-+            f'ffprobe -i {SEGMENTS_DIR}/{dir}/qcamera.ts -show_entries format=duration -v quiet -of csv="p=0"'
-+        )
-+        duration = float(probe.read().strip())
-+        all_links = os.listdir(os.path.join(SEGMENTS_DIR, dir))
-+        links = [(dir, link) for link in all_links if link.endswith("hevc") or link.endswith("ts")]
-+        converted_links = [(dir, link) for link in all_links if link.endswith("mp4")]
-+        segments.append({
-+            "name": dir,
-+            "time": str(datetime.timedelta(seconds=int(t))),
-+            "links": links,
-+            "converted_links": converted_links
-+        })
-+        t += duration
-+        idx += 1
-+    return render_template('video/segments.html', segments=segments, show_conversion=show_conversion)
-+
-+
-+@app.route('/file/<path:path>')
-+def send_report(path):
-+    return send_from_directory(SEGMENTS_DIR, path, as_attachment=True)
-+
-+
-+@app.route('/video-convert/<path:path>')
-+def convert_video(path):
-+    input_path = os.path.join(SEGMENTS_DIR, path)
-+    output_path = os.path.join(SEGMENTS_DIR, path + ".mp4")
-+    subprocess.Popen(["ffmpeg", "-i", input_path, output_path])
-+    return "triggered"
-+
-+
-+@app.post('/update/install')
-+def install_update():
-+    if os.path.exists("/data/openpilot/prebuilt"):
-+        os.remove("/data/openpilot/prebuilt")
-+    params.put_bool("DoReboot", True)
-+    return "triggered"
-+
-+
-+@app.post('/update/check')
-+def check_for_update():
-+    subprocess.run(["pkill", "-SIGUSR1", "-f", "selfdrive.updated"])
-+    return "triggered"
-+
-+
-+@app.post('/update/download')
-+def download_update():
-+    subprocess.run(["pkill", "-SIGHUP", "-f", "selfdrive.updated"])
-+    return "triggered"
-+
-+
-+@app.route('/update/status')
-+def update_status():
-+    updater_state = (params.get("UpdaterState") or b'').decode()
-+    if updater_state != "idle":
-+        return updater_state
-+
-+    update_failed_count = int((params.get("UpdateFailedCount") or "0").decode())
-+    if update_failed_count > 0:
-+        return "failed"
-+    if params.get_bool("UpdaterFetchAvailable"):
-+        return "available"
-+
-+    return (params.get("LastUpdateTime") or "").decode()
-+
-+
-+@app.route('/update/update_card')
-+def update_card():
-+    button_text = "Check For Update"
-+    button_link = "/update/check"
-+    if params.get_bool("UpdaterFetchAvailable"):
-+        button_text = "Download Update"
-+        button_link = "/update/download"
-+
-+    downloaded = params.get_bool("UpdateAvailable")
-+
-+    version = (params.get("UpdaterNewDescription") or b'').decode()
-+    branch = (params.get("UpdaterTargetBranch") or b'').decode()
-+    state = (params.get("UpdaterState") or b'').decode()
-+    last_check = (params.get("LastUpdateTime") or b'').decode()
-+    release_notes = (params.get("UpdaterNewReleaseNotes") or b'').decode()
-+    update_failed_count = (params.get("UpdateFailedCount") or b"0").decode()
-+
-+    return render_template(
-+        'update/update_card.html',
-+        button_text=button_text,
-+        button_link=button_link,
-+        install_button=downloaded,
-+        version=version,
-+        branch=branch,
-+        state=state,
-+        last_check=last_check,
-+        release_notes=release_notes,
-+        failure_count=update_failed_count,
-+    )
-+
-+
-+@app.route('/update/version_card')
-+def version_card():
-+    version = (params.get("UpdaterCurrentDescription") or b'').decode()
-+    repo = (params.get("GitRemote") or b'').decode()
-+    branch = (params.get("GitBranch") or b'').decode()
-+    install_date = (params.get("InstallDate") or b'').decode()
-+    release_notes = (params.get("UpdaterCurrentReleaseNotes") or b'').decode()
-+    commit = (params.get("GitCommit") or b'').decode()
-+
-+    return render_template(
-+        'update/version_card.html',
-+        version=version,
-+        repo=repo,
-+        branch=branch,
-+        install_date=install_date,
-+        release_notes=release_notes,
-+        commit=commit
-+    )
++route_home(app)
++route_log(app)
++route_params(app)
++route_settings(app)
++route_update(app)
++route_video(app)
 +
 +
 +def main():
@@ -611,7 +682,7 @@ index 000000000..1fdf989df
 +</div>
 diff --git a/selfdrive/opwebd/templates/pages/index.html b/selfdrive/opwebd/templates/pages/index.html
 new file mode 100644
-index 000000000..0d2bda1d7
+index 000000000..857386081
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/index.html
 @@ -0,0 +1,19 @@
@@ -620,7 +691,7 @@ index 000000000..0d2bda1d7
 +{% block content %}
 +<div id="video-card" class="grid grid-cols-1 w-full mb-2 p-2 place-items-center float-left" hx-get="/video?route={{route}}" hx-trigger="load"></div>
 +<p class="px-2 py-4 w-full text-center">
-+Note: conversion for json download is slow. May take up to 3 minutes for rlog to start downloading in json
++Note: conversion for json download is slow. May take up to 90 seconds for rlog to start downloading in json
 +</p>
 +<div id="segment-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/video/segments?route={{route}}&hide_conversion=true" hx-trigger="load"></div>
 +<div id="logs-card" class="xl:w-1/2 w-full p-2 float-left" hx-get="/logs/segments?route={{route}}" hx-trigger="load"></div>
@@ -662,7 +733,7 @@ index 000000000..7a1cea916
 +{% endblock content %}
 diff --git a/selfdrive/opwebd/templates/pages/logs.html b/selfdrive/opwebd/templates/pages/logs.html
 new file mode 100644
-index 000000000..8c1c23130
+index 000000000..eda3faade
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/pages/logs.html
 @@ -0,0 +1,23 @@
@@ -682,7 +753,7 @@ index 000000000..8c1c23130
 +    </select>
 +  </div>
 +  <p class="p-6 px-8">
-+    Note: conversion for json download is slow. May take up to 3 minutes for rlog to start downloading in json
++    Note: conversion for json download is slow. May take up to 90 seconds for rlog to start downloading in json
 +  </p>
 +
 +  <div class="w-full items-center justify-between px-8 flex flex-row" id="logs">
@@ -981,6 +1052,26 @@ index 000000000..ce87eecf1
 +<div class="bg-slate-800 rounded-full p-0.5">
 +<img class="h-8 w-auto" src="data:image/png;base64,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" />
 +</div>
+diff --git a/selfdrive/opwebd/utils.py b/selfdrive/opwebd/utils.py
+new file mode 100644
+index 000000000..9ad4f00fe
+--- /dev/null
++++ b/selfdrive/opwebd/utils.py
+@@ -0,0 +1,14 @@
++import os
++
++dir_path = os.path.dirname(os.path.realpath(__file__))
++
++IS_AGNOS = os.path.exists("/AGNOS")
++SEGMENTS_DIR = "/data/media/0/realdata"
++if not IS_AGNOS:
++    SEGMENTS_DIR = os.path.join(dir_path, "video")
++    if not os.path.exists(SEGMENTS_DIR):
++        os.mkdir(SEGMENTS_DIR)
++
++
++def sortSegments(segment):
++    return int(segment.split("--")[-1])
 -- 
 2.41.0
 
