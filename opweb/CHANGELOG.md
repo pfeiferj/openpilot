@@ -1,5 +1,12 @@
 # OPWeb Changelog
 
+## 08/07/23
+* Improve conversion time for log downloads (approx 2x faster)
+* Sorting in event types
+* Improved detection of toggle params
+* Improved code structure
+
+
 ## 08/06/23
 * Can now view logs in browser
 * Better log to json conversion

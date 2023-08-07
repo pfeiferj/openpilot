@@ -1,4 +1,4 @@
-From 06becfd94e7f4652dc9bdd7309cf7040ed7e7989 Mon Sep 17 00:00:00 2001
+From d82e2d9565d291dcec0f83f9329b14dfddf6d923 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -10,7 +10,7 @@ Subject: [PATCH] opweb
  selfdrive/opwebd/components/home.py           | 16 ++++
  selfdrive/opwebd/components/log.py            | 63 +++++++++++++
  selfdrive/opwebd/components/params.py         | 50 ++++++++++
- selfdrive/opwebd/components/settings.py       | 27 ++++++
+ selfdrive/opwebd/components/settings.py       | 28 ++++++
  selfdrive/opwebd/components/update.py         | 92 +++++++++++++++++++
  selfdrive/opwebd/components/video.py          | 80 ++++++++++++++++
  selfdrive/opwebd/opwebd.py                    | 25 +++++
@@ -39,7 +39,7 @@ Subject: [PATCH] opweb
  selfdrive/opwebd/templates/video/video.html   |  3 +
  selfdrive/opwebd/templates/wheel.html         |  3 +
  selfdrive/opwebd/utils.py                     | 14 +++
- 35 files changed, 787 insertions(+)
+ 35 files changed, 788 insertions(+)
  create mode 100644 selfdrive/opwebd/__init__.py
  create mode 100644 selfdrive/opwebd/components/__init__.py
  create mode 100644 selfdrive/opwebd/components/home.py
@@ -245,10 +245,10 @@ index 000000000..b98701543
 +        return render_template('pages/params.html', params=parameters, location=location, has_mem_params=has_mem_params())
 diff --git a/selfdrive/opwebd/components/settings.py b/selfdrive/opwebd/components/settings.py
 new file mode 100644
-index 000000000..949af4336
+index 000000000..a09a95b5b
 --- /dev/null
 +++ b/selfdrive/opwebd/components/settings.py
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,28 @@
 +from flask import Flask, render_template, request
 +from common.params import Params
 +
@@ -261,6 +261,7 @@ index 000000000..949af4336
 +    @app.route("/settings")
 +    def settings_page():
 +        toggle_keys = [key.decode('utf-8') for key in keys if params.get(key) in [b'0', b'1']]
++        toggle_keys = [key for key in toggle_keys if "Available" not in key and "Is" not in key and "Count" not in key]
 +        return render_template('pages/settings.html', keys=toggle_keys)
 +
 +    @app.route("/params/toggle", methods=['GET', 'PUT'])
