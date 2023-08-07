@@ -49,7 +49,7 @@ Update
 
 
 Light Mode (dynamically switches based on clients OS theme)
-![Home Page With Light Theme](./screenshots/update.png?raw=true)
+![Home Page With Light Theme](./screenshots/light_mode.png?raw=true)
 
 
 Mobile (improvements planned)
