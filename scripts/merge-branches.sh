@@ -21,6 +21,7 @@ git merge pfeifer-speed-limit-control
 git merge pfeifer-vtsc
 git merge pfeifer-mapd
 git merge pfeifer-opweb
+git merge pfeifer-distance-based-curvature
 
 
 # checkout the .gitattributes file so future merges will not be affected

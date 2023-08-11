@@ -42,3 +42,6 @@ git pull
 
 git checkout pfeifer-opweb
 git pull
+
+git checkout pfeifer-distance-based-curvature
+git pull

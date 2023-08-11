@@ -1,0 +1,159 @@
+From 91a1c75d3eeb862370579f6678562bd5fdc79892 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Fri, 11 Aug 2023 00:48:13 -0400
+Subject: [PATCH] distance based curvature
+
+---
+ common/params.cc                              |  5 +++
+ .../controls/distance_based_curvature.py      | 43 +++++++++++++++++++
+ selfdrive/controls/lib/drive_helpers.py       |  8 ++++
+ .../lib/longitudinal_mpc_lib/long_mpc.py      |  7 +++
+ selfdrive/ui/qt/offroad/settings.cc           |  8 ++++
+ 5 files changed, 71 insertions(+)
+ create mode 100644 selfdrive/controls/distance_based_curvature.py
+
+diff --git a/common/params.cc b/common/params.cc
+index e8ab42c0b..797a54ea3 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -206,6 +206,11 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
++
++    // PFEIFER - DBC {{
++    {"DistanceBasedCurvature", PERSISTENT},
++    {"Distances", PERSISTENT},
++    // }} PFEIFER - DBC
+ };
+ 
+ } // namespace
+diff --git a/selfdrive/controls/distance_based_curvature.py b/selfdrive/controls/distance_based_curvature.py
+new file mode 100644
+index 000000000..4b927e571
+--- /dev/null
++++ b/selfdrive/controls/distance_based_curvature.py
+@@ -0,0 +1,43 @@
++# PFEIFER - DBC
++
++import numpy as np
++from selfdrive.modeld.constants import index_function
++import json
++from common.params import Params
++mem_params = Params("/dev/shm/params")
++
++N = 12
++MAX_T = 10.0
++T_IDXS_LST = [index_function(idx, max_val=MAX_T, max_idx=N) for idx in range(N+1)]
++
++T_IDXS_MPC = np.array(T_IDXS_LST)
++
++class DistanceBasedCurvature:
++  @property
++  def distances(self):
++    distances = mem_params.get("Distances")
++    if distances is not None:
++      distances = json.loads(distances.decode())
++      distances = np.interp(T_IDXS, T_IDXS_MPC, distances)
++      distances = distances[:CONTROL_N].tolist()
++    else:
++      distances = []
++
++    if len(distances) != CONTROL_N:
++      distances = [0.0] * CONTROL_N
++
++    return distances
++
++
++  @distances.setter
++  def distances(self, distances):
++    mem_params.put("Distances", json.dumps(distances.tolist()))
++
++
++  def average_curvature_desired(psi, v_ego, delay):
++    distances = self.distances
++    distance = interp(delay, T_IDXS[:CONTROL_N], distances)
++    distance = max(0.0001, distance)
++    average_curvature_desired = psi / distance if mem_params.get_bool("DistanceBasedCurvature") else psi / (v_ego * delay)
++
++dbc = DistanceBasedCurvature()
+diff --git a/selfdrive/controls/lib/drive_helpers.py b/selfdrive/controls/lib/drive_helpers.py
+index ab65da2e1..b109e15dc 100644
+--- a/selfdrive/controls/lib/drive_helpers.py
++++ b/selfdrive/controls/lib/drive_helpers.py
+@@ -6,6 +6,10 @@ from common.numpy_fast import clip, interp
+ from common.realtime import DT_MDL
+ from selfdrive.modeld.constants import T_IDXS
+ 
++# PFEIFER - DBC {{
++from selfdrive.common.distance_based_curvature import dbc
++# }} PFEIFER - DBC
++
+ # WARNING: this value was determined based on the model's training distribution,
+ #          model predictions above this speed can be unpredictable
+ # V_CRUISE's are in kph
+@@ -168,6 +172,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
+     psis = [0.0]*CONTROL_N
+     curvatures = [0.0]*CONTROL_N
+     curvature_rates = [0.0]*CONTROL_N
++
+   v_ego = max(MIN_SPEED, v_ego)
+ 
+   # TODO this needs more thought, use .2s extra for now to estimate other delays
+@@ -179,6 +184,9 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
+   current_curvature_desired = curvatures[0]
+   psi = interp(delay, T_IDXS[:CONTROL_N], psis)
+   average_curvature_desired = psi / (v_ego * delay)
++  # PFEIFER - DBC {{
++  average_curvature_desired = dbc.average_curvature_desired(psi, v_ego, delay)
++  # }} PFEIFER - DBC
+   desired_curvature = 2 * average_curvature_desired - current_curvature_desired
+ 
+   # This is the "desired rate of the setpoint" not an actual desired rate
+diff --git a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
+index afc400ede..51a38a212 100644
+--- a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
++++ b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
+@@ -10,6 +10,10 @@ from selfdrive.modeld.constants import index_function
+ from selfdrive.car.interfaces import ACCEL_MIN
+ from selfdrive.controls.radard import _LEAD_ACCEL_TAU
+ 
++# PFEIFER - DBC {{
++from selfdrive.controls.distance_based_curvature import dbc
++# }} PFEIFER - DBC
++
+ if __name__ == '__main__':  # generating code
+   from third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
+ else:
+@@ -434,6 +438,9 @@ class LongitudinalMpc:
+     for i in range(N):
+       self.u_sol[i] = self.solver.get(i, 'u')
+ 
++    # PFEIFER - DBC {{
++    dbc.distances = self.x_sol[:,0]
++    # }} PFEIFER - DBC
+     self.v_solution = self.x_sol[:,1]
+     self.a_solution = self.x_sol[:,2]
+     self.j_solution = self.u_sol[:,0]
+diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
+index 94a673dd7..97196f872 100644
+--- a/selfdrive/ui/qt/offroad/settings.cc
++++ b/selfdrive/ui/qt/offroad/settings.cc
+@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+       tr("Display speed in km/h instead of mph."),
+       "../assets/offroad/icon_metric.png",
+     },
++    // PFEIFER - DBC {{
++    {
++      "DistanceBasedCurvature",
++      tr("Distance Based Curvature"),
++      "Adjusts the curvature based on the distance after lag. Likely this is mathematically incorrect but depending on the model/car can give good results.",
++      "../assets/img_experimental_white.svg",
++    },
++    // }} PFEIFER - DBC
+ #ifdef ENABLE_MAPS
+     {
+       "NavSettingTime24h",
+-- 
+2.41.0
+

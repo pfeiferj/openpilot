@@ -58,3 +58,6 @@ git pull --rebase origin master
 
 git checkout pfeifer-opweb
 git pull --rebase origin master
+
+git checkout pfeifer-distance-based-curvature
+git pull --rebase origin master
