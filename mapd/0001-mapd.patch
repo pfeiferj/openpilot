@@ -1,4 +1,4 @@
-From 81d26f5f1434454f73bb4138baadea6228ee3318 Mon Sep 17 00:00:00 2001
+From d12c106b8c40a5681ca640aabe8f38007ac3fcfb Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 14:19:30 -0400
 Subject: [PATCH] mapd
@@ -190,7 +190,7 @@ index 76a49eda5..4c268596a 100644
  def launcher(proc: str, name: str) -> None:
    try:
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index f151a51d1..b3cf16e0c 100644
+index 2fd786875..efbd8a9c4 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
 @@ -70,6 +70,10 @@ procs = [
@@ -203,7 +203,7 @@ index f151a51d1..b3cf16e0c 100644
 +
    # debug procs
    NativeProcess("bridge", "cereal/messaging", ["./bridge"], onroad=False, callback=notcar),
-   PythonProcess("webjoystick", "tools.joystick.web", onroad=False, callback=notcar),
+   PythonProcess("webjoystick", "tools.bodyteleop.web", onroad=False, callback=notcar),
 diff --git a/selfdrive/mapd/README.md b/selfdrive/mapd/README.md
 new file mode 100644
 index 000000000..bd3a3c949

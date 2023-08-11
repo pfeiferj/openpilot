@@ -1,4 +1,4 @@
-From 74f85bc31cac7b0505a08b5dc6d36c8ad2829630 Mon Sep 17 00:00:00 2001
+From 081427aff0241513666a2d7eeb687faa5aa0a96d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -232,7 +232,7 @@ index 000000000..dee8f649a
 2.41.0
 
 
-From a822bd4cc96ef93a4c80a5e970bf10b5e85af3ac Mon Sep 17 00:00:00 2001
+From 80411fd280602feb0f5a8308b8a771bd3b3bfb06 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -260,10 +260,10 @@ index e8ab42c0b..f09fbb2ab 100644
  
  } // namespace
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 66bf303de..62be75201 100644
+index 46f86fdc1..ee3659565 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -9,6 +9,10 @@ from selfdrive.car import STD_CARGO_KG, create_button_event, scale_tire_stiffnes
+@@ -10,6 +10,10 @@ from selfdrive.car import STD_CARGO_KG, create_button_event, scale_tire_stiffnes
  from selfdrive.car.interfaces import CarInterfaceBase
  from selfdrive.car.disable_ecu import disable_ecu
  
@@ -274,7 +274,7 @@ index 66bf303de..62be75201 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -328,6 +332,11 @@ class CarInterface(CarInterfaceBase):
+@@ -331,6 +335,11 @@ class CarInterface(CarInterfaceBase):
  
        ret.buttonEvents = buttonEvents
  
@@ -307,7 +307,7 @@ index 000000000..16da137b1
 2.41.0
 
 
-From 8a6bfdbfe53b6ac1ae8086520f9d6b238811abd6 Mon Sep 17 00:00:00 2001
+From 16f04fdbfa78bbd2c9e9eeff868c913345a07cc9 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -394,7 +394,7 @@ index 32e2f8626..1021795bd 100644
  
    @staticmethod
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index b6ac7bec9..bc046e9dc 100755
+index 576527292..e53b62ca1 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
@@ -408,7 +408,7 @@ index b6ac7bec9..bc046e9dc 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -130,6 +134,12 @@ class LongitudinalPlanner:
+@@ -129,6 +133,12 @@ class LongitudinalPlanner:
      accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
      accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
  
@@ -536,7 +536,7 @@ index 000000000..4c18d76d9
 +
 +slc = SpeedLimitController()
 diff --git a/selfdrive/navd/navd.py b/selfdrive/navd/navd.py
-index 70a6b62ae..eff4387ab 100755
+index 3a8897e8e..e31afd0e7 100755
 --- a/selfdrive/navd/navd.py
 +++ b/selfdrive/navd/navd.py
 @@ -19,6 +19,10 @@ from selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
@@ -565,7 +565,7 @@ index 70a6b62ae..eff4387ab 100755
        self.pm.send('navInstruction', msg)
        return
  
-@@ -257,6 +269,18 @@ class RouteEngine:
+@@ -282,6 +294,18 @@ class RouteEngine:
  
      if ('maxspeed' in closest.annotations) and self.localizer_valid:
        msg.navInstruction.speedLimit = closest.annotations['maxspeed']

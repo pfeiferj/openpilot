@@ -1,4 +1,4 @@
-From d82e2d9565d291dcec0f83f9329b14dfddf6d923 Mon Sep 17 00:00:00 2001
+From aaa88d9e803ff27948ba22e2f95ebb487fe0a377 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -76,7 +76,7 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/utils.py
 
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index f151a51d1..e3aa360b8 100644
+index 2fd786875..2185f78f5 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
 @@ -70,6 +70,10 @@ procs = [
@@ -89,7 +89,7 @@ index f151a51d1..e3aa360b8 100644
 +
    # debug procs
    NativeProcess("bridge", "cereal/messaging", ["./bridge"], onroad=False, callback=notcar),
-   PythonProcess("webjoystick", "tools.joystick.web", onroad=False, callback=notcar),
+   PythonProcess("webjoystick", "tools.bodyteleop.web", onroad=False, callback=notcar),
 diff --git a/selfdrive/opwebd/__init__.py b/selfdrive/opwebd/__init__.py
 new file mode 100644
 index 000000000..e69de29bb

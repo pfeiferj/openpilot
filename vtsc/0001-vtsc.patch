@@ -1,4 +1,4 @@
-From 70fc234546853416460c6b6d56816b764694f1bf Mon Sep 17 00:00:00 2001
+From a70651dbc4239970058981c4bdad6f1ecf9e3123 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
@@ -27,7 +27,7 @@ index e8ab42c0b..58b2fe03b 100644
  
  } // namespace
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index b6ac7bec9..5b876e983 100755
+index 576527292..d7047f017 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
@@ -41,7 +41,7 @@ index b6ac7bec9..5b876e983 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -130,6 +134,17 @@ class LongitudinalPlanner:
+@@ -129,6 +133,17 @@ class LongitudinalPlanner:
      accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
      accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
  

@@ -1,4 +1,4 @@
-From 2c36c266cb486e6ccf57b7aef1d453630001c1ca Mon Sep 17 00:00:00 2001
+From 2297b52955796499841d53064d4873adec294fba Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 6 Aug 2023 15:53:01 -0400
 Subject: [PATCH] Always On Lateral
@@ -307,10 +307,10 @@ index e17f1ff4..b9da2fd0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index 438a0fba..fbf7d38e 100644
+index 23047689..3dc61740 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -114,6 +114,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -115,6 +115,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
      if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {
@@ -474,7 +474,7 @@ index b2f0ea98..978dd533 100644
 +#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index 6c714ca3..ba1c089f 100644
+index e1b3a471..43596c08 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
 @@ -143,6 +143,10 @@ class ALTERNATIVE_EXPERIENCE:

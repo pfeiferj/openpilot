@@ -1,4 +1,4 @@
-From 9ecd65e48846018a5535ab944f054a7e7ba3ebc6 Mon Sep 17 00:00:00 2001
+From 1d28aa65d8c13f2776975cd4074f9e85fabeccb2 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:29:00 -0400
 Subject: [PATCH] Current Max Speed
@@ -30,7 +30,7 @@ index e8ab42c0b..f1626b27c 100644
  
  } // namespace
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index fe5bb3671..f902c2962 100755
+index 79ec310d5..d872063d8 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -27,6 +27,9 @@ from selfdrive.controls.lib.events import Events, ET
@@ -43,7 +43,7 @@ index fe5bb3671..f902c2962 100755
  
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
-@@ -699,6 +702,9 @@ class Controls:
+@@ -700,6 +703,9 @@ class Controls:
  
      hudControl = CC.hudControl
      hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)
@@ -99,7 +99,7 @@ index 000000000..c0042b3b6
 +
 +cms = CurrentMaxSpeed()
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index b6ac7bec9..ec5935e6c 100755
+index 576527292..501cea4ad 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
@@ -113,7 +113,7 @@ index b6ac7bec9..ec5935e6c 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -136,6 +140,10 @@ class LongitudinalPlanner:
+@@ -135,6 +139,10 @@ class LongitudinalPlanner:
      x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
      self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=self.personality)
  

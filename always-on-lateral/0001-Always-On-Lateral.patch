@@ -1,6 +1,6 @@
-From 40d76d5a847b35beec0d653f3b90b3de32f5d8d6 Mon Sep 17 00:00:00 2001
+From e0e4470b4a96ba4b172d26f86c07d95dbf0bc935 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sun, 6 Aug 2023 15:53:39 -0400
+Date: Thu, 10 Aug 2023 21:19:33 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -60,24 +60,24 @@ index e8ab42c0b..aa4fb3409 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 1950ba6f8..2c36c266c 160000
+index 61e987f6e..2297b5295 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 1950ba6f83b2ccf31a609fb6eca6aed5e4840252
-+Subproject commit 2c36c266cb486e6ccf57b7aef1d453630001c1ca
+-Subproject commit 61e987f6e280f2b84b6f5ccffaca91ae9635f411
++Subproject commit 2297b52955796499841d53064d4873adec294fba
 diff --git a/release/files_common b/release/files_common
-index b66a076b2..c8f604079 100644
+index 90ee2ccd6..6e933a389 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -594,3 +594,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -595,3 +595,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/always_on_lateral.py
 diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
-index fdc5aa338..fcbc4c931 100644
+index 3afd45ce9..bfbb8f54e 100644
 --- a/selfdrive/car/chrysler/carstate.py
 +++ b/selfdrive/car/chrysler/carstate.py
 @@ -5,6 +5,10 @@ from opendbc.can.can_define import CANDefine
@@ -155,7 +155,7 @@ index 69d34c09c..5840ee927 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/honda/carstate.py b/selfdrive/car/honda/carstate.py
-index 35d627990..35073b696 100644
+index 196f233a3..662b0047c 100644
 --- a/selfdrive/car/honda/carstate.py
 +++ b/selfdrive/car/honda/carstate.py
 @@ -9,6 +9,10 @@ from selfdrive.car.honda.hondacan import get_cruise_speed_conversion, get_pt_bus
@@ -169,7 +169,7 @@ index 35d627990..35073b696 100644
  TransmissionType = car.CarParams.TransmissionType
  
  
-@@ -157,6 +161,10 @@ class CarState(CarStateBase):
+@@ -158,6 +162,10 @@ class CarState(CarStateBase):
      # However, on cars without a digital speedometer this is not always present (HRV, FIT, CRV 2016, ILX and RDX)
      self.dash_speed_seen = False
  
@@ -253,10 +253,10 @@ index 32e2f8626..88bdf6765 100644
      ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
  
 diff --git a/selfdrive/car/interfaces.py b/selfdrive/car/interfaces.py
-index ec9f4a0f0..124725e4e 100644
+index 99df4cf4b..d34384a7b 100644
 --- a/selfdrive/car/interfaces.py
 +++ b/selfdrive/car/interfaces.py
-@@ -327,6 +327,10 @@ class CarStateBase(ABC):
+@@ -328,6 +328,10 @@ class CarStateBase(ABC):
      self.car_fingerprint = CP.carFingerprint
      self.out = car.CarState.new_message()
  
@@ -320,7 +320,7 @@ index 189c244ca..ba09cd26e 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/tesla/carstate.py b/selfdrive/car/tesla/carstate.py
-index 0f373842f..9ad53eede 100644
+index 1d82fb440..1f88f66b9 100644
 --- a/selfdrive/car/tesla/carstate.py
 +++ b/selfdrive/car/tesla/carstate.py
 @@ -7,6 +7,10 @@ from selfdrive.car.interfaces import CarStateBase
@@ -346,7 +346,7 @@ index 0f373842f..9ad53eede 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index b6ecbe5e5..08b543279 100644
+index a63ba2ae7..7717a51b4 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -23,6 +23,10 @@ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
@@ -634,7 +634,7 @@ index 000000000..a0c7d119c
 +    return experience
 +
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index fe5bb3671..bf8c2c732 100755
+index 79ec310d5..68652736f 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
@@ -672,7 +672,7 @@ index fe5bb3671..bf8c2c732 100755
  
    def state_control(self, CS):
      """Given the state, this function returns a CarControl packet"""
-@@ -584,6 +596,10 @@ class Controls:
+@@ -585,6 +597,10 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
