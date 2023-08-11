@@ -45,3 +45,6 @@ git pull
 
 git checkout pfeifer-distance-based-curvature
 git pull
+
+git checkout cluster-based-max-speed
+git pull

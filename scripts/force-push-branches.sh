@@ -45,3 +45,6 @@ git push --force
 
 git checkout pfeifer-distance-based-curvature
 git push --force
+
+git checkout cluster-based-max-speed
+git push --force

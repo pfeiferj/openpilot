@@ -65,3 +65,7 @@ mv *.patch ../openpilot-patches/opweb/
 git checkout pfeifer-distance-based-curvature
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/distance-based-curvature/
+
+git checkout cluster-based-max-speed
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/cluster-based-max-speed/
