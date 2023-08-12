@@ -1,4 +1,4 @@
-From d12c106b8c40a5681ca640aabe8f38007ac3fcfb Mon Sep 17 00:00:00 2001
+From f94ce11b93cc35d7877c76b4b901328e6e8708c7 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 14:19:30 -0400
 Subject: [PATCH] mapd
@@ -175,7 +175,7 @@ index 000000000..de3b306cc
 +    with TextWindow(error) as t:
 +      t.wait_for_exit()
 diff --git a/selfdrive/manager/process.py b/selfdrive/manager/process.py
-index 76a49eda5..4c268596a 100644
+index 0acb23857..4d20ccfdc 100644
 --- a/selfdrive/manager/process.py
 +++ b/selfdrive/manager/process.py
 @@ -22,6 +22,10 @@ from cereal import log
@@ -190,10 +190,10 @@ index 76a49eda5..4c268596a 100644
  def launcher(proc: str, name: str) -> None:
    try:
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 2fd786875..efbd8a9c4 100644
+index 7cd1ed948..0ddcf21d5 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -70,6 +70,10 @@ procs = [
+@@ -74,6 +74,10 @@ procs = [
    PythonProcess("uploader", "system.loggerd.uploader", offroad=True),
    PythonProcess("statsd", "selfdrive.statsd", offroad=True),
  

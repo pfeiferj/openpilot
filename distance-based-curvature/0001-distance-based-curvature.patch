@@ -1,4 +1,4 @@
-From f89982a47c5f718474aaec9e3977085bf87a530b Mon Sep 17 00:00:00 2001
+From 6fef53abdcb2f904e54f80c4d2984b26525815bb Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -114,7 +114,7 @@ index ab65da2e1..9dd343192 100644
  
    # This is the "desired rate of the setpoint" not an actual desired rate
 diff --git a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
-index afc400ede..51a38a212 100644
+index dadf6cba2..279261b37 100644
 --- a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 +++ b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 @@ -10,6 +10,10 @@ from selfdrive.modeld.constants import index_function
@@ -128,7 +128,7 @@ index afc400ede..51a38a212 100644
  if __name__ == '__main__':  # generating code
    from third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
  else:
-@@ -434,6 +438,9 @@ class LongitudinalMpc:
+@@ -436,6 +440,9 @@ class LongitudinalMpc:
      for i in range(N):
        self.u_sol[i] = self.solver.get(i, 'u')
  

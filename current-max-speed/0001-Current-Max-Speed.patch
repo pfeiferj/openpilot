@@ -1,4 +1,4 @@
-From 1d28aa65d8c13f2776975cd4074f9e85fabeccb2 Mon Sep 17 00:00:00 2001
+From 8d9931d1917d3d7e1380e70b7c1ea9e975db0fac Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:29:00 -0400
 Subject: [PATCH] Current Max Speed
@@ -30,7 +30,7 @@ index e8ab42c0b..f1626b27c 100644
  
  } // namespace
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 79ec310d5..d872063d8 100755
+index 8084b18ff..43a875ad7 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -27,6 +27,9 @@ from selfdrive.controls.lib.events import Events, ET

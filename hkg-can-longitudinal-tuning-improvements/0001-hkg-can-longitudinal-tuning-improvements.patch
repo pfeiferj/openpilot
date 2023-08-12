@@ -1,4 +1,4 @@
-From 0555aa37c172d651d5b0142311e8e32d74449bd3 Mon Sep 17 00:00:00 2001
+From bcb3239b777b14cca80a18dfd0e4dcd73d9025ad Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 11 Jun 2023 14:43:40 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -10,7 +10,7 @@ Subject: [PATCH] hkg-can longitudinal tuning improvements
  3 files changed, 21 insertions(+), 8 deletions(-)
 
 diff --git a/selfdrive/car/hyundai/carcontroller.py b/selfdrive/car/hyundai/carcontroller.py
-index ff23d43f0..e35d3dfa3 100644
+index 8c734583e..9b5ab575e 100644
 --- a/selfdrive/car/hyundai/carcontroller.py
 +++ b/selfdrive/car/hyundai/carcontroller.py
 @@ -169,10 +169,18 @@ class CarController:
