@@ -5,6 +5,9 @@ button from the steering wheel.
 ## Cars Supported
 * HKG
 
+### Untested but potentially supported
+* GM
+
 ## Branch
 [pfeifer-experimental-mode-toggle](https://github.com/pfeiferj/openpilot/tree/pfeifer-experimental-mode-toggle)
 \-

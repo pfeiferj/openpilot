@@ -22,6 +22,9 @@ will limit the speed to 50 mph (45 mph speed limit plus 5 mph offset).
 ## Double Press Gap Supported Cars
 * HKG
 
+### Double Press Gap Untested Cars
+* GM
+
 ## Branch
 [pfeifer-speed-limit-control](https://github.com/pfeiferj/openpilot/tree/pfeifer-speed-limit-control)
 \-

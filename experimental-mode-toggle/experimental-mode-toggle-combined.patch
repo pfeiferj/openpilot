@@ -232,16 +232,17 @@ index 000000000..dee8f649a
 2.41.0
 
 
-From a8aeca068fa16c6cb1cdbd7a983f6456ae978c4e Mon Sep 17 00:00:00 2001
+From dac788037584b5605b6eb4df574aaacc96ad28fb Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
 
 ---
  common/params.cc                        |  4 ++++
+ selfdrive/car/gm/carstate.py            |  9 +++++++++
  selfdrive/car/hyundai/interface.py      |  9 +++++++++
- selfdrive/controls/gap_adjust_button.py | 11 +++++++++++
- 3 files changed, 24 insertions(+)
+ selfdrive/controls/gap_adjust_button.py | 12 ++++++++++++
+ 4 files changed, 34 insertions(+)
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -259,6 +260,33 @@ index e8ab42c0b..f09fbb2ab 100644
  };
  
  } // namespace
+diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
+index 43cdee18d..85fa379b2 100644
+--- a/selfdrive/car/gm/carstate.py
++++ b/selfdrive/car/gm/carstate.py
+@@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
+ from selfdrive.car.interfaces import CarStateBase
+ from selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD
+ 
++# PFEIFER - GAB {{
++from selfdrive.controls.gap_adjust_button import gap_adjust_button
++# }} PFEIFER - GAB
++
+ TransmissionType = car.CarParams.TransmissionType
+ NetworkLocation = car.CarParams.NetworkLocation
+ STANDSTILL_THRESHOLD = 10 * 0.0311 * CV.KPH_TO_MS
+@@ -29,6 +33,11 @@ class CarState(CarStateBase):
+   def update(self, pt_cp, cam_cp, loopback_cp):
+     ret = car.CarState.new_message()
+ 
++    # PFEIFER - GAB {{
++    distance_button_pressed = pt_cp.vl["ASCMSteeringButton"]["DistanceButton"] != 0
++    gap_adjust_button.update(distance_button_pressed)
++    # }} PFEIFER - GAB
++
+     self.prev_cruise_buttons = self.cruise_buttons
+     self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
+     self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
 index 46f86fdc1..ee3659565 100644
 --- a/selfdrive/car/hyundai/interface.py
@@ -288,14 +316,15 @@ index 46f86fdc1..ee3659565 100644
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/controls/gap_adjust_button.py b/selfdrive/controls/gap_adjust_button.py
 new file mode 100644
-index 000000000..16da137b1
+index 000000000..83a4ce1b0
 --- /dev/null
 +++ b/selfdrive/controls/gap_adjust_button.py
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,12 @@
 +# PFEIFER - GAB
 +
 +# Acknowledgements:
 +# HKG button state was pulled from sunnypilot. https://github.com/sunnyhaibin/sunnypilot
++# GM button state was pulled from OPGM. https://github.com/opgm/openpilot
 +
 +from selfdrive.controls.button_manager import Button, ButtonState
 +
@@ -307,7 +336,7 @@ index 000000000..16da137b1
 2.41.0
 
 
-From a98339f41bff61a8c24a6b91b80e42836d04f602 Mon Sep 17 00:00:00 2001
+From 0d11855b8aa58ab99236d6127f73a79a7e63d359 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 17:18:00 -0400
 Subject: [PATCH 3/3] experimental mode toggle

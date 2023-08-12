@@ -5,6 +5,9 @@ steering wheel.
 ## Supported Cars
 * HKG
 
+### Untested but potentially supported
+* GM
+
 ## Branch
 [pfeifer-gap-adjust-control](https://github.com/pfeiferj/openpilot/tree/pfeifer-gap-adjust-control)
 \-
