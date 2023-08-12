@@ -1,15 +1,15 @@
-From 91a1c75d3eeb862370579f6678562bd5fdc79892 Mon Sep 17 00:00:00 2001
+From f89982a47c5f718474aaec9e3977085bf87a530b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
 
 ---
- common/params.cc                              |  5 +++
- .../controls/distance_based_curvature.py      | 43 +++++++++++++++++++
+ common/params.cc                              |  5 ++
+ .../controls/distance_based_curvature.py      | 46 +++++++++++++++++++
  selfdrive/controls/lib/drive_helpers.py       |  8 ++++
  .../lib/longitudinal_mpc_lib/long_mpc.py      |  7 +++
  selfdrive/ui/qt/offroad/settings.cc           |  8 ++++
- 5 files changed, 71 insertions(+)
+ 5 files changed, 74 insertions(+)
  create mode 100644 selfdrive/controls/distance_based_curvature.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -30,18 +30,20 @@ index e8ab42c0b..797a54ea3 100644
  } // namespace
 diff --git a/selfdrive/controls/distance_based_curvature.py b/selfdrive/controls/distance_based_curvature.py
 new file mode 100644
-index 000000000..4b927e571
+index 000000000..f1a1f1c84
 --- /dev/null
 +++ b/selfdrive/controls/distance_based_curvature.py
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,46 @@
 +# PFEIFER - DBC
 +
 +import numpy as np
 +from selfdrive.modeld.constants import index_function
 +import json
++from selfdrive.modeld.constants import T_IDXS
 +from common.params import Params
 +mem_params = Params("/dev/shm/params")
 +
++CONTROL_N = 17
 +N = 12
 +MAX_T = 10.0
 +T_IDXS_LST = [index_function(idx, max_val=MAX_T, max_idx=N) for idx in range(N+1)]
@@ -70,15 +72,16 @@ index 000000000..4b927e571
 +    mem_params.put("Distances", json.dumps(distances.tolist()))
 +
 +
-+  def average_curvature_desired(psi, v_ego, delay):
++  def average_curvature_desired(self, psi, v_ego, delay):
 +    distances = self.distances
-+    distance = interp(delay, T_IDXS[:CONTROL_N], distances)
++    distance = np.interp(delay, T_IDXS[:CONTROL_N], distances)
 +    distance = max(0.0001, distance)
 +    average_curvature_desired = psi / distance if mem_params.get_bool("DistanceBasedCurvature") else psi / (v_ego * delay)
++    return average_curvature_desired
 +
 +dbc = DistanceBasedCurvature()
 diff --git a/selfdrive/controls/lib/drive_helpers.py b/selfdrive/controls/lib/drive_helpers.py
-index ab65da2e1..b109e15dc 100644
+index ab65da2e1..9dd343192 100644
 --- a/selfdrive/controls/lib/drive_helpers.py
 +++ b/selfdrive/controls/lib/drive_helpers.py
 @@ -6,6 +6,10 @@ from common.numpy_fast import clip, interp
@@ -86,7 +89,7 @@ index ab65da2e1..b109e15dc 100644
  from selfdrive.modeld.constants import T_IDXS
  
 +# PFEIFER - DBC {{
-+from selfdrive.common.distance_based_curvature import dbc
++from selfdrive.controls.distance_based_curvature import dbc
 +# }} PFEIFER - DBC
 +
  # WARNING: this value was determined based on the model's training distribution,
