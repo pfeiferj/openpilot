@@ -1,4 +1,4 @@
-From 2297b52955796499841d53064d4873adec294fba Mon Sep 17 00:00:00 2001
+From e622f651a50c81516c82755c735b41eb8758b934 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 6 Aug 2023 15:53:01 -0400
 Subject: [PATCH] Always On Lateral
@@ -24,7 +24,8 @@ always on lateral is not enabled.
  board/safety/safety_volkswagen_pq.h  | 12 ++++++
  board/safety_declarations.h          | 12 ++++++
  python/__init__.py                   |  4 ++
- 16 files changed, 194 insertions(+), 5 deletions(-)
+ tests/libpanda/safety_helpers.h      |  3 ++
+ 17 files changed, 197 insertions(+), 5 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
 index 4d7efd2a..1b661ea2 100644
@@ -488,6 +489,20 @@ index e1b3a471..43596c08 100644
  
  class Panda:
  
+diff --git a/tests/libpanda/safety_helpers.h b/tests/libpanda/safety_helpers.h
+index 22a3c4f1..dc07538d 100644
+--- a/tests/libpanda/safety_helpers.h
++++ b/tests/libpanda/safety_helpers.h
+@@ -21,6 +21,9 @@ bool addr_checks_valid() {
+ 
+ void set_controls_allowed(bool c){
+   controls_allowed = c;
++  // PFEIFER - AOL {{
++  lateral_controls_allowed = c;
++  // }} PFEIFER - AOL
+ }
+ 
+ void set_alternative_experience(int mode){
 -- 
 2.41.0
 

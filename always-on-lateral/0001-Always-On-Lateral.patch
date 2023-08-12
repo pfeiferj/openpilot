@@ -1,6 +1,6 @@
-From e0e4470b4a96ba4b172d26f86c07d95dbf0bc935 Mon Sep 17 00:00:00 2001
+From 245f0b0767538ccf464d51bf53f43022d8bf660f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Thu, 10 Aug 2023 21:19:33 -0400
+Date: Sat, 12 Aug 2023 12:28:58 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -60,12 +60,12 @@ index e8ab42c0b..aa4fb3409 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 61e987f6e..2297b5295 160000
+index 61e987f6e..e622f651a 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
 -Subproject commit 61e987f6e280f2b84b6f5ccffaca91ae9635f411
-+Subproject commit 2297b52955796499841d53064d4873adec294fba
++Subproject commit e622f651a50c81516c82755c735b41eb8758b934
 diff --git a/release/files_common b/release/files_common
 index 90ee2ccd6..6e933a389 100644
 --- a/release/files_common
@@ -77,7 +77,7 @@ index 90ee2ccd6..6e933a389 100644
 +
 +selfdrive/controls/always_on_lateral.py
 diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
-index 3afd45ce9..bfbb8f54e 100644
+index 7b250ddf9..65f78a5d8 100644
 --- a/selfdrive/car/chrysler/carstate.py
 +++ b/selfdrive/car/chrysler/carstate.py
 @@ -5,6 +5,10 @@ from opendbc.can.can_define import CANDefine
@@ -103,7 +103,7 @@ index 3afd45ce9..bfbb8f54e 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/ford/carstate.py b/selfdrive/car/ford/carstate.py
-index d9848096e..eb4407871 100644
+index 824d92993..bf8c7f4f2 100644
 --- a/selfdrive/car/ford/carstate.py
 +++ b/selfdrive/car/ford/carstate.py
 @@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
@@ -129,7 +129,7 @@ index d9848096e..eb4407871 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index 69d34c09c..5840ee927 100644
+index 43cdee18d..83b9b9b90 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
@@ -155,7 +155,7 @@ index 69d34c09c..5840ee927 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/honda/carstate.py b/selfdrive/car/honda/carstate.py
-index 196f233a3..662b0047c 100644
+index d6d2b18a0..99355eb1d 100644
 --- a/selfdrive/car/honda/carstate.py
 +++ b/selfdrive/car/honda/carstate.py
 @@ -9,6 +9,10 @@ from selfdrive.car.honda.hondacan import get_cruise_speed_conversion, get_pt_bus
@@ -169,7 +169,7 @@ index 196f233a3..662b0047c 100644
  TransmissionType = car.CarParams.TransmissionType
  
  
-@@ -158,6 +162,10 @@ class CarState(CarStateBase):
+@@ -106,6 +110,10 @@ class CarState(CarStateBase):
      # However, on cars without a digital speedometer this is not always present (HRV, FIT, CRV 2016, ILX and RDX)
      self.dash_speed_seen = False
  
@@ -181,7 +181,7 @@ index 196f233a3..662b0047c 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 32e2f8626..88bdf6765 100644
+index 55f888c9e..9a29efcbc 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
@@ -268,7 +268,7 @@ index 99df4cf4b..d34384a7b 100644
      self.left_blinker_cnt = 0
      self.right_blinker_cnt = 0
 diff --git a/selfdrive/car/mazda/carstate.py b/selfdrive/car/mazda/carstate.py
-index af8830895..edca4ca46 100644
+index d782e59de..5f4029071 100644
 --- a/selfdrive/car/mazda/carstate.py
 +++ b/selfdrive/car/mazda/carstate.py
 @@ -5,6 +5,10 @@ from opendbc.can.parser import CANParser
@@ -294,7 +294,7 @@ index af8830895..edca4ca46 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/subaru/carstate.py b/selfdrive/car/subaru/carstate.py
-index 189c244ca..ba09cd26e 100644
+index da8f88ed0..f3385cb6a 100644
 --- a/selfdrive/car/subaru/carstate.py
 +++ b/selfdrive/car/subaru/carstate.py
 @@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
@@ -320,7 +320,7 @@ index 189c244ca..ba09cd26e 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/tesla/carstate.py b/selfdrive/car/tesla/carstate.py
-index 1d82fb440..1f88f66b9 100644
+index 61a6526f0..5f8eff781 100644
 --- a/selfdrive/car/tesla/carstate.py
 +++ b/selfdrive/car/tesla/carstate.py
 @@ -7,6 +7,10 @@ from selfdrive.car.interfaces import CarStateBase
@@ -346,7 +346,7 @@ index 1d82fb440..1f88f66b9 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index a63ba2ae7..7717a51b4 100644
+index 8a75ab427..b7b6b7d88 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -23,6 +23,10 @@ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
@@ -372,7 +372,7 @@ index a63ba2ae7..7717a51b4 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/volkswagen/carstate.py b/selfdrive/car/volkswagen/carstate.py
-index f3cd2808a..94dc821d1 100644
+index 35f7e8bf6..a486b71b4 100644
 --- a/selfdrive/car/volkswagen/carstate.py
 +++ b/selfdrive/car/volkswagen/carstate.py
 @@ -6,6 +6,10 @@ from opendbc.can.parser import CANParser
@@ -634,7 +634,7 @@ index 000000000..a0c7d119c
 +    return experience
 +
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 79ec310d5..68652736f 100755
+index 8084b18ff..9a81a51eb 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
@@ -680,7 +680,7 @@ index 79ec310d5..68652736f 100755
 +    self.aol.update(CS, self.state, self.CP, self.sm, self.AM)
 +    CC.latActive = self.aol.lat_active
 +    # }} PFEIFER - AOL
-     CC.longActive = self.enabled and not self.events.any(ET.OVERRIDE_LONGITUDINAL) and self.CP.openpilotLongitudinalControl
+     CC.longActive = self.enabled and not self.events.contains(ET.OVERRIDE_LONGITUDINAL) and self.CP.openpilotLongitudinalControl
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
@@ -751,10 +751,10 @@ index 94a673dd7..a37700a18 100644
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index a435dd27c..0c199dc8e 100644
+index 7c070d2ad..aed432497 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -57,6 +57,13 @@ void OnroadWindow::updateState(const UIState &s) {
+@@ -68,6 +68,13 @@ void OnroadWindow::updateState(const UIState &s) {
    }
  
    QColor bgColor = bg_colors[s.status];
@@ -769,10 +769,10 @@ index a435dd27c..0c199dc8e 100644
    alerts->updateAlert(alert);
  
 diff --git a/selfdrive/ui/qt/onroad.h b/selfdrive/ui/qt/onroad.h
-index 0dd95877a..dec7ec909 100644
+index 778322ed0..8b8033871 100644
 --- a/selfdrive/ui/qt/onroad.h
 +++ b/selfdrive/ui/qt/onroad.h
-@@ -146,6 +146,9 @@ private:
+@@ -145,6 +145,9 @@ private:
    QColor bg = bg_colors[STATUS_DISENGAGED];
    QWidget *map = nullptr;
    QHBoxLayout* split;

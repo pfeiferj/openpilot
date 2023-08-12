@@ -1,5 +1,9 @@
 # Always On Lateral Changelog
 
+## 08/12/23
+Panda:
+    * Set lateral_controls_allowed in tests so safety tests can be run (thanks @nworby for the heads up!)
+
 ## 08/03/23
 Panda:
     * Add missing comment block (thanks @nworby for the find!)
