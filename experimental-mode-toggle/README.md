@@ -7,6 +7,7 @@ button from the steering wheel.
 
 ### Untested but potentially supported
 * GM
+* Toyota
 
 ## Branch
 [pfeifer-experimental-mode-toggle](https://github.com/pfeiferj/openpilot/tree/pfeifer-experimental-mode-toggle)

@@ -10,6 +10,7 @@ Uses the Button Manager to track the gap adjust button on various cars.
 
 ### Untested but potentially supported
 * GM
+* Toyota
 
 ## Branch
 [pfeifer-gap-adjust-button](https://github.com/pfeiferj/openpilot/tree/pfeifer-gap-adjust-button)

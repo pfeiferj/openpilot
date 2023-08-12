@@ -1,4 +1,4 @@
-From dac788037584b5605b6eb4df574aaacc96ad28fb Mon Sep 17 00:00:00 2001
+From 0b31b3743a3de71c8c3ac7513e1f99b7c2788083 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
@@ -7,8 +7,9 @@ Subject: [PATCH] gap adjust button
  common/params.cc                        |  4 ++++
  selfdrive/car/gm/carstate.py            |  9 +++++++++
  selfdrive/car/hyundai/interface.py      |  9 +++++++++
- selfdrive/controls/gap_adjust_button.py | 12 ++++++++++++
- 4 files changed, 34 insertions(+)
+ selfdrive/car/toyota/carstate.py        | 13 +++++++++++++
+ selfdrive/controls/gap_adjust_button.py | 13 +++++++++++++
+ 5 files changed, 48 insertions(+)
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -80,17 +81,49 @@ index 46f86fdc1..ee3659565 100644
      # On some newer model years, the CANCEL button acts as a pause/resume button based on the PCM state
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
+diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
+index 8a75ab427..f8b795262 100644
+--- a/selfdrive/car/toyota/carstate.py
++++ b/selfdrive/car/toyota/carstate.py
+@@ -10,6 +10,10 @@ from opendbc.can.parser import CANParser
+ from selfdrive.car.interfaces import CarStateBase
+ from selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
+ 
++# PFEIFER - GAB {{
++from selfdrive.controls.gap_adjust_button import gap_adjust_button
++# }} PFEIFER - GAB
++
+ SteerControlType = car.CarParams.SteerControlType
+ 
+ # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
+@@ -162,6 +166,15 @@ class CarState(CarStateBase):
+     if self.CP.carFingerprint != CAR.PRIUS_V:
+       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
+ 
++    # PFEIFER - GAB {{
++    distance_button_pressed = False
++    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
++      distance_button_pressed = cp_cam.vl["ACC_CONTROL"]["DISTANCE"] == 1
++    elif self.CP.carFingerprint in RADAR_ACC_CAR:
++      distance_button_pressed = cp.vl["ACC_CONTROL"]["DISTANCE"] == 1
++    gap_adjust_button.update(distance_button_pressed)
++    # }} PFEIFER - GAB
++
+     return ret
+ 
+   @staticmethod
 diff --git a/selfdrive/controls/gap_adjust_button.py b/selfdrive/controls/gap_adjust_button.py
 new file mode 100644
-index 000000000..83a4ce1b0
+index 000000000..af2b3e645
 --- /dev/null
 +++ b/selfdrive/controls/gap_adjust_button.py
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,13 @@
 +# PFEIFER - GAB
 +
 +# Acknowledgements:
 +# HKG button state was pulled from sunnypilot. https://github.com/sunnyhaibin/sunnypilot
 +# GM button state was pulled from OPGM. https://github.com/opgm/openpilot
++# Toyota button state was pulled from Frogpilot who pulled it from krkeegan. https://github.com/FrogAi/FrogPilot | https://github.com/krkeegan/openpilot
 +
 +from selfdrive.controls.button_manager import Button, ButtonState
 +
