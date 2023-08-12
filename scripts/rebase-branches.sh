@@ -62,5 +62,10 @@ git pull --rebase origin master
 git checkout pfeifer-distance-based-curvature
 git pull --rebase origin master
 
+
+# Upstream Prs
 git checkout cluster-based-max-speed
+git pull --rebase origin master
+
+git checkout wrong-direction-check
 git pull --rebase origin master

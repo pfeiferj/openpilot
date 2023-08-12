@@ -46,5 +46,10 @@ git reset --hard origin/pfeifer-opweb
 git checkout pfeifer-distance-based-curvature
 git reset --hard origin/pfeifer-distance-based-curvature
 
+
+# Upstream PRs
 git checkout cluster-based-max-speed
 git reset --hard origin/cluster-based-max-speed
+
+git checkout wrong-direction-check
+git reset --hard origin/wrong-direction-check

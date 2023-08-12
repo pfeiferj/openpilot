@@ -22,7 +22,10 @@ git merge pfeifer-vtsc
 git merge pfeifer-mapd
 git merge pfeifer-opweb
 git merge pfeifer-distance-based-curvature
+
+# Upstream PRs
 git merge cluster-based-max-speed
+git merge wrong-direction-check
 
 
 # checkout the .gitattributes file so future merges will not be affected
