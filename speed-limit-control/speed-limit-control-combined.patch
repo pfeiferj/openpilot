@@ -232,7 +232,7 @@ index 000000000..dee8f649a
 2.41.0
 
 
-From 0b31b3743a3de71c8c3ac7513e1f99b7c2788083 Mon Sep 17 00:00:00 2001
+From 368b7ff12586e8c813b7047ec634519e9b705a49 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -241,9 +241,9 @@ Subject: [PATCH 2/3] gap adjust button
  common/params.cc                        |  4 ++++
  selfdrive/car/gm/carstate.py            |  9 +++++++++
  selfdrive/car/hyundai/interface.py      |  9 +++++++++
- selfdrive/car/toyota/carstate.py        | 13 +++++++++++++
+ selfdrive/car/toyota/carstate.py        | 12 ++++++++++++
  selfdrive/controls/gap_adjust_button.py | 13 +++++++++++++
- 5 files changed, 48 insertions(+)
+ 5 files changed, 47 insertions(+)
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -316,7 +316,7 @@ index 46f86fdc1..ee3659565 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 8a75ab427..f8b795262 100644
+index 8a75ab427..c6ec2cdd1 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -10,6 +10,10 @@ from opendbc.can.parser import CANParser
@@ -330,16 +330,15 @@ index 8a75ab427..f8b795262 100644
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -162,6 +166,15 @@ class CarState(CarStateBase):
+@@ -162,6 +166,14 @@ class CarState(CarStateBase):
      if self.CP.carFingerprint != CAR.PRIUS_V:
        self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
  
 +    # PFEIFER - GAB {{
 +    distance_button_pressed = False
-+    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
-+      distance_button_pressed = cp_cam.vl["ACC_CONTROL"]["DISTANCE"] == 1
-+    elif self.CP.carFingerprint in RADAR_ACC_CAR:
-+      distance_button_pressed = cp.vl["ACC_CONTROL"]["DISTANCE"] == 1
++    if self.CP.carFingerprint in TSS2_CAR:
++      if 'DISTANCE' in cp_acc.vl["ACC_CONTROL"]:
++        distance_button_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"] == 1
 +    gap_adjust_button.update(distance_button_pressed)
 +    # }} PFEIFER - GAB
 +
@@ -369,7 +368,7 @@ index 000000000..af2b3e645
 2.41.0
 
 
-From 63f66ec87a292e13bf19a225eb661462bfb61af4 Mon Sep 17 00:00:00 2001
+From c27bd7bbcf16c4a51a4a554911dc8c7e6b067551 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
