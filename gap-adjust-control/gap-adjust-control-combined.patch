@@ -232,7 +232,7 @@ index 000000000..dee8f649a
 2.41.0
 
 
-From 368b7ff12586e8c813b7047ec634519e9b705a49 Mon Sep 17 00:00:00 2001
+From 091cebe17d8763d0ec0b5317038dfd88197d52da Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -368,7 +368,7 @@ index 000000000..af2b3e645
 2.41.0
 
 
-From 87ce9a3ecb89046abd54bf66e0941f5cc589c421 Mon Sep 17 00:00:00 2001
+From 1d7c828e75796ff6a44dc750c074e97b16948a0b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:35:40 -0400
 Subject: [PATCH 3/3] gap adjust control
@@ -546,7 +546,7 @@ index 8084b18ff..79fdd31d4 100755
        self.state_transition(CS)
 diff --git a/selfdrive/controls/gap_adjust_control.py b/selfdrive/controls/gap_adjust_control.py
 new file mode 100644
-index 000000000..017803482
+index 000000000..7156f5be3
 --- /dev/null
 +++ b/selfdrive/controls/gap_adjust_control.py
 @@ -0,0 +1,74 @@
@@ -603,7 +603,7 @@ index 000000000..017803482
 +        if write_state:
 +          self.write_state()
 +
-+  def transition_car_state(load_button_state=True):
++  def transition_car_state(self, load_button_state=True):
 +    transition_id = gap_adjust_button.simple_transition_id;
 +
 +    if self.button_transition_id != transition_id:
