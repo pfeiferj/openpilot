@@ -1,8 +1,15 @@
 # Always On Lateral Changelog
 
+## 08/16/23
+Openpilot:
+    * Improves safety by adding checks for soft disable and immediate disable
+      events. (Once again a huge thanks goes out to @nworby for his attention to
+      detail regarding safety!)
+
 ## 08/12/23
 Panda:
-    * Set lateral_controls_allowed in tests so safety tests can be run (thanks @nworby for the heads up!)
+    * Set lateral_controls_allowed in tests so safety tests can be run (thanks
+      @nworby for the heads up!)
 
 ## 08/03/23
 Panda:
@@ -14,7 +21,8 @@ Openpilot:
 
 ## 07/28/23
 Openpilot:
-    * Add always\_on\_lateral.py to the release files list (thanks @nworby for the suggestion!)
+    * Add always\_on\_lateral.py to the release files list (thanks @nworby for
+      the suggestion!)
 
 ## 07/07/23
 Panda:
