@@ -1,5 +1,10 @@
 # OPWeb Changelog
 
+## 08/17/23
+* Reformat code to 2 space tabs
+* Improve ui on mobile
+* Fix raw logs downloads
+
 ## 08/07/23
 * Improve conversion time for log downloads (approx 2x faster)
 * Sorting in event types

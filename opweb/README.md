@@ -52,7 +52,9 @@ Light Mode (dynamically switches based on clients OS theme)
 ![Home Page With Light Theme](./screenshots/light_mode.png?raw=true)
 
 
-Mobile (improvements planned)
+Mobile
 
 <img src="https://raw.githubusercontent.com/pfeiferj/openpilot/pfeifer-openpilot-patches/opweb/screenshots/mobile.png" alt="Home Page on Mobile" width="400" />
+
+<img src="https://raw.githubusercontent.com/pfeiferj/openpilot/pfeifer-openpilot-patches/opweb/screenshots/mobile-menu.png" alt="Nav menu on Mobile" width="400" />
 
