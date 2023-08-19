@@ -1,5 +1,10 @@
 # Always On Lateral Changelog
 
+## 08/19/23
+Openpilot:
+    * Fixes an issue with setting the alt experience flag for main immediately
+    enables always on lateral. (Thanks @jackal830 and @nworby for the find!)
+
 ## 08/16/23
 Openpilot:
     * Improves safety by adding checks for soft disable and immediate disable

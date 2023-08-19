@@ -1,4 +1,4 @@
-From 41e36fc2c1654c618e5b9444811476e1b0f28904 Mon Sep 17 00:00:00 2001
+From b9a94b5196a1a655cdc0726d8e59ab95140e7072 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 12 Aug 2023 12:28:58 -0400
 Subject: [PATCH] Always On Lateral
@@ -399,7 +399,7 @@ index 35f7e8bf6..a486b71b4 100644
  
 diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
 new file mode 100644
-index 000000000..1048b455c
+index 000000000..54af5dced
 --- /dev/null
 +++ b/selfdrive/controls/always_on_lateral.py
 @@ -0,0 +1,295 @@
@@ -695,7 +695,7 @@ index 000000000..1048b455c
 +    experience = 0
 +    if always_on_lateral_enabled:
 +      experience |= ALTERNATIVE_EXPERIENCE.ENABLE_ALWAYS_ON_LATERAL
-+    if not always_on_lateral_main_enables:
++    if always_on_lateral_main_enables:
 +      experience |= ALTERNATIVE_EXPERIENCE.AOL_ENABLE_ON_MAIN
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
@@ -871,5 +871,5 @@ index 572065d96..1f99bf55b 100644
  
  static std::map<cereal::ControlsState::AlertStatus, QColor> alert_colors = {
 -- 
-2.41.0
+2.39.2
 
