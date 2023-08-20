@@ -1,6 +1,6 @@
-From e622f651a50c81516c82755c735b41eb8758b934 Mon Sep 17 00:00:00 2001
+From ed56db675c681213237446b0e8a84b37f55fbd4b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sun, 6 Aug 2023 15:53:01 -0400
+Date: Sat, 19 Aug 2023 20:57:52 -0400
 Subject: [PATCH] Always On Lateral
 
 Safety code for Always On Lateral. On supported cars this allows lateral
@@ -28,12 +28,12 @@ always on lateral is not enabled.
  17 files changed, 197 insertions(+), 5 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
-index 4d7efd2a..1b661ea2 100644
+index 2c6daddb..7cb99c9a 100644
 --- a/board/safety.h
 +++ b/board/safety.h
 @@ -256,18 +256,45 @@ void generic_rx_checks(bool stock_ecu_detected) {
    if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS)) {
-     controls_allowed = 0;
+     controls_allowed = false;
    }
 +  // PFEIFER - AOL {{
 +  if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL)) {
@@ -44,7 +44,7 @@ index 4d7efd2a..1b661ea2 100644
  
    // exit controls on rising edge of brake press
    if (brake_pressed && (!brake_pressed_prev || vehicle_moving)) {
-     controls_allowed = 0;
+     controls_allowed = false;
    }
 +  // PFEIFER - AOL {{
 +  if (brake_pressed && (!brake_pressed_prev || vehicle_moving) && !(alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL)) {
@@ -58,7 +58,7 @@ index 4d7efd2a..1b661ea2 100644
  
    // exit controls on rising edge of regen paddle
    if (regen_braking && (!regen_braking_prev || vehicle_moving)) {
-     controls_allowed = 0;
+     controls_allowed = false;
    }
 +  // PFEIFER - AOL {{
 +  if (regen_braking && (!regen_braking_prev || vehicle_moving) && !(alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL)) {
@@ -87,7 +87,7 @@ index 4d7efd2a..1b661ea2 100644
    desired_torque_last = 0;
    rt_torque_last = 0;
    ts_angle_last = 0;
-@@ -531,7 +561,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -537,7 +567,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    bool violation = false;
    uint32_t ts = microsecond_timer_get();
  
@@ -99,7 +99,7 @@ index 4d7efd2a..1b661ea2 100644
      // *** global torque limit check ***
      violation |= max_limit_check(desired_torque, limits.max_steer, -limits.max_steer);
  
-@@ -558,7 +591,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -564,7 +597,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // no torque if controls is not allowed
@@ -111,7 +111,7 @@ index 4d7efd2a..1b661ea2 100644
      violation = true;
    }
  
-@@ -600,7 +636,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -606,7 +642,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // reset to 0 if either controls is not allowed or there's a violation
@@ -123,7 +123,7 @@ index 4d7efd2a..1b661ea2 100644
      valid_steer_req_count = 0;
      invalid_steer_req_count = 0;
      desired_torque_last = 0;
-@@ -616,7 +655,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -622,7 +661,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
  bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const SteeringLimits limits) {
    bool violation = false;
  
@@ -135,7 +135,7 @@ index 4d7efd2a..1b661ea2 100644
      // convert floating point angle rate limits to integers in the scale of the desired angle on CAN,
      // add 1 to not false trigger the violation. also fudge the speed by 1 m/s so rate limits are
      // always slightly above openpilot's in case we read an updated speed in between angle commands
-@@ -659,7 +701,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
+@@ -665,7 +707,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
    }
  
    // No angle control allowed when controls are not allowed
@@ -180,7 +180,7 @@ index 90c8a065..4edc7441 100644
    return &default_rx_checks;
  }
 diff --git a/board/safety/safety_ford.h b/board/safety/safety_ford.h
-index 4f71650c..744654ce 100644
+index 8f48868a..62905523 100644
 --- a/board/safety/safety_ford.h
 +++ b/board/safety/safety_ford.h
 @@ -264,6 +264,15 @@ static int ford_rx_hook(CANPacket_t *to_push) {
@@ -200,7 +200,7 @@ index 4f71650c..744654ce 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_gm.h b/board/safety/safety_gm.h
-index 76e55f0b..36231e68 100644
+index c4727c0a..ff3049ad 100644
 --- a/board/safety/safety_gm.h
 +++ b/board/safety/safety_gm.h
 @@ -112,6 +112,18 @@ static int gm_rx_hook(CANPacket_t *to_push) {
@@ -223,15 +223,15 @@ index 76e55f0b..36231e68 100644
        brake_pressed = GET_BIT(to_push, 40U) != 0U;
      }
 diff --git a/board/safety/safety_honda.h b/board/safety/safety_honda.h
-index 83e671a5..e4247314 100644
+index 40c650e1..d108d2d7 100644
 --- a/board/safety/safety_honda.h
 +++ b/board/safety/safety_honda.h
 @@ -143,7 +143,15 @@ static int honda_rx_hook(CANPacket_t *to_push) {
        acc_main_on = GET_BIT(to_push, ((addr == 0x326) ? 28U : 47U));
        if (!acc_main_on) {
-         controls_allowed = 0;
+         controls_allowed = false;
 +        // PFEIFER - AOL {{
-+        lateral_controls_allowed = 0;
++        lateral_controls_allowed = false;
 +        // }} PFEIFER - AOL
        }
 +      // PFEIFER - AOL {{
@@ -243,7 +243,7 @@ index 83e671a5..e4247314 100644
  
      // enter controls when PCM enters cruise state
 diff --git a/board/safety/safety_hyundai_canfd.h b/board/safety/safety_hyundai_canfd.h
-index 2dc6e9bb..1371093e 100644
+index fa6bf0b6..6c1fb7d1 100644
 --- a/board/safety/safety_hyundai_canfd.h
 +++ b/board/safety/safety_hyundai_canfd.h
 @@ -210,6 +210,15 @@ static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
@@ -263,7 +263,7 @@ index 2dc6e9bb..1371093e 100644
      }
  
 diff --git a/board/safety/safety_hyundai_common.h b/board/safety/safety_hyundai_common.h
-index 8bd84fea..5e3935f9 100644
+index 7d16b83b..f8db5ed7 100644
 --- a/board/safety/safety_hyundai_common.h
 +++ b/board/safety/safety_hyundai_common.h
 @@ -65,6 +65,12 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main
@@ -308,10 +308,10 @@ index e17f1ff4..b9da2fd0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index 23047689..3dc61740 100644
+index aa74a8f6..0641d3b9 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -115,6 +115,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -138,6 +138,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
      if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {
@@ -418,7 +418,7 @@ index 4cd9c2ec..3db12c5b 100644
  
      if (addr == MSG_GRA_ACC_01) {
 diff --git a/board/safety/safety_volkswagen_pq.h b/board/safety/safety_volkswagen_pq.h
-index 7a909d4d..12cad771 100644
+index b310ef2c..7e02dce3 100644
 --- a/board/safety/safety_volkswagen_pq.h
 +++ b/board/safety/safety_volkswagen_pq.h
 @@ -124,6 +124,18 @@ static int volkswagen_pq_rx_hook(CANPacket_t *to_push) {
@@ -441,10 +441,10 @@ index 7a909d4d..12cad771 100644
        if (addr == MSG_MOTOR_5) {
          // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
 diff --git a/board/safety_declarations.h b/board/safety_declarations.h
-index b2f0ea98..978dd533 100644
+index 9064bb62..c8d49943 100644
 --- a/board/safety_declarations.h
 +++ b/board/safety_declarations.h
-@@ -185,6 +185,9 @@ void safety_tick(const addr_checks *addr_checks);
+@@ -191,6 +191,9 @@ void safety_tick(const addr_checks *addr_checks);
  
  // This can be set by the safety hooks
  bool controls_allowed = false;
@@ -454,7 +454,7 @@ index b2f0ea98..978dd533 100644
  bool relay_malfunction = false;
  bool gas_interceptor_detected = false;
  int gas_interceptor_prev = 0;
-@@ -199,6 +202,10 @@ struct sample_t vehicle_speed;
+@@ -205,6 +208,10 @@ struct sample_t vehicle_speed;
  bool vehicle_moving = false;
  bool acc_main_on = false;  // referred to as "ACC off" in ISO 15622:2018
  int cruise_button_prev = 0;
@@ -465,7 +465,7 @@ index b2f0ea98..978dd533 100644
  bool safety_rx_checks_invalid = false;
  
  // for safety modes with torque steering control
-@@ -241,3 +248,8 @@ int alternative_experience = 0;
+@@ -247,3 +254,8 @@ int alternative_experience = 0;
  uint32_t safety_mode_cnt = 0U;
  // allow 1s of transition timeout after relay changes state before assessing malfunctioning
  const uint32_t RELAY_TRNS_TIMEOUT = 1U;
@@ -475,7 +475,7 @@ index b2f0ea98..978dd533 100644
 +#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index e1b3a471..43596c08 100644
+index aa9be43a..771e2105 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
 @@ -143,6 +143,10 @@ class ALTERNATIVE_EXPERIENCE:
@@ -504,5 +504,5 @@ index 22a3c4f1..dc07538d 100644
  
  void set_alternative_experience(int mode){
 -- 
-2.41.0
+2.39.2
 

@@ -1,4 +1,4 @@
-From ab647ce556964a567b6e44b664553f598242277b Mon Sep 17 00:00:00 2001
+From f7a1f8ad92de92ca183184cd9283fa9434bd194e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:30:49 -0400
 Subject: [PATCH] Lane Detection
@@ -111,7 +111,7 @@ index 4652b41c1..8f2e9e2ca 100644
        # LaneChangeState.laneChangeStarting
        elif self.lane_change_state == LaneChangeState.laneChangeStarting:
 diff --git a/selfdrive/controls/lib/lateral_planner.py b/selfdrive/controls/lib/lateral_planner.py
-index baea40749..3c6547bfd 100644
+index 38258b4b5..630b982a3 100644
 --- a/selfdrive/controls/lib/lateral_planner.py
 +++ b/selfdrive/controls/lib/lateral_planner.py
 @@ -8,6 +8,9 @@ from selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed
@@ -154,5 +154,5 @@ index 94a673dd7..3040eebef 100644
      {
        "NavSettingTime24h",
 -- 
-2.41.0
+2.39.2
 

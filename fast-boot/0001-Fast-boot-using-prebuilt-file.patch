@@ -1,4 +1,4 @@
-From 0c575c71940042a38be477c10e2aeefa966404ad Mon Sep 17 00:00:00 2001
+From 108998d2a97dfd505bb071bb3e76bb7372c07b8a Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
@@ -13,7 +13,7 @@ Added prebuilt functionality that removes itself whenever the user installs upda
  5 files changed, 32 insertions(+), 2 deletions(-)
 
 diff --git a/common/spinner.py b/common/spinner.py
-index 57242d644..e9ed3f35d 100644
+index 34fd720ee..aaf0087b5 100644
 --- a/common/spinner.py
 +++ b/common/spinner.py
 @@ -47,6 +47,8 @@ if __name__ == "__main__":
@@ -115,5 +115,5 @@ index cdfa86c8e..4ad8d2d95 100644
  
    setStyleSheet(R"(
 -- 
-2.41.0
+2.39.2
 

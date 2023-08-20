@@ -1,4 +1,4 @@
-From 18932662ed2372bb9897d533679f66c3e77105f6 Mon Sep 17 00:00:00 2001
+From c1b38698871373f9b7e68728a78544f1ad705c4a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
@@ -299,5 +299,5 @@ index 94a673dd7..0405b8415 100644
      {
        "NavSettingTime24h",
 -- 
-2.41.0
+2.39.2
 

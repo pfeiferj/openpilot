@@ -1,4 +1,4 @@
-From ad588d4fca226008f3be1e6bb67f61c8253eb185 Mon Sep 17 00:00:00 2001
+From 5c730007fb45b21efa70db578a9bbcb908620d1a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 18:48:03 -0400
 Subject: [PATCH] Use the cluster speed when limiting speed
@@ -25,5 +25,5 @@ index 576527292..46c3dc9be 100755
      long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
      force_slow_decel = sm['controlsState'].forceDecel
 -- 
-2.41.0
+2.39.2
 

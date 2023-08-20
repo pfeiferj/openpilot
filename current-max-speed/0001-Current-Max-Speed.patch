@@ -1,4 +1,4 @@
-From 8d9931d1917d3d7e1380e70b7c1ea9e975db0fac Mon Sep 17 00:00:00 2001
+From 7e94342663754fcae083e7793d1d07b366a320c1 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:29:00 -0400
 Subject: [PATCH] Current Max Speed
@@ -125,5 +125,5 @@ index 576527292..501cea4ad 100755
      self.a_desired_trajectory_full = np.interp(T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
      self.v_desired_trajectory = self.v_desired_trajectory_full[:CONTROL_N]
 -- 
-2.41.0
+2.39.2
 

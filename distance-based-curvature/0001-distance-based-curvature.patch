@@ -1,4 +1,4 @@
-From 6fef53abdcb2f904e54f80c4d2984b26525815bb Mon Sep 17 00:00:00 2001
+From 9ffd75543b4f4f2ee0bcf60a771d697127e5340f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -158,5 +158,5 @@ index 94a673dd7..97196f872 100644
      {
        "NavSettingTime24h",
 -- 
-2.41.0
+2.39.2
 

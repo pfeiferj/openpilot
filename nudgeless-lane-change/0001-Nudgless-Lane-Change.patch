@@ -1,4 +1,4 @@
-From 9c9bbf83fa50b348f95c4fea3e3353057f3da752 Mon Sep 17 00:00:00 2001
+From b8ec33f7c57b58c376b33b4904d948bb354d518f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:15 -0400
 Subject: [PATCH] Nudgless Lane Change
@@ -83,5 +83,5 @@ index 94a673dd7..d1c3fbc9d 100644
      {
        "NavSettingTime24h",
 -- 
-2.41.0
+2.39.2
 
