@@ -1,5 +1,8 @@
 # Experimental Mode Toggle Changelog
 
+## 08/20/23
+* Toyota gap adjust button fix
+
 ## 08/14/23
 * Toyota gap adjust button fix
 

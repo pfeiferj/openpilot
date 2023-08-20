@@ -1,4 +1,4 @@
-From d820e51e0cad62ef1e2172bb891266a89048d07b Mon Sep 17 00:00:00 2001
+From 0b5d159d466f54bde64651e8a20b1a38f92df323 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH] button manager
@@ -10,7 +10,7 @@ Subject: [PATCH] button manager
 
 diff --git a/selfdrive/controls/button_manager.py b/selfdrive/controls/button_manager.py
 new file mode 100644
-index 000000000..dee8f649a
+index 000000000..d93bf10c1
 --- /dev/null
 +++ b/selfdrive/controls/button_manager.py
 @@ -0,0 +1,214 @@
@@ -25,7 +25,7 @@ index 000000000..dee8f649a
 +
 +LONG_PRESS_LENGTH = 0.4 #s
 +PRESS_INTERVAL = 0.2 #s
-+DEBOUNCE_LENGTH = 0.03 #s
++DEBOUNCE_LENGTH = 0.04 #s
 +
 +class ButtonState(IntEnum):
 +  VOID = 0
@@ -229,5 +229,5 @@ index 000000000..dee8f649a
 +
 +    return self.state
 -- 
-2.41.0
+2.39.2
 

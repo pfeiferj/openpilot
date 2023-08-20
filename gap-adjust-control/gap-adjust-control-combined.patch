@@ -1,4 +1,4 @@
-From d820e51e0cad62ef1e2172bb891266a89048d07b Mon Sep 17 00:00:00 2001
+From 0b5d159d466f54bde64651e8a20b1a38f92df323 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,7 +10,7 @@ Subject: [PATCH 1/3] button manager
 
 diff --git a/selfdrive/controls/button_manager.py b/selfdrive/controls/button_manager.py
 new file mode 100644
-index 000000000..dee8f649a
+index 000000000..d93bf10c1
 --- /dev/null
 +++ b/selfdrive/controls/button_manager.py
 @@ -0,0 +1,214 @@
@@ -25,7 +25,7 @@ index 000000000..dee8f649a
 +
 +LONG_PRESS_LENGTH = 0.4 #s
 +PRESS_INTERVAL = 0.2 #s
-+DEBOUNCE_LENGTH = 0.03 #s
++DEBOUNCE_LENGTH = 0.04 #s
 +
 +class ButtonState(IntEnum):
 +  VOID = 0
@@ -229,10 +229,10 @@ index 000000000..dee8f649a
 +
 +    return self.state
 -- 
-2.41.0
+2.39.2
 
 
-From 091cebe17d8763d0ec0b5317038dfd88197d52da Mon Sep 17 00:00:00 2001
+From 1638decb2f273e6f4d8ce7543de5ca3f17064dfc Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -289,10 +289,10 @@ index 43cdee18d..85fa379b2 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 46f86fdc1..ee3659565 100644
+index 3e25863f4..008f74a7c 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -10,6 +10,10 @@ from selfdrive.car import STD_CARGO_KG, create_button_event, scale_tire_stiffnes
+@@ -11,6 +11,10 @@ from selfdrive.car import create_button_event, get_safety_config
  from selfdrive.car.interfaces import CarInterfaceBase
  from selfdrive.car.disable_ecu import disable_ecu
  
@@ -303,7 +303,7 @@ index 46f86fdc1..ee3659565 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -331,6 +335,11 @@ class CarInterface(CarInterfaceBase):
+@@ -326,6 +330,11 @@ class CarInterface(CarInterfaceBase):
  
        ret.buttonEvents = buttonEvents
  
@@ -316,7 +316,7 @@ index 46f86fdc1..ee3659565 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 8a75ab427..c6ec2cdd1 100644
+index 8a75ab427..fa1761aaa 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -10,6 +10,10 @@ from opendbc.can.parser import CANParser
@@ -339,7 +339,7 @@ index 8a75ab427..c6ec2cdd1 100644
 +    if self.CP.carFingerprint in TSS2_CAR:
 +      if 'DISTANCE' in cp_acc.vl["ACC_CONTROL"]:
 +        distance_button_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"] == 1
-+    gap_adjust_button.update(distance_button_pressed)
++        gap_adjust_button.update(distance_button_pressed)
 +    # }} PFEIFER - GAB
 +
      return ret
@@ -365,10 +365,10 @@ index 000000000..af2b3e645
 +
 +gap_adjust_button = Button("GapAdjustButton")
 -- 
-2.41.0
+2.39.2
 
 
-From 1d7c828e75796ff6a44dc750c074e97b16948a0b Mon Sep 17 00:00:00 2001
+From 8b3a136ba67b5c46e2531f2872b6c49a41ce2098 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:35:40 -0400
 Subject: [PATCH 3/3] gap adjust control
@@ -376,11 +376,11 @@ Subject: [PATCH 3/3] gap adjust control
 ---
  selfdrive/car/gm/gmcan.py                | 12 +++-
  selfdrive/car/hyundai/hyundaican.py      | 12 +++-
- selfdrive/car/toyota/carstate.py         | 13 +++++
+ selfdrive/car/toyota/carstate.py         | 14 +++++
  selfdrive/car/toyota/toyotacan.py        | 14 ++++-
  selfdrive/controls/controlsd.py          |  8 +++
  selfdrive/controls/gap_adjust_control.py | 74 ++++++++++++++++++++++++
- 6 files changed, 130 insertions(+), 3 deletions(-)
+ 6 files changed, 131 insertions(+), 3 deletions(-)
  create mode 100644 selfdrive/controls/gap_adjust_control.py
 
 diff --git a/selfdrive/car/gm/gmcan.py b/selfdrive/car/gm/gmcan.py
@@ -417,7 +417,7 @@ index 0de206667..2e9dbf822 100644
      "ACCAlwaysOne2": 1,
      "ACCLeadCar": lead_car_in_sight,
 diff --git a/selfdrive/car/hyundai/hyundaican.py b/selfdrive/car/hyundai/hyundaican.py
-index dc5a5b628..cf6d161ec 100644
+index c0c60fba0..83685b23d 100644
 --- a/selfdrive/car/hyundai/hyundaican.py
 +++ b/selfdrive/car/hyundai/hyundaican.py
 @@ -1,5 +1,8 @@
@@ -430,7 +430,7 @@ index dc5a5b628..cf6d161ec 100644
  hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
  
 @@ -128,9 +131,16 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
- def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, set_speed, stopping, long_override):
+ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, set_speed, stopping, long_override, use_fca):
    commands = []
  
 +  # PFEIFER - GAC {{
@@ -448,7 +448,7 @@ index dc5a5b628..cf6d161ec 100644
      "AliveCounterACC": idx % 0x10,
      "ObjValid": 1, # close lead makes controls tighter
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index c6ec2cdd1..46824e477 100644
+index fa1761aaa..8d3aabff1 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -14,6 +14,10 @@ from selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD,
@@ -462,20 +462,21 @@ index c6ec2cdd1..46824e477 100644
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -174,6 +178,12 @@ class CarState(CarStateBase):
-     gap_adjust_button.update(distance_button_pressed)
+@@ -174,6 +178,13 @@ class CarState(CarStateBase):
+         gap_adjust_button.update(distance_button_pressed)
      # }} PFEIFER - GAB
  
 +    # PFEIFER - GAC {{
 +    if self.CP.carFingerprint in TSS2_CAR:
-+      personality = max(cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"] - 1, 0)
-+      gap_adjust.update_from_car_state(personality)
++      if "DISTANCE_LINES" in cp.vl["PCM_CRUISE_SM"]:
++        personality = max(cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"] - 1, 0)
++        gap_adjust.update_from_car_state(personality)
 +    # }} PFEIFER - GAC
 +
      return ret
  
    @staticmethod
-@@ -242,6 +252,9 @@ class CarState(CarStateBase):
+@@ -242,6 +253,9 @@ class CarState(CarStateBase):
          ("PRE_COLLISION", 33),
          ("ACC_CONTROL", 33),
          ("PCS_HUD", 1),
@@ -546,7 +547,7 @@ index 8084b18ff..79fdd31d4 100755
        self.state_transition(CS)
 diff --git a/selfdrive/controls/gap_adjust_control.py b/selfdrive/controls/gap_adjust_control.py
 new file mode 100644
-index 000000000..7156f5be3
+index 000000000..98346947d
 --- /dev/null
 +++ b/selfdrive/controls/gap_adjust_control.py
 @@ -0,0 +1,74 @@
@@ -618,12 +619,12 @@ index 000000000..7156f5be3
 +    self.disable_default_update = True
 +
 +    old_state = self.state
-+    self.state = GapAdjustState((int(self.state) + 1) % 3)
++    self.state = GapAdjustState(state % 3)
 +
 +    if write_state and old_state != self.state:
 +      self.write_state()
 +
 +gap_adjust = GapAdjust()
 -- 
-2.41.0
+2.39.2
 

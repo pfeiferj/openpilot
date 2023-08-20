@@ -1,4 +1,4 @@
-From d820e51e0cad62ef1e2172bb891266a89048d07b Mon Sep 17 00:00:00 2001
+From 0b5d159d466f54bde64651e8a20b1a38f92df323 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,7 +10,7 @@ Subject: [PATCH 1/3] button manager
 
 diff --git a/selfdrive/controls/button_manager.py b/selfdrive/controls/button_manager.py
 new file mode 100644
-index 000000000..dee8f649a
+index 000000000..d93bf10c1
 --- /dev/null
 +++ b/selfdrive/controls/button_manager.py
 @@ -0,0 +1,214 @@
@@ -25,7 +25,7 @@ index 000000000..dee8f649a
 +
 +LONG_PRESS_LENGTH = 0.4 #s
 +PRESS_INTERVAL = 0.2 #s
-+DEBOUNCE_LENGTH = 0.03 #s
++DEBOUNCE_LENGTH = 0.04 #s
 +
 +class ButtonState(IntEnum):
 +  VOID = 0
@@ -229,10 +229,10 @@ index 000000000..dee8f649a
 +
 +    return self.state
 -- 
-2.41.0
+2.39.2
 
 
-From 091cebe17d8763d0ec0b5317038dfd88197d52da Mon Sep 17 00:00:00 2001
+From 1638decb2f273e6f4d8ce7543de5ca3f17064dfc Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -289,10 +289,10 @@ index 43cdee18d..85fa379b2 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 46f86fdc1..ee3659565 100644
+index 3e25863f4..008f74a7c 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -10,6 +10,10 @@ from selfdrive.car import STD_CARGO_KG, create_button_event, scale_tire_stiffnes
+@@ -11,6 +11,10 @@ from selfdrive.car import create_button_event, get_safety_config
  from selfdrive.car.interfaces import CarInterfaceBase
  from selfdrive.car.disable_ecu import disable_ecu
  
@@ -303,7 +303,7 @@ index 46f86fdc1..ee3659565 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -331,6 +335,11 @@ class CarInterface(CarInterfaceBase):
+@@ -326,6 +330,11 @@ class CarInterface(CarInterfaceBase):
  
        ret.buttonEvents = buttonEvents
  
@@ -316,7 +316,7 @@ index 46f86fdc1..ee3659565 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 8a75ab427..c6ec2cdd1 100644
+index 8a75ab427..fa1761aaa 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -10,6 +10,10 @@ from opendbc.can.parser import CANParser
@@ -339,7 +339,7 @@ index 8a75ab427..c6ec2cdd1 100644
 +    if self.CP.carFingerprint in TSS2_CAR:
 +      if 'DISTANCE' in cp_acc.vl["ACC_CONTROL"]:
 +        distance_button_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"] == 1
-+    gap_adjust_button.update(distance_button_pressed)
++        gap_adjust_button.update(distance_button_pressed)
 +    # }} PFEIFER - GAB
 +
      return ret
@@ -365,10 +365,10 @@ index 000000000..af2b3e645
 +
 +gap_adjust_button = Button("GapAdjustButton")
 -- 
-2.41.0
+2.39.2
 
 
-From d161af4985f5d0dfaa5ade3a0a37470e2fb874e2 Mon Sep 17 00:00:00 2001
+From 5eeff8f41b1abb642c5071145b53a599782dd708 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -376,12 +376,12 @@ Subject: [PATCH 3/3] Speed Limit Controller
 Limits the speed based on the current speed limit.
 ---
  common/params.cc                              |   6 +
- selfdrive/car/hyundai/carstate.py             |  21 ++++
+ selfdrive/car/hyundai/carstate.py             |  22 ++++
  .../controls/lib/longitudinal_planner.py      |  10 ++
  selfdrive/controls/speed_limit_controller.py  | 108 ++++++++++++++++++
  selfdrive/navd/navd.py                        |  24 ++++
  selfdrive/ui/qt/offroad/settings.cc           |  20 ++++
- 6 files changed, 189 insertions(+)
+ 6 files changed, 190 insertions(+)
  create mode 100644 selfdrive/controls/speed_limit_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -402,7 +402,7 @@ index f09fbb2ab..f4eb828ba 100644
  
  } // namespace
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 55f888c9e..ad1013cd5 100644
+index 2e3801c31..3540b4041 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
@@ -415,8 +415,8 @@ index 55f888c9e..ad1013cd5 100644
 +
  PREV_BUTTON_SAMPLES = 8
  CLUSTER_SAMPLE_RATE = 20  # frames
- 
-@@ -45,6 +49,14 @@ class CarState(CarStateBase):
+ STANDSTILL_THRESHOLD = 12 * 0.03125 * CV.KPH_TO_MS
+@@ -51,6 +55,14 @@ class CarState(CarStateBase):
  
      self.params = CarControllerParams(CP)
  
@@ -431,7 +431,7 @@ index 55f888c9e..ad1013cd5 100644
    def update(self, cp, cp_cam):
      if self.CP.carFingerprint in CANFD_CAR:
        return self.update_canfd(cp, cp_cam)
-@@ -154,6 +166,11 @@ class CarState(CarStateBase):
+@@ -160,6 +172,11 @@ class CarState(CarStateBase):
      self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
      self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
  
@@ -443,13 +443,14 @@ index 55f888c9e..ad1013cd5 100644
      return ret
  
    def update_canfd(self, cp, cp_cam):
-@@ -341,6 +358,10 @@ class CarState(CarStateBase):
-         ("ACCELERATOR_BRAKE_ALT", 100),
+@@ -325,6 +342,11 @@ class CarState(CarStateBase):
+         ("SCC_CONTROL", 50),
        ]
  
 +    # PFEIFER - SLC {{
-+    signals.append(("SpeedLim_Nav_Clu", "Navi_HU"))
-+    checks.append(("Navi_HU", 5))
++    messages += [
++      ("Navi_HU", 5),
++    ]
 +    # }} PFEIFER - SLC
      return CANParser(DBC[CP.carFingerprint]["pt"], messages, CanBus(CP).ECAN)
  
@@ -677,5 +678,5 @@ index 94a673dd7..49de81bd6 100644
      {
        "NavSettingTime24h",
 -- 
-2.41.0
+2.39.2
 
