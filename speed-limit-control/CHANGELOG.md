@@ -1,6 +1,9 @@
 # Speed Limit Control Changelog
 
 ## 08/20/23
+* HKG car based slc fix
+
+## 08/20/23
 * Toyota gap adjust button fix
 
 ## 08/14/23
