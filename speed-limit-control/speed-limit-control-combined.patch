@@ -368,7 +368,7 @@ index 000000000..af2b3e645
 2.39.2
 
 
-From 5eeff8f41b1abb642c5071145b53a599782dd708 Mon Sep 17 00:00:00 2001
+From 85ad2aa65bacb36a12eb09a8033cab1239ff863d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -376,12 +376,12 @@ Subject: [PATCH 3/3] Speed Limit Controller
 Limits the speed based on the current speed limit.
 ---
  common/params.cc                              |   6 +
- selfdrive/car/hyundai/carstate.py             |  22 ++++
+ selfdrive/car/hyundai/carstate.py             |  25 ++++
  .../controls/lib/longitudinal_planner.py      |  10 ++
  selfdrive/controls/speed_limit_controller.py  | 108 ++++++++++++++++++
  selfdrive/navd/navd.py                        |  24 ++++
  selfdrive/ui/qt/offroad/settings.cc           |  20 ++++
- 6 files changed, 190 insertions(+)
+ 6 files changed, 193 insertions(+)
  create mode 100644 selfdrive/controls/speed_limit_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -402,7 +402,7 @@ index f09fbb2ab..f4eb828ba 100644
  
  } // namespace
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 2e3801c31..3540b4041 100644
+index 2e3801c31..eaa663151 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
@@ -416,7 +416,7 @@ index 2e3801c31..3540b4041 100644
  PREV_BUTTON_SAMPLES = 8
  CLUSTER_SAMPLE_RATE = 20  # frames
  STANDSTILL_THRESHOLD = 12 * 0.03125 * CV.KPH_TO_MS
-@@ -51,6 +55,14 @@ class CarState(CarStateBase):
+@@ -51,6 +55,16 @@ class CarState(CarStateBase):
  
      self.params = CarControllerParams(CP)
  
@@ -425,13 +425,15 @@ index 2e3801c31..3540b4041 100644
 +    if "SpeedLim_Nav_Clu" not in cp.vl["Navi_HU"]:
 +      return 0
 +    speed_limit = cp.vl["Navi_HU"]["SpeedLim_Nav_Clu"]
-+    return speed_limit if speed_limit not in (0, 255) else 0
++    speed_limit = speed_limit if speed_limit not in (0, 255) else 0
++    speed_conv = CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS
++    return speed_limit * speed_conv
 +  # }} PFEIFER - SLC
 +
    def update(self, cp, cp_cam):
      if self.CP.carFingerprint in CANFD_CAR:
        return self.update_canfd(cp, cp_cam)
-@@ -160,6 +172,11 @@ class CarState(CarStateBase):
+@@ -160,6 +174,11 @@ class CarState(CarStateBase):
      self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
      self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
  
@@ -443,16 +445,17 @@ index 2e3801c31..3540b4041 100644
      return ret
  
    def update_canfd(self, cp, cp_cam):
-@@ -325,6 +342,11 @@ class CarState(CarStateBase):
-         ("SCC_CONTROL", 50),
-       ]
+@@ -279,6 +298,12 @@ class CarState(CarStateBase):
+     else:
+       messages.append(("LVR12", 100))
  
 +    # PFEIFER - SLC {{
 +    messages += [
 +      ("Navi_HU", 5),
 +    ]
 +    # }} PFEIFER - SLC
-     return CANParser(DBC[CP.carFingerprint]["pt"], messages, CanBus(CP).ECAN)
++
+     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)
  
    @staticmethod
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
