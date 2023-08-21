@@ -76,3 +76,40 @@ be set or read from any process.
 * Data is a complex type. Params does not provide a type system for data stored
   in it so extra code needs written whenever you are storing a complex type for
   both serialization and deserialization.
+
+
+## Params located at /dev/shm/params
+The params library can use alternative paths for storing the param files. If we
+setup a second instance of params in /dev/shm/params we end up with a "hybrid"
+of the advantages/disadvantages of cereal and params. This is due to /dev/shm
+living on ram instead of on the device storage.
+
+### Advantages
+* Multiple processes can write to the same value.
+* Variable definitions have a low maintenance cost.
+* Fast. Using /dev/shm/params gives speeds close to the speeds of cereal.
+
+### Disadvantages
+* Settings do not survive reboots. They will survive ignition cycles however.
+* Slightly inconsistent performance. While the performance will be much more
+  consistent than when using the default params location it will not be quite as
+  consistent as using cereal.
+* Race conditions are possible. Multiple processes being able to both read and
+  write to a variable can lead to out of order changes of the variable.
+* The params library events will not be applied to the values.
+
+### When should it be used?
+* When speed is important.
+* When doing frequent reads and writes.
+* When multiple processes need to be able to write to the variable.
+* The code is not intended for upstream openpilot.
+
+### When should it not be used?
+* Data is a complex type. Params does not provide a type system for data stored
+  in it so extra code needs written whenever you are storing a complex type for
+  both serialization and deserialization.
+* The code is intended to be upstreamed to openpilot. Cereal should be used if
+  the code is intended for upstream openpilot as it will be the fastest most
+  consistent option.
+* The data needs to be persisted. Since the data is in ram it will not survive a
+  reboot.
