@@ -1,0 +1,26 @@
+From a1427aeb8c7805ba288c0e2bc352f79f9cda09e4 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Tue, 22 Aug 2023 19:05:58 -0400
+Subject: [PATCH] disable registration
+
+---
+ selfdrive/athena/registration.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/selfdrive/athena/registration.py b/selfdrive/athena/registration.py
+index 32bc92059..da8770d89 100755
+--- a/selfdrive/athena/registration.py
++++ b/selfdrive/athena/registration.py
+@@ -31,6 +31,9 @@ def register(show_spinner=False) -> Optional[str]:
+   HardwareSerial = params.get("HardwareSerial", encoding='utf8')
+   dongle_id: Optional[str] = params.get("DongleId", encoding='utf8')
+   needs_registration = None in (IMEI, HardwareSerial, dongle_id)
++  # PFEIFER - DR {{
++  needs_registration = False
++  # }} PFEIFER - DR
+ 
+   pubkey = Path(PERSIST+"/comma/id_rsa.pub")
+   if not pubkey.is_file():
+-- 
+2.39.2
+

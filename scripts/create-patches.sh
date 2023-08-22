@@ -69,3 +69,7 @@ mv *.patch ../openpilot-patches/distance-based-curvature/
 git checkout cluster-based-max-speed
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/cluster-based-max-speed/
+
+git checkout pfeifer-disable-registration
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/disable-registration/

@@ -46,6 +46,9 @@ git pull
 git checkout pfeifer-distance-based-curvature
 git pull
 
+git checkout pfeifer-disable-registration
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

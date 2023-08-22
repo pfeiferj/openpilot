@@ -46,6 +46,9 @@ git push --force
 git checkout pfeifer-distance-based-curvature
 git push --force
 
+git checkout pfeifer-disable-registration
+git push --force
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed
