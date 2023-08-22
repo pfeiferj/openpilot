@@ -29,6 +29,9 @@ def register(show_spinner=False) -> str | None:
   HardwareSerial = params.get("HardwareSerial", encoding='utf8')
   dongle_id: str | None = params.get("DongleId", encoding='utf8')
   needs_registration = None in (IMEI, HardwareSerial, dongle_id)
+  # PFEIFER - DR {{
+  needs_registration = False
+  # }} PFEIFER - DR
 
   pubkey = Path(Paths.persist_root()+"/comma/id_rsa.pub")
   if not pubkey.is_file():
