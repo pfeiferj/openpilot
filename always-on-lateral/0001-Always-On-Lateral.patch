@@ -1,4 +1,4 @@
-From e7631b7dab53065a2d45358db72a768cf33f7e17 Mon Sep 17 00:00:00 2001
+From f15329f41300babca2a98a8c1d1422d63ff45aea Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 19 Aug 2023 20:58:18 -0400
 Subject: [PATCH] Always On Lateral
@@ -398,7 +398,7 @@ index 35f7e8bf6..a486b71b4 100644
  
 diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
 new file mode 100644
-index 000000000..54af5dced
+index 000000000..f4684cc4d
 --- /dev/null
 +++ b/selfdrive/controls/always_on_lateral.py
 @@ -0,0 +1,295 @@
@@ -633,7 +633,7 @@ index 000000000..54af5dced
 +      return False
 +
 +    # If DisengageLatOnBlinker is enabled we disable lat when blinkers are on
-+    if self.disengage_lat_on_blinker and self.blinkers_active:
++    if self.disengage_lat_on_blinker and self.blinkers_active and not self.op_active:
 +      return False
 +
 +    # Lat is active if we pass all previous tests for disengagement

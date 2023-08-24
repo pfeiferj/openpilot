@@ -1,5 +1,9 @@
 # Always On Lateral Changelog
 
+## 08/23/23
+Openpilot:
+    * Disable lat on blinker only disables while op is not active
+
 ## 08/19/23
 Openpilot:
     * Fixes an issue with setting the alt experience flag for main immediately
