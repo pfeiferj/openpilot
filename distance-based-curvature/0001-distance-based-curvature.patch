@@ -1,15 +1,16 @@
-From 9ffd75543b4f4f2ee0bcf60a771d697127e5340f Mon Sep 17 00:00:00 2001
+From 41c9246c5fbe1cf5d69d686f3850249b915d849d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
 
 ---
  common/params.cc                              |  5 ++
+ release/files_common                          |  2 +
  .../controls/distance_based_curvature.py      | 46 +++++++++++++++++++
  selfdrive/controls/lib/drive_helpers.py       |  8 ++++
  .../lib/longitudinal_mpc_lib/long_mpc.py      |  7 +++
  selfdrive/ui/qt/offroad/settings.cc           |  8 ++++
- 5 files changed, 74 insertions(+)
+ 6 files changed, 76 insertions(+)
  create mode 100644 selfdrive/controls/distance_based_curvature.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -28,19 +29,29 @@ index e8ab42c0b..797a54ea3 100644
  };
  
  } // namespace
+diff --git a/release/files_common b/release/files_common
+index f9acce885..40ef72e7d 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/controls/distance_based_curvature.py
 diff --git a/selfdrive/controls/distance_based_curvature.py b/selfdrive/controls/distance_based_curvature.py
 new file mode 100644
-index 000000000..f1a1f1c84
+index 000000000..692450af4
 --- /dev/null
 +++ b/selfdrive/controls/distance_based_curvature.py
 @@ -0,0 +1,46 @@
 +# PFEIFER - DBC
 +
 +import numpy as np
-+from selfdrive.modeld.constants import index_function
++from openpilot.selfdrive.modeld.constants import index_function
 +import json
-+from selfdrive.modeld.constants import T_IDXS
-+from common.params import Params
++from openpilot.selfdrive.modeld.constants import T_IDXS
++from openpilot.common.params import Params
 +mem_params = Params("/dev/shm/params")
 +
 +CONTROL_N = 17
@@ -81,15 +92,15 @@ index 000000000..f1a1f1c84
 +
 +dbc = DistanceBasedCurvature()
 diff --git a/selfdrive/controls/lib/drive_helpers.py b/selfdrive/controls/lib/drive_helpers.py
-index ab65da2e1..9dd343192 100644
+index 00916ddf7..915df8f4f 100644
 --- a/selfdrive/controls/lib/drive_helpers.py
 +++ b/selfdrive/controls/lib/drive_helpers.py
-@@ -6,6 +6,10 @@ from common.numpy_fast import clip, interp
- from common.realtime import DT_MDL
- from selfdrive.modeld.constants import T_IDXS
+@@ -6,6 +6,10 @@ from openpilot.common.numpy_fast import clip, interp
+ from openpilot.common.realtime import DT_MDL
+ from openpilot.selfdrive.modeld.constants import T_IDXS
  
 +# PFEIFER - DBC {{
-+from selfdrive.controls.distance_based_curvature import dbc
++from openpilot.selfdrive.controls.distance_based_curvature import dbc
 +# }} PFEIFER - DBC
 +
  # WARNING: this value was determined based on the model's training distribution,
@@ -114,19 +125,19 @@ index ab65da2e1..9dd343192 100644
  
    # This is the "desired rate of the setpoint" not an actual desired rate
 diff --git a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
-index dadf6cba2..279261b37 100644
+index eaa782efe..b613b84c1 100644
 --- a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 +++ b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
-@@ -10,6 +10,10 @@ from selfdrive.modeld.constants import index_function
- from selfdrive.car.interfaces import ACCEL_MIN
- from selfdrive.controls.radard import _LEAD_ACCEL_TAU
+@@ -10,6 +10,10 @@ from openpilot.selfdrive.modeld.constants import index_function
+ from openpilot.selfdrive.car.interfaces import ACCEL_MIN
+ from openpilot.selfdrive.controls.radard import _LEAD_ACCEL_TAU
  
 +# PFEIFER - DBC {{
-+from selfdrive.controls.distance_based_curvature import dbc
++from openpilot.selfdrive.controls.distance_based_curvature import dbc
 +# }} PFEIFER - DBC
 +
  if __name__ == '__main__':  # generating code
-   from third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
+   from openpilot.third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
  else:
 @@ -436,6 +440,9 @@ class LongitudinalMpc:
      for i in range(N):
@@ -139,10 +150,10 @@ index dadf6cba2..279261b37 100644
      self.a_solution = self.x_sol[:,2]
      self.j_solution = self.u_sol[:,0]
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 94a673dd7..97196f872 100644
+index 8b0f9c1f3..c077a47c6 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -72,6 +72,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },

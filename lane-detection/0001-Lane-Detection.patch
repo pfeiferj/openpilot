@@ -1,16 +1,17 @@
-From f7a1f8ad92de92ca183184cd9283fa9434bd194e Mon Sep 17 00:00:00 2001
+From f61504617fc8875c92e6fed26bb537a14e80bc9e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 28 Jul 2023 22:30:49 -0400
+Date: Thu, 24 Aug 2023 21:03:13 -0400
 Subject: [PATCH] Lane Detection
 
 Prevents lane changes whenever there is no lane detected.
 ---
  common/params.cc                          |  4 ++
+ release/files_common                      |  2 +
  selfdrive/controls/lane_detection.py      | 51 +++++++++++++++++++++++
  selfdrive/controls/lib/desire_helper.py   |  7 ++++
  selfdrive/controls/lib/lateral_planner.py |  6 +++
  selfdrive/ui/qt/offroad/settings.cc       |  8 ++++
- 5 files changed, 76 insertions(+)
+ 6 files changed, 78 insertions(+)
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -28,9 +29,19 @@ index e8ab42c0b..99fd6e2bf 100644
  };
  
  } // namespace
+diff --git a/release/files_common b/release/files_common
+index f9acce885..4c2efe831 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/controls/lane_detection.py
 diff --git a/selfdrive/controls/lane_detection.py b/selfdrive/controls/lane_detection.py
 new file mode 100644
-index 000000000..5940ba095
+index 000000000..b39057cd3
 --- /dev/null
 +++ b/selfdrive/controls/lane_detection.py
 @@ -0,0 +1,51 @@
@@ -40,7 +51,7 @@ index 000000000..5940ba095
 +# Lane detection logic was pulled from frogpilot. A huge thanks to FrogAi! https://github.com/FrogAi/FrogPilot
 +
 +import numpy as np
-+from common.params import Params
++from openpilot.common.params import Params
 +params = Params()
 +
 +class LaneDetection:
@@ -86,15 +97,15 @@ index 000000000..5940ba095
 +
 +ld = LaneDetection()
 diff --git a/selfdrive/controls/lib/desire_helper.py b/selfdrive/controls/lib/desire_helper.py
-index 4652b41c1..8f2e9e2ca 100644
+index d53803507..33aa1f55d 100644
 --- a/selfdrive/controls/lib/desire_helper.py
 +++ b/selfdrive/controls/lib/desire_helper.py
 @@ -1,6 +1,9 @@
  from cereal import log
- from common.conversions import Conversions as CV
- from common.realtime import DT_MDL
+ from openpilot.common.conversions import Conversions as CV
+ from openpilot.common.realtime import DT_MDL
 +# PFEIFER - LD {{
-+from selfdrive.controls.lane_detection import ld
++from openpilot.selfdrive.controls.lane_detection import ld
 +# }} PFEIFER - LD
  
  LaneChangeState = log.LateralPlan.LaneChangeState
@@ -111,20 +122,20 @@ index 4652b41c1..8f2e9e2ca 100644
        # LaneChangeState.laneChangeStarting
        elif self.lane_change_state == LaneChangeState.laneChangeStarting:
 diff --git a/selfdrive/controls/lib/lateral_planner.py b/selfdrive/controls/lib/lateral_planner.py
-index 38258b4b5..630b982a3 100644
+index 92786f73d..7668d1b59 100644
 --- a/selfdrive/controls/lib/lateral_planner.py
 +++ b/selfdrive/controls/lib/lateral_planner.py
-@@ -8,6 +8,9 @@ from selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed
- from selfdrive.controls.lib.desire_helper import DesireHelper
+@@ -9,6 +9,9 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED,
+ from openpilot.selfdrive.controls.lib.desire_helper import DesireHelper
  import cereal.messaging as messaging
  from cereal import log
 +# PFEIFER - LD {{
-+from selfdrive.controls.lane_detection import ld
++from openpilot.selfdrive.controls.lane_detection import ld
 +# }} PFEIFER - LD
  
  TRAJECTORY_SIZE = 33
  CAMERA_OFFSET = 0.04
-@@ -79,6 +82,9 @@ class LateralPlanner:
+@@ -80,6 +83,9 @@ class LateralPlanner:
        self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
        self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
      lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
@@ -135,10 +146,10 @@ index 38258b4b5..630b982a3 100644
  
      self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 94a673dd7..3040eebef 100644
+index 8b0f9c1f3..5dc712012 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -72,6 +72,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },

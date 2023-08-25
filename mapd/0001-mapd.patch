@@ -1,10 +1,11 @@
-From 41fa8544539f6ece60df7c0db598090e6f8c335d Mon Sep 17 00:00:00 2001
+From 5e6e801238f3da149acc81061f7c7586ae699233 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 14:19:30 -0400
 Subject: [PATCH] mapd
 
 ---
  launch_chffrplus.sh                    |   5 +-
+ release/files_common                   |   5 +
  selfdrive/manager/custom_dep.py        | 119 +++++++
  selfdrive/manager/process.py           |   4 +
  selfdrive/manager/process_config.py    |   4 +
@@ -19,7 +20,7 @@ Subject: [PATCH] mapd
  selfdrive/mapd/lib/geo.py              |  78 +++++
  selfdrive/mapd/lib/osm.py              |  45 +++
  selfdrive/mapd/mapd.py                 | 184 +++++++++++
- 15 files changed, 1503 insertions(+), 1 deletion(-)
+ 16 files changed, 1508 insertions(+), 1 deletion(-)
  create mode 100755 selfdrive/manager/custom_dep.py
  create mode 100644 selfdrive/mapd/README.md
  create mode 100644 selfdrive/mapd/assets/mapd_deps.tar.xz
@@ -49,9 +50,22 @@ index 9fe9b1bd1..f2848a58b 100755
  
    # if broken, keep on screen error
    while true; do sleep 1; done
+diff --git a/release/files_common b/release/files_common
+index f9acce885..acbe1dfe0 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,8 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/mapd/*.py
++selfdrive/mapd/lib/*.py
++selfdrive/mapd/assets/mapd_deps.tar.xz
++selfdrive/mapd/README.md
 diff --git a/selfdrive/manager/custom_dep.py b/selfdrive/manager/custom_dep.py
 new file mode 100755
-index 000000000..de3b306cc
+index 000000000..09112aac9
 --- /dev/null
 +++ b/selfdrive/manager/custom_dep.py
 @@ -0,0 +1,119 @@
@@ -64,9 +78,9 @@ index 000000000..de3b306cc
 +import tarfile
 +import time
 +import traceback
-+from common.basedir import BASEDIR
-+from common.text_window import TextWindow
-+import selfdrive.sentry as sentry
++from openpilot.common.basedir import BASEDIR
++from openpilot.common.text_window import TextWindow
++import openpilot.selfdrive.sentry as sentry
 +from urllib.request import urlopen
 +from glob import glob
 +import subprocess
@@ -175,10 +189,10 @@ index 000000000..de3b306cc
 +    with TextWindow(error) as t:
 +      t.wait_for_exit()
 diff --git a/selfdrive/manager/process.py b/selfdrive/manager/process.py
-index 0acb23857..4d20ccfdc 100644
+index 82cc8d74a..903823077 100644
 --- a/selfdrive/manager/process.py
 +++ b/selfdrive/manager/process.py
-@@ -22,6 +22,10 @@ from cereal import log
+@@ -20,6 +20,10 @@ from openpilot.system.swaglog import cloudlog
  WATCHDOG_FN = "/dev/shm/wd_"
  ENABLE_WATCHDOG = os.getenv("NO_WATCHDOG") is None
  
@@ -190,20 +204,20 @@ index 0acb23857..4d20ccfdc 100644
  def launcher(proc: str, name: str) -> None:
    try:
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 7cd1ed948..0ddcf21d5 100644
+index 50e684fcb..6a2ac2b11 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -74,6 +74,10 @@ procs = [
-   PythonProcess("uploader", "system.loggerd.uploader", offroad=True),
-   PythonProcess("statsd", "selfdrive.statsd", offroad=True),
+@@ -84,6 +84,10 @@ procs = [
+   PythonProcess("uploader", "system.loggerd.uploader", always_run),
+   PythonProcess("statsd", "selfdrive.statsd", always_run),
  
 +  # PFEIFER - MAPD {{
-+  PythonProcess("mapd", "selfdrive.mapd.mapd"),
++  PythonProcess("mapd", "selfdrive.mapd.mapd", always_run),
 +  # }} PFEIFER - MAPD
 +
    # debug procs
-   NativeProcess("bridge", "cereal/messaging", ["./bridge"], onroad=False, callback=notcar),
-   PythonProcess("webjoystick", "tools.bodyteleop.web", onroad=False, callback=notcar),
+   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
+   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/mapd/README.md b/selfdrive/mapd/README.md
 new file mode 100644
 index 000000000..bd3a3c949
@@ -9615,13 +9629,13 @@ index 000000000..94b6b1a89
 +LANE_WIDTH = 3.7  # Lane width estimate. Used for detecting departures from way.
 diff --git a/selfdrive/mapd/lib/NodesData.py b/selfdrive/mapd/lib/NodesData.py
 new file mode 100644
-index 000000000..fdfb24815
+index 000000000..e66b9ee11
 --- /dev/null
 +++ b/selfdrive/mapd/lib/NodesData.py
 @@ -0,0 +1,208 @@
 +import numpy as np
 +from enum import Enum
-+from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
++from openpilot.selfdrive.mapd.lib.geo import DIRECTION, R, vectors
 +
 +
 +_DIVERTION_SEARCH_RANGE = [-200., 50.]  # mt. Range of distance to current location for diversion search.
@@ -9829,13 +9843,13 @@ index 000000000..fdfb24815
 +      distance_to_node_ahead
 diff --git a/selfdrive/mapd/lib/Route.py b/selfdrive/mapd/lib/Route.py
 new file mode 100644
-index 000000000..9f29e6b8d
+index 000000000..2b64e330b
 --- /dev/null
 +++ b/selfdrive/mapd/lib/Route.py
 @@ -0,0 +1,310 @@
-+from selfdrive.mapd.lib.NodesData import NodesData, NodeDataIdx
-+from selfdrive.mapd.config import QUERY_RADIUS
-+from selfdrive.mapd.lib.geo import ref_vectors, R, distance_to_points
++from openpilot.selfdrive.mapd.lib.NodesData import NodesData, NodeDataIdx
++from openpilot.selfdrive.mapd.config import QUERY_RADIUS
++from openpilot.selfdrive.mapd.lib.geo import ref_vectors, R, distance_to_points
 +from itertools import compress
 +import numpy as np
 +
@@ -10145,14 +10159,14 @@ index 000000000..9f29e6b8d
 +    return self.current_wr.road_name if self.located else None
 diff --git a/selfdrive/mapd/lib/WayCollection.py b/selfdrive/mapd/lib/WayCollection.py
 new file mode 100644
-index 000000000..91e7a161a
+index 000000000..df358e8a6
 --- /dev/null
 +++ b/selfdrive/mapd/lib/WayCollection.py
 @@ -0,0 +1,85 @@
-+from selfdrive.mapd.lib.WayRelation import WayRelation
-+from selfdrive.mapd.lib.WayRelationIndex import WayRelationIndex
-+from selfdrive.mapd.lib.Route import Route
-+from selfdrive.mapd.config import LANE_WIDTH
++from openpilot.selfdrive.mapd.lib.WayRelation import WayRelation
++from openpilot.selfdrive.mapd.lib.WayRelationIndex import WayRelationIndex
++from openpilot.selfdrive.mapd.lib.Route import Route
++from openpilot.selfdrive.mapd.config import LANE_WIDTH
 +import uuid
 +
 +
@@ -10236,14 +10250,14 @@ index 000000000..91e7a161a
 +    return Route(current, self.wr_index, self.id, self.query_center)
 diff --git a/selfdrive/mapd/lib/WayRelation.py b/selfdrive/mapd/lib/WayRelation.py
 new file mode 100644
-index 000000000..d2ec6af71
+index 000000000..5bfa835d3
 --- /dev/null
 +++ b/selfdrive/mapd/lib/WayRelation.py
 @@ -0,0 +1,412 @@
-+from selfdrive.mapd.lib.geo import DIRECTION, R, vectors, bearing_to_points, distance_to_points, point_on_line
-+from selfdrive.mapd.lib.osm import create_way
-+from common.conversions import Conversions as CV
-+from selfdrive.mapd.config import LANE_WIDTH
++from openpilot.selfdrive.mapd.lib.geo import DIRECTION, R, vectors, bearing_to_points, distance_to_points, point_on_line
++from openpilot.selfdrive.mapd.lib.osm import create_way
++from openpilot.common.conversions import Conversions as CV
++from openpilot.selfdrive.mapd.config import LANE_WIDTH
 +from datetime import datetime as dt
 +import numpy as np
 +import re
@@ -10778,13 +10792,13 @@ index 000000000..51947481a
 +  BACKWARD = 4
 diff --git a/selfdrive/mapd/lib/osm.py b/selfdrive/mapd/lib/osm.py
 new file mode 100644
-index 000000000..1e7bef9fa
+index 000000000..fe4c4edce
 --- /dev/null
 +++ b/selfdrive/mapd/lib/osm.py
 @@ -0,0 +1,45 @@
 +import overpy
 +import numpy as np
-+from selfdrive.mapd.lib.geo import R
++from openpilot.selfdrive.mapd.lib.geo import R
 +
 +
 +def create_way(way_id, node_ids, from_way):
@@ -10829,7 +10843,7 @@ index 000000000..1e7bef9fa
 +    return areas, ways
 diff --git a/selfdrive/mapd/mapd.py b/selfdrive/mapd/mapd.py
 new file mode 100644
-index 000000000..1077f107e
+index 000000000..78bf8fef0
 --- /dev/null
 +++ b/selfdrive/mapd/mapd.py
 @@ -0,0 +1,184 @@
@@ -10840,14 +10854,14 @@ index 000000000..1077f107e
 +import numpy as np
 +from cereal import log
 +import cereal.messaging as messaging
-+from common.params import Params
-+from common.realtime import Ratekeeper
-+from selfdrive.mapd.lib.osm import OSM
-+from selfdrive.mapd.lib.geo import distance_to_points
-+from selfdrive.mapd.lib.WayCollection import WayCollection
-+from selfdrive.mapd.config import QUERY_RADIUS, MIN_DISTANCE_FOR_NEW_QUERY
-+from system.swaglog import cloudlog
-+from selfdrive.controls.speed_limit_controller import slc
++from openpilot.common.params import Params
++from openpilot.common.realtime import Ratekeeper
++from openpilot.selfdrive.mapd.lib.osm import OSM
++from openpilot.selfdrive.mapd.lib.geo import distance_to_points
++from openpilot.selfdrive.mapd.lib.WayCollection import WayCollection
++from openpilot.selfdrive.mapd.config import QUERY_RADIUS, MIN_DISTANCE_FOR_NEW_QUERY
++from openpilot.system.swaglog import cloudlog
++from openpilot.selfdrive.controls.speed_limit_controller import slc
 +
 +_DEBUG = False
 +_CLOUDLOG_DEBUG = True

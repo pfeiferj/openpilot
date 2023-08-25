@@ -1,4 +1,4 @@
-From ed56db675c681213237446b0e8a84b37f55fbd4b Mon Sep 17 00:00:00 2001
+From e7144cbf42654bb6e3ab5fb6b1e18057cc338849 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 19 Aug 2023 20:57:52 -0400
 Subject: [PATCH] Always On Lateral
@@ -308,10 +308,10 @@ index e17f1ff4..b9da2fd0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index aa74a8f6..0641d3b9 100644
+index 9d31ff6e..7d44aa7f 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -138,6 +138,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -139,6 +139,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
      if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {

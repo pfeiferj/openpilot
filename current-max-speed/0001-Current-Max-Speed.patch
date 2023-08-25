@@ -1,6 +1,6 @@
-From 7e94342663754fcae083e7793d1d07b366a320c1 Mon Sep 17 00:00:00 2001
+From e588edcfa2b2c9fbe4798b2b6e468df9c8c57d5c Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 28 Jul 2023 22:29:00 -0400
+Date: Thu, 24 Aug 2023 20:59:47 -0400
 Subject: [PATCH] Current Max Speed
 
 Show the current maximum speed in the car hud instead of the set max.
@@ -8,10 +8,11 @@ Useful when there are things other than the set max speed limiting your
 speed, i.e. speed limit control.
 ---
  common/params.cc                              |  4 ++
+ release/files_common                          |  2 +
  selfdrive/controls/controlsd.py               |  6 +++
  selfdrive/controls/current_max_speed.py       | 39 +++++++++++++++++++
  .../controls/lib/longitudinal_planner.py      |  8 ++++
- 4 files changed, 57 insertions(+)
+ 5 files changed, 59 insertions(+)
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -29,21 +30,31 @@ index e8ab42c0b..f1626b27c 100644
  };
  
  } // namespace
+diff --git a/release/files_common b/release/files_common
+index f9acce885..df6563199 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 8084b18ff..43a875ad7 100755
+index 809403073..1737325a6 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
-@@ -27,6 +27,9 @@ from selfdrive.controls.lib.events import Events, ET
- from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
- from selfdrive.controls.lib.vehicle_model import VehicleModel
- from system.hardware import HARDWARE
+@@ -28,6 +28,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET
+ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
+ from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
+ from openpilot.system.hardware import HARDWARE
 +# PFEIFER - CMS {{
-+from selfdrive.controls.current_max_speed import cms
++from openpilot.selfdrive.controls.current_max_speed import cms
 +# }} PFEIFER - CMS
  
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
-@@ -700,6 +703,9 @@ class Controls:
+@@ -701,6 +704,9 @@ class Controls:
  
      hudControl = CC.hudControl
      hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)
@@ -55,12 +66,12 @@ index 8084b18ff..43a875ad7 100755
      hudControl.leadVisible = self.sm['longitudinalPlan'].hasLead
 diff --git a/selfdrive/controls/current_max_speed.py b/selfdrive/controls/current_max_speed.py
 new file mode 100644
-index 000000000..c0042b3b6
+index 000000000..3f2b7863c
 --- /dev/null
 +++ b/selfdrive/controls/current_max_speed.py
 @@ -0,0 +1,39 @@
-+from common.conversions import Conversions as CV
-+from common.params import Params
++from openpilot.common.conversions import Conversions as CV
++from openpilot.common.params import Params
 +import json
 +mem_params = Params("/dev/shm/params")
 +
@@ -99,15 +110,15 @@ index 000000000..c0042b3b6
 +
 +cms = CurrentMaxSpeed()
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 576527292..501cea4ad 100755
+index c1e782fa5..519e4b3ff 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -17,6 +17,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
- from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
- from system.swaglog import cloudlog
+@@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
+ from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
+ from openpilot.system.swaglog import cloudlog
  
 +# PFEIFER - CMS {{
-+from selfdrive.controls.current_max_speed import cms
++from openpilot.selfdrive.controls.current_max_speed import cms
 +# }} PFEIFER - CMS
 +
  LON_MPC_STEP = 0.2  # first step is 0.2s

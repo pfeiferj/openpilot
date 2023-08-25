@@ -1,22 +1,33 @@
-From 0b5d159d466f54bde64651e8a20b1a38f92df323 Mon Sep 17 00:00:00 2001
+From 1aab1eadba569dede9bf018c0a9f41acc31b24fb Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
 
 ---
+ release/files_common                 |   2 +
  selfdrive/controls/button_manager.py | 214 +++++++++++++++++++++++++++
- 1 file changed, 214 insertions(+)
+ 2 files changed, 216 insertions(+)
  create mode 100644 selfdrive/controls/button_manager.py
 
+diff --git a/release/files_common b/release/files_common
+index f9acce885..ce5c9910f 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/controls/button_manager.py
 diff --git a/selfdrive/controls/button_manager.py b/selfdrive/controls/button_manager.py
 new file mode 100644
-index 000000000..d93bf10c1
+index 000000000..343cf6396
 --- /dev/null
 +++ b/selfdrive/controls/button_manager.py
 @@ -0,0 +1,214 @@
 +# PFEIFER - BM
 +
-+from common.params import Params
++from openpilot.common.params import Params
 +from enum import IntEnum
 +from time import time
 +import json
@@ -232,18 +243,19 @@ index 000000000..d93bf10c1
 2.39.2
 
 
-From 1638decb2f273e6f4d8ce7543de5ca3f17064dfc Mon Sep 17 00:00:00 2001
+From 964f599f43a981096df146607c962b92b65ff0c0 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
 
 ---
  common/params.cc                        |  4 ++++
+ release/files_common                    |  1 +
  selfdrive/car/gm/carstate.py            |  9 +++++++++
  selfdrive/car/hyundai/interface.py      |  9 +++++++++
  selfdrive/car/toyota/carstate.py        | 12 ++++++++++++
  selfdrive/controls/gap_adjust_button.py | 13 +++++++++++++
- 5 files changed, 47 insertions(+)
+ 6 files changed, 48 insertions(+)
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -261,16 +273,25 @@ index e8ab42c0b..f09fbb2ab 100644
  };
  
  } // namespace
+diff --git a/release/files_common b/release/files_common
+index ce5c9910f..c3185ef92 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -609,3 +609,4 @@ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
+ 
+ selfdrive/controls/button_manager.py
++selfdrive/controls/gap_adjust_button.py
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index 43cdee18d..85fa379b2 100644
+index 8585e9f20..ae9c591e0 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
- from selfdrive.car.interfaces import CarStateBase
- from selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD
+ from openpilot.selfdrive.car.interfaces import CarStateBase
+ from openpilot.selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD
  
 +# PFEIFER - GAB {{
-+from selfdrive.controls.gap_adjust_button import gap_adjust_button
++from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button
 +# }} PFEIFER - GAB
 +
  TransmissionType = car.CarParams.TransmissionType
@@ -289,21 +310,21 @@ index 43cdee18d..85fa379b2 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 3e25863f4..008f74a7c 100644
+index 16e93e162..7a83583f0 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -11,6 +11,10 @@ from selfdrive.car import create_button_event, get_safety_config
- from selfdrive.car.interfaces import CarInterfaceBase
- from selfdrive.car.disable_ecu import disable_ecu
+@@ -11,6 +11,10 @@ from openpilot.selfdrive.car import create_button_event, get_safety_config
+ from openpilot.selfdrive.car.interfaces import CarInterfaceBase
+ from openpilot.selfdrive.car.disable_ecu import disable_ecu
  
 +# PFEIFER - GAB {{
-+from selfdrive.controls.gap_adjust_button import gap_adjust_button
++from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button
 +# }} PFEIFER - GAB
 +
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -326,6 +330,11 @@ class CarInterface(CarInterfaceBase):
+@@ -328,6 +332,11 @@ class CarInterface(CarInterfaceBase):
  
        ret.buttonEvents = buttonEvents
  
@@ -316,21 +337,21 @@ index 3e25863f4..008f74a7c 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 8a75ab427..fa1761aaa 100644
+index c96df6f10..dbac7473e 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
-@@ -10,6 +10,10 @@ from opendbc.can.parser import CANParser
- from selfdrive.car.interfaces import CarStateBase
- from selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
+@@ -11,6 +11,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
+ from openpilot.selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, \
+                                                   TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
  
 +# PFEIFER - GAB {{
-+from selfdrive.controls.gap_adjust_button import gap_adjust_button
++from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button
 +# }} PFEIFER - GAB
 +
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -162,6 +166,14 @@ class CarState(CarStateBase):
+@@ -163,6 +167,14 @@ class CarState(CarStateBase):
      if self.CP.carFingerprint != CAR.PRIUS_V:
        self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
  
@@ -347,7 +368,7 @@ index 8a75ab427..fa1761aaa 100644
    @staticmethod
 diff --git a/selfdrive/controls/gap_adjust_button.py b/selfdrive/controls/gap_adjust_button.py
 new file mode 100644
-index 000000000..af2b3e645
+index 000000000..f34ff3a7f
 --- /dev/null
 +++ b/selfdrive/controls/gap_adjust_button.py
 @@ -0,0 +1,13 @@
@@ -358,7 +379,7 @@ index 000000000..af2b3e645
 +# GM button state was pulled from OPGM. https://github.com/opgm/openpilot
 +# Toyota button state was pulled from Frogpilot who pulled it from krkeegan. https://github.com/FrogAi/FrogPilot | https://github.com/krkeegan/openpilot
 +
-+from selfdrive.controls.button_manager import Button, ButtonState
++from openpilot.selfdrive.controls.button_manager import Button, ButtonState
 +
 +# export button state so only one import is necessary
 +GapButtonState = ButtonState
@@ -368,33 +389,43 @@ index 000000000..af2b3e645
 2.39.2
 
 
-From 19b59ed5b46a6c3f87e9e7fe3b5488150c5730ce Mon Sep 17 00:00:00 2001
+From 516f91056307c929593ac498edbc521c147221af Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 17:18:00 -0400
 Subject: [PATCH 3/3] experimental mode toggle
 
 ---
+ release/files_common                          |  1 +
  selfdrive/controls/controlsd.py               |  8 ++++
  .../controls/experimental_mode_toggle.py      | 41 +++++++++++++++++++
- 2 files changed, 49 insertions(+)
+ 3 files changed, 50 insertions(+)
  create mode 100644 selfdrive/controls/experimental_mode_toggle.py
 
+diff --git a/release/files_common b/release/files_common
+index c3185ef92..8349c4803 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -610,3 +610,4 @@ tinygrad_repo/tinygrad/*.py
+ 
+ selfdrive/controls/button_manager.py
+ selfdrive/controls/gap_adjust_button.py
++selfdrive/controls/experimental_mode_toggle.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 8084b18ff..f8a88b388 100755
+index 809403073..3b07790b9 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
-@@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
- from selfdrive.controls.lib.vehicle_model import VehicleModel
- from system.hardware import HARDWARE
+@@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
+ from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
+ from openpilot.system.hardware import HARDWARE
  
 +# PFEIFER - EMT {{
-+from selfdrive.controls.experimental_mode_toggle import emt
++from openpilot.selfdrive.controls.experimental_mode_toggle import emt
 +# }} PFEIFER - EMT
 +
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -856,6 +860,10 @@ class Controls:
+@@ -857,6 +861,10 @@ class Controls:
      self.update_events(CS)
      cloudlog.timestamp("Events updated")
  
@@ -407,14 +438,14 @@ index 8084b18ff..f8a88b388 100755
        self.state_transition(CS)
 diff --git a/selfdrive/controls/experimental_mode_toggle.py b/selfdrive/controls/experimental_mode_toggle.py
 new file mode 100644
-index 000000000..2614eb788
+index 000000000..fbdfa201d
 --- /dev/null
 +++ b/selfdrive/controls/experimental_mode_toggle.py
 @@ -0,0 +1,41 @@
 +# PFEIFER - EMT
 +
-+from common.params import Params, put_bool_nonblocking
-+from selfdrive.controls.gap_adjust_button import gap_adjust_button, GapButtonState
++from openpilot.common.params import Params, put_bool_nonblocking
++from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button, GapButtonState
 +
 +params = Params()
 +

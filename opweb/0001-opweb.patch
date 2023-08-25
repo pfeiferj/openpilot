@@ -1,9 +1,10 @@
-From 95ae475978d9b8f12fda8bcc56cd88b54ccfd6f5 Mon Sep 17 00:00:00 2001
+From b3a1431d152b0f3a251ac07ce276146c5afbcb52 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
 
 ---
+ release/files_common                          |  5 +
  selfdrive/manager/process_config.py           |  4 +
  selfdrive/opwebd/__init__.py                  |  0
  selfdrive/opwebd/components/__init__.py       |  0
@@ -39,7 +40,7 @@ Subject: [PATCH] opweb
  selfdrive/opwebd/templates/video/video.html   |  3 +
  selfdrive/opwebd/templates/wheel.html         |  3 +
  selfdrive/opwebd/utils.py                     | 14 +++
- 35 files changed, 842 insertions(+)
+ 36 files changed, 847 insertions(+)
  create mode 100644 selfdrive/opwebd/__init__.py
  create mode 100644 selfdrive/opwebd/components/__init__.py
  create mode 100644 selfdrive/opwebd/components/home.py
@@ -75,21 +76,34 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/templates/wheel.html
  create mode 100644 selfdrive/opwebd/utils.py
 
+diff --git a/release/files_common b/release/files_common
+index f9acce885..ea0b2a4eb 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,8 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/opwebd/*.py
++selfdrive/components/*.py
++selfdrive/static/*
++selfdrive/templates/**/*
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 7cd1ed948..ccc9c3926 100644
+index 50e684fcb..7a332faa6 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -74,6 +74,10 @@ procs = [
-   PythonProcess("uploader", "system.loggerd.uploader", offroad=True),
-   PythonProcess("statsd", "selfdrive.statsd", offroad=True),
+@@ -84,6 +84,10 @@ procs = [
+   PythonProcess("uploader", "system.loggerd.uploader", always_run),
+   PythonProcess("statsd", "selfdrive.statsd", always_run),
  
 +  # PFEIFER - OPWEB {{
-+  PythonProcess("opwebd", "selfdrive.opwebd.opwebd", offroad=True, onroad=False),
++  PythonProcess("opwebd", "selfdrive.opwebd.opwebd", always_run),
 +  # }} PFEIFER - OPWEB
 +
    # debug procs
-   NativeProcess("bridge", "cereal/messaging", ["./bridge"], onroad=False, callback=notcar),
-   PythonProcess("webjoystick", "tools.bodyteleop.web", onroad=False, callback=notcar),
+   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
+   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/opwebd/__init__.py b/selfdrive/opwebd/__init__.py
 new file mode 100644
 index 000000000..e69de29bb
@@ -189,13 +203,13 @@ index 000000000..e60cff451
 +                             "attachment;filename=" + filename})
 diff --git a/selfdrive/opwebd/components/params.py b/selfdrive/opwebd/components/params.py
 new file mode 100644
-index 000000000..d044b0d0e
+index 000000000..a71c4b108
 --- /dev/null
 +++ b/selfdrive/opwebd/components/params.py
 @@ -0,0 +1,51 @@
 +import os
 +from flask import Flask, render_template, request
-+from common.params import Params
++from openpilot.common.params import Params
 +
 +MAX_MEM_PARAMS_CHECKS = 5
 +_mem_params_checks = 0
@@ -246,12 +260,12 @@ index 000000000..d044b0d0e
 +    return render_template('pages/params.html', params=parameters, location=location, has_mem_params=has_mem_params())
 diff --git a/selfdrive/opwebd/components/settings.py b/selfdrive/opwebd/components/settings.py
 new file mode 100644
-index 000000000..d21badf57
+index 000000000..61a5e5d12
 --- /dev/null
 +++ b/selfdrive/opwebd/components/settings.py
 @@ -0,0 +1,28 @@
 +from flask import Flask, render_template, request
-+from common.params import Params
++from openpilot.common.params import Params
 +
 +params = Params()
 +keys = params.all_keys()
@@ -280,12 +294,12 @@ index 000000000..d21badf57
 +    return render_template('settings/toggle.html', checked=checked, bg=bg, translate=translate, key=key)
 diff --git a/selfdrive/opwebd/components/update.py b/selfdrive/opwebd/components/update.py
 new file mode 100644
-index 000000000..2e8545553
+index 000000000..4bac77272
 --- /dev/null
 +++ b/selfdrive/opwebd/components/update.py
 @@ -0,0 +1,92 @@
 +from flask import Flask, render_template
-+from common.params import Params
++from openpilot.common.params import Params
 +import os
 +import subprocess
 +

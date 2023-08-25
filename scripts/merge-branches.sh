@@ -5,6 +5,7 @@ set -e
 # will cause bad union merges.
 echo "*.py merge=union -text" >> .gitattributes
 echo "*.cc merge=union -text" >> .gitattributes
+echo "release/files_common merge=union -text" >> .gitattributes
 
 # This is most likely to have problems from upstream changes
 git merge pfeifer-always-on-lateral

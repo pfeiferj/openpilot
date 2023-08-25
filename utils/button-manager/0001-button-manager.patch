@@ -1,22 +1,33 @@
-From 0b5d159d466f54bde64651e8a20b1a38f92df323 Mon Sep 17 00:00:00 2001
+From 1aab1eadba569dede9bf018c0a9f41acc31b24fb Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH] button manager
 
 ---
+ release/files_common                 |   2 +
  selfdrive/controls/button_manager.py | 214 +++++++++++++++++++++++++++
- 1 file changed, 214 insertions(+)
+ 2 files changed, 216 insertions(+)
  create mode 100644 selfdrive/controls/button_manager.py
 
+diff --git a/release/files_common b/release/files_common
+index f9acce885..ce5c9910f 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/controls/button_manager.py
 diff --git a/selfdrive/controls/button_manager.py b/selfdrive/controls/button_manager.py
 new file mode 100644
-index 000000000..d93bf10c1
+index 000000000..343cf6396
 --- /dev/null
 +++ b/selfdrive/controls/button_manager.py
 @@ -0,0 +1,214 @@
 +# PFEIFER - BM
 +
-+from common.params import Params
++from openpilot.common.params import Params
 +from enum import IntEnum
 +from time import time
 +import json

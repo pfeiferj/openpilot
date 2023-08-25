@@ -1,14 +1,15 @@
-From c1b38698871373f9b7e68728a78544f1ad705c4a Mon Sep 17 00:00:00 2001
+From f50c46132f137822c8d6b7f10c8b4e8e2d65e17c Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
 
 ---
  common/params.cc                              |   4 +
+ release/files_common                          |   2 +
  .../controls/lib/longitudinal_planner.py      |  15 ++
  selfdrive/controls/vtsc.py                    | 214 ++++++++++++++++++
  selfdrive/ui/qt/offroad/settings.cc           |   8 +
- 4 files changed, 241 insertions(+)
+ 5 files changed, 243 insertions(+)
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -26,16 +27,26 @@ index e8ab42c0b..58b2fe03b 100644
  };
  
  } // namespace
+diff --git a/release/files_common b/release/files_common
+index f9acce885..8c53338f9 100644
+--- a/release/files_common
++++ b/release/files_common
+@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+ tinygrad_repo/tinygrad/runtime/ops_gpu.py
+ tinygrad_repo/tinygrad/shape/*
+ tinygrad_repo/tinygrad/*.py
++
++selfdrive/controls/vtsc.py
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 576527292..d7047f017 100755
+index c1e782fa5..2da4b420a 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -17,6 +17,10 @@ from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDX
- from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
- from system.swaglog import cloudlog
+@@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
+ from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
+ from openpilot.system.swaglog import cloudlog
  
 +# PFEIFER - VTSC {{
-+from selfdrive.controls.vtsc import vtsc
++from openpilot.selfdrive.controls.vtsc import vtsc
 +# }} PFEIFER - VTSC
 +
  LON_MPC_STEP = 0.2  # first step is 0.2s
@@ -61,7 +72,7 @@ index 576527292..d7047f017 100755
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/vtsc.py b/selfdrive/controls/vtsc.py
 new file mode 100644
-index 000000000..fa784fd49
+index 000000000..f2c8c569f
 --- /dev/null
 +++ b/selfdrive/controls/vtsc.py
 @@ -0,0 +1,214 @@
@@ -72,10 +83,10 @@ index 000000000..fa784fd49
 +# I also used sunnypilot as a reference. (https://github.com/sunnyhaibin/sunnypilot) Big thanks for sunny's amazing work
 +
 +import numpy as np
-+from common.numpy_fast import clip
-+from common.realtime import sec_since_boot, DT_MDL
++from openpilot.common.numpy_fast import clip
++from openpilot.common.realtime import DT_MDL
 +from time import time
-+from common.params import Params
++from openpilot.common.params import Params
 +params = Params()
 +
 +Polynomial = np.polynomial.polynomial.Polynomial
@@ -174,10 +185,10 @@ index 000000000..fa784fd49
 +    self.y_plan = []
 +
 +  def update_params(self):
-+    time = sec_since_boot()
-+    if time > self.last_params_update + 5.0:
++    t = time()
++    if t > self.last_params_update + 5.0:
 +      self.enabled = params.get_bool("TurnVisionControl")
-+      self.last_params_update = time
++      self.last_params_update = t
 +
 +
 +  def get_driving_path_poly(self):
@@ -280,10 +291,10 @@ index 000000000..fa784fd49
 +
 +vtsc = VisionTurnController()
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 94a673dd7..0405b8415 100644
+index 8b0f9c1f3..bbc16808d 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -72,6 +72,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },

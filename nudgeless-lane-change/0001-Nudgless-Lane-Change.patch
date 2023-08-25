@@ -1,6 +1,6 @@
-From b8ec33f7c57b58c376b33b4904d948bb354d518f Mon Sep 17 00:00:00 2001
+From f894fe5c333c96a970ae06184e1c1fd2d5babc6e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 28 Jul 2023 22:32:15 -0400
+Date: Thu, 24 Aug 2023 21:04:13 -0400
 Subject: [PATCH] Nudgless Lane Change
 
 Enables automatically changing lanes when the blinker is turned on.
@@ -26,15 +26,15 @@ index e8ab42c0b..fc8c7310d 100644
  
  } // namespace
 diff --git a/selfdrive/controls/lib/desire_helper.py b/selfdrive/controls/lib/desire_helper.py
-index 4652b41c1..87d7a0bcd 100644
+index d53803507..5f9274e40 100644
 --- a/selfdrive/controls/lib/desire_helper.py
 +++ b/selfdrive/controls/lib/desire_helper.py
 @@ -1,6 +1,10 @@
  from cereal import log
- from common.conversions import Conversions as CV
- from common.realtime import DT_MDL
+ from openpilot.common.conversions import Conversions as CV
+ from openpilot.common.realtime import DT_MDL
 +# PFEIFER - NLC {{
-+from common.params import Params
++from openpilot.common.params import Params
 +params = Params()
 +# }} PFEIFER - NLC
  
@@ -64,10 +64,10 @@ index 4652b41c1..87d7a0bcd 100644
      if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
        self.lane_change_timer = 0.0
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 94a673dd7..d1c3fbc9d 100644
+index 8b0f9c1f3..7310a3555 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -72,6 +72,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },

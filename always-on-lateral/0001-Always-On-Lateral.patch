@@ -1,6 +1,6 @@
-From f15329f41300babca2a98a8c1d1422d63ff45aea Mon Sep 17 00:00:00 2001
+From a75269f81a9212235e965465abee136d914cf52f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 19 Aug 2023 20:58:18 -0400
+Date: Thu, 24 Aug 2023 20:57:46 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -60,32 +60,32 @@ index e8ab42c0b..aa4fb3409 100644
  
  } // namespace
 diff --git a/panda b/panda
-index aed103d53..ed56db675 160000
+index 0587f22bf..e7144cbf4 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit aed103d5372d1e5b3fb686d2aa8f111081b37fd0
-+Subproject commit ed56db675c681213237446b0e8a84b37f55fbd4b
+-Subproject commit 0587f22bf359c77296f9b03bef6c3bbcbc820f87
++Subproject commit e7144cbf42654bb6e3ab5fb6b1e18057cc338849
 diff --git a/release/files_common b/release/files_common
-index 8381546b0..907164fab 100644
+index f9acce885..57e9b4add 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -593,3 +593,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/always_on_lateral.py
 diff --git a/selfdrive/car/chrysler/carstate.py b/selfdrive/car/chrysler/carstate.py
-index 7b250ddf9..65f78a5d8 100644
+index eb1cf7e7d..f90c148c8 100644
 --- a/selfdrive/car/chrysler/carstate.py
 +++ b/selfdrive/car/chrysler/carstate.py
 @@ -5,6 +5,10 @@ from opendbc.can.can_define import CANDefine
- from selfdrive.car.interfaces import CarStateBase
- from selfdrive.car.chrysler.values import DBC, STEER_THRESHOLD, RAM_CARS
+ from openpilot.selfdrive.car.interfaces import CarStateBase
+ from openpilot.selfdrive.car.chrysler.values import DBC, STEER_THRESHOLD, RAM_CARS
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  
@@ -103,15 +103,15 @@ index 7b250ddf9..65f78a5d8 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/ford/carstate.py b/selfdrive/car/ford/carstate.py
-index 824d92993..bf8c7f4f2 100644
+index 5c787b787..e253a26c2 100644
 --- a/selfdrive/car/ford/carstate.py
 +++ b/selfdrive/car/ford/carstate.py
-@@ -6,6 +6,10 @@ from selfdrive.car.interfaces import CarStateBase
- from selfdrive.car.ford.fordcan import CanBus
- from selfdrive.car.ford.values import CANFD_CAR, CarControllerParams, DBC
+@@ -6,6 +6,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
+ from openpilot.selfdrive.car.ford.fordcan import CanBus
+ from openpilot.selfdrive.car.ford.values import CANFD_CAR, CarControllerParams, DBC
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  GearShifter = car.CarState.GearShifter
@@ -129,15 +129,15 @@ index 824d92993..bf8c7f4f2 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index 43cdee18d..83b9b9b90 100644
+index 8585e9f20..4e9564934 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
- from selfdrive.car.interfaces import CarStateBase
- from selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD
+ from openpilot.selfdrive.car.interfaces import CarStateBase
+ from openpilot.selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  TransmissionType = car.CarParams.TransmissionType
@@ -155,21 +155,21 @@ index 43cdee18d..83b9b9b90 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/honda/carstate.py b/selfdrive/car/honda/carstate.py
-index d6d2b18a0..99355eb1d 100644
+index 03aedb31d..c43c5335b 100644
 --- a/selfdrive/car/honda/carstate.py
 +++ b/selfdrive/car/honda/carstate.py
-@@ -9,6 +9,10 @@ from selfdrive.car.honda.hondacan import get_cruise_speed_conversion, get_pt_bus
- from selfdrive.car.honda.values import CAR, DBC, STEER_THRESHOLD, HONDA_BOSCH, HONDA_NIDEC_ALT_SCM_MESSAGES, HONDA_BOSCH_ALT_BRAKE_SIGNAL, HONDA_BOSCH_RADARLESS
- from selfdrive.car.interfaces import CarStateBase
+@@ -11,6 +11,10 @@ from openpilot.selfdrive.car.honda.values import CAR, DBC, STEER_THRESHOLD, HOND
+                                                  HONDA_BOSCH_RADARLESS
+ from openpilot.selfdrive.car.interfaces import CarStateBase
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  TransmissionType = car.CarParams.TransmissionType
  
  
-@@ -106,6 +110,10 @@ class CarState(CarStateBase):
+@@ -108,6 +112,10 @@ class CarState(CarStateBase):
      # However, on cars without a digital speedometer this is not always present (HRV, FIT, CRV 2016, ILX and RDX)
      self.dash_speed_seen = False
  
@@ -181,21 +181,21 @@ index d6d2b18a0..99355eb1d 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 2e3801c31..820d31018 100644
+index ee35bf666..515247727 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
-@@ -10,6 +10,10 @@ from selfdrive.car.hyundai.hyundaicanfd import CanBus
- from selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_GEARS, CAMERA_SCC_CAR, CANFD_CAR, EV_CAR, HYBRID_CAR, Buttons, CarControllerParams
- from selfdrive.car.interfaces import CarStateBase
+@@ -11,6 +11,10 @@ from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_G
+                                                    CANFD_CAR, EV_CAR, HYBRID_CAR, Buttons, CarControllerParams
+ from openpilot.selfdrive.car.interfaces import CarStateBase
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  PREV_BUTTON_SAMPLES = 8
  CLUSTER_SAMPLE_RATE = 20  # frames
  STANDSTILL_THRESHOLD = 12 * 0.03125 * CV.KPH_TO_MS
-@@ -104,11 +108,17 @@ class CarState(CarStateBase):
+@@ -105,11 +109,17 @@ class CarState(CarStateBase):
        ret.cruiseState.available = cp.vl["TCS13"]["ACCEnable"] == 0
        ret.cruiseState.enabled = cp.vl["TCS13"]["ACC_REQ"] == 1
        ret.cruiseState.standstill = False
@@ -213,7 +213,7 @@ index 2e3801c31..820d31018 100644
  
      # TODO: Find brake pressure
      ret.brake = 0
-@@ -158,11 +168,22 @@ class CarState(CarStateBase):
+@@ -159,11 +169,22 @@ class CarState(CarStateBase):
      self.steer_state = cp.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
@@ -236,7 +236,7 @@ index 2e3801c31..820d31018 100644
      ret = car.CarState.new_message()
  
      self.is_metric = cp.vl["CRUISE_BUTTONS_ALT"]["DISTANCE_UNIT"] != 1
-@@ -223,7 +244,14 @@ class CarState(CarStateBase):
+@@ -224,7 +245,14 @@ class CarState(CarStateBase):
  
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
@@ -252,7 +252,7 @@ index 2e3801c31..820d31018 100644
      ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
  
 diff --git a/selfdrive/car/interfaces.py b/selfdrive/car/interfaces.py
-index f30683d9a..7dd826d27 100644
+index 53b3e381f..b91b42ff0 100644
 --- a/selfdrive/car/interfaces.py
 +++ b/selfdrive/car/interfaces.py
 @@ -326,6 +326,10 @@ class CarStateBase(ABC):
@@ -267,15 +267,15 @@ index f30683d9a..7dd826d27 100644
      self.left_blinker_cnt = 0
      self.right_blinker_cnt = 0
 diff --git a/selfdrive/car/mazda/carstate.py b/selfdrive/car/mazda/carstate.py
-index d782e59de..5f4029071 100644
+index 1f7846ca0..ec159b844 100644
 --- a/selfdrive/car/mazda/carstate.py
 +++ b/selfdrive/car/mazda/carstate.py
 @@ -5,6 +5,10 @@ from opendbc.can.parser import CANParser
- from selfdrive.car.interfaces import CarStateBase
- from selfdrive.car.mazda.values import DBC, LKAS_LIMITS, GEN1
+ from openpilot.selfdrive.car.interfaces import CarStateBase
+ from openpilot.selfdrive.car.mazda.values import DBC, LKAS_LIMITS, GEN1
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  class CarState(CarStateBase):
@@ -293,15 +293,15 @@ index d782e59de..5f4029071 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/subaru/carstate.py b/selfdrive/car/subaru/carstate.py
-index 84c1285af..da27193a2 100644
+index ff203f387..6bc552a70 100644
 --- a/selfdrive/car/subaru/carstate.py
 +++ b/selfdrive/car/subaru/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
- from selfdrive.car.subaru.values import DBC, CAR, GLOBAL_GEN2, PREGLOBAL_CARS, CanBus, SubaruFlags
- from selfdrive.car import CanSignalRateCalculator
+ from openpilot.selfdrive.car.subaru.values import DBC, CAR, GLOBAL_GEN2, PREGLOBAL_CARS, HYBRID_CARS, CanBus, SubaruFlags
+ from openpilot.selfdrive.car import CanSignalRateCalculator
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  
@@ -319,15 +319,15 @@ index 84c1285af..da27193a2 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/tesla/carstate.py b/selfdrive/car/tesla/carstate.py
-index 61a6526f0..5f8eff781 100644
+index 2cb4f09d7..175d429bd 100644
 --- a/selfdrive/car/tesla/carstate.py
 +++ b/selfdrive/car/tesla/carstate.py
-@@ -7,6 +7,10 @@ from selfdrive.car.interfaces import CarStateBase
+@@ -7,6 +7,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
  from opendbc.can.parser import CANParser
  from opendbc.can.can_define import CANDefine
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  class CarState(CarStateBase):
@@ -345,21 +345,21 @@ index 61a6526f0..5f8eff781 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 8a75ab427..b7b6b7d88 100644
+index c96df6f10..ce07eaedd 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
-@@ -23,6 +23,10 @@ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
+@@ -24,6 +24,10 @@ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
  # - prolonged high driver torque: 17 (permanent)
  PERM_STEER_FAULTS = (3, 17)
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  
  class CarState(CarStateBase):
    def __init__(self, CP):
-@@ -43,6 +47,10 @@ class CarState(CarStateBase):
+@@ -44,6 +48,10 @@ class CarState(CarStateBase):
      self.acc_type = 1
      self.lkas_hud = {}
  
@@ -371,15 +371,15 @@ index 8a75ab427..b7b6b7d88 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/volkswagen/carstate.py b/selfdrive/car/volkswagen/carstate.py
-index 35f7e8bf6..a486b71b4 100644
+index cbe8918d4..b31945828 100644
 --- a/selfdrive/car/volkswagen/carstate.py
 +++ b/selfdrive/car/volkswagen/carstate.py
 @@ -6,6 +6,10 @@ from opendbc.can.parser import CANParser
- from selfdrive.car.volkswagen.values import DBC, CANBUS, PQ_CARS, NetworkLocation, TransmissionType, GearShifter, \
+ from openpilot.selfdrive.car.volkswagen.values import DBC, CANBUS, PQ_CARS, NetworkLocation, TransmissionType, GearShifter, \
                                              CarControllerParams
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral, AlwaysOnLateralType
 +# }} PFEIFER - AOL
 +
  
@@ -398,7 +398,7 @@ index 35f7e8bf6..a486b71b4 100644
  
 diff --git a/selfdrive/controls/always_on_lateral.py b/selfdrive/controls/always_on_lateral.py
 new file mode 100644
-index 000000000..f4684cc4d
+index 000000000..e7e7a2a7b
 --- /dev/null
 +++ b/selfdrive/controls/always_on_lateral.py
 @@ -0,0 +1,295 @@
@@ -417,13 +417,13 @@ index 000000000..f4684cc4d
 +# improvements to the safety of this implementation
 +
 +from cereal import log, car
-+from common.params import Params, put_bool_nonblocking
-+from selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEED
++from openpilot.common.params import Params, put_bool_nonblocking
++from openpilot.selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEED
 +from panda import ALTERNATIVE_EXPERIENCE
-+from selfdrive.controls.lib.events import EngagementAlert, AudibleAlert
-+from selfdrive.controls.lib.events import ET
++from openpilot.selfdrive.controls.lib.events import EngagementAlert, AudibleAlert
++from openpilot.selfdrive.controls.lib.events import ET
 +from enum import IntEnum
-+from common.realtime import DT_CTRL
++from openpilot.common.realtime import DT_CTRL
 +
 +State = log.ControlsState.OpenpilotState
 +ACTIVE_STATES = (State.enabled, State.softDisabling, State.overriding)
@@ -698,21 +698,21 @@ index 000000000..f4684cc4d
 +      experience |= ALTERNATIVE_EXPERIENCE.AOL_ENABLE_ON_MAIN
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 8084b18ff..382a23070 100755
+index 809403073..9d5144b48 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
-@@ -28,6 +28,10 @@ from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
- from selfdrive.controls.lib.vehicle_model import VehicleModel
- from system.hardware import HARDWARE
+@@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
+ from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
+ from openpilot.system.hardware import HARDWARE
  
 +# PFEIFER - AOL {{
-+from selfdrive.controls.always_on_lateral import AlwaysOnLateral
++from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral
 +# }} PFEIFER - AOL
 +
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -106,7 +110,10 @@ class Controls:
+@@ -107,7 +111,10 @@ class Controls:
      self.CP.alternativeExperience = 0
      if not self.disengage_on_accelerator:
        self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
@@ -724,7 +724,7 @@ index 8084b18ff..382a23070 100755
      # read params
      self.is_metric = self.params.get_bool("IsMetric")
      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
-@@ -558,6 +565,11 @@ class Controls:
+@@ -559,6 +566,11 @@ class Controls:
      self.active = self.state in ACTIVE_STATES
      if self.active:
        self.current_alert_types.append(ET.WARNING)
@@ -736,7 +736,7 @@ index 8084b18ff..382a23070 100755
  
    def state_control(self, CS):
      """Given the state, this function returns a CarControl packet"""
-@@ -585,6 +597,10 @@ class Controls:
+@@ -586,6 +598,10 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
@@ -748,10 +748,10 @@ index 8084b18ff..382a23070 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 94a673dd7..a37700a18 100644
+index 8b0f9c1f3..92713495e 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -69,6 +69,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -72,6 +72,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -788,7 +788,7 @@ index 94a673dd7..a37700a18 100644
  #ifdef ENABLE_MAPS
      {
        "NavSettingTime24h",
-@@ -110,6 +140,10 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -114,6 +144,10 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
    toggles["ExperimentalMode"]->setActiveIcon("../assets/img_experimental.svg");
    toggles["ExperimentalMode"]->setConfirmation(true, true);
    toggles["ExperimentalLongitudinalEnabled"]->setConfirmation(true, false);
@@ -799,7 +799,7 @@ index 94a673dd7..a37700a18 100644
  
    connect(toggles["ExperimentalLongitudinalEnabled"], &ToggleControl::toggleFlipped, [=]() {
      updateToggles();
-@@ -146,6 +180,14 @@ void TogglesPanel::updateToggles() {
+@@ -151,6 +185,14 @@ void TogglesPanel::updateToggles() {
                                    .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner. "
                                            "When a navigation destination is set and the driving model is using it as input, the driving path on the map will turn green."));
  
@@ -815,10 +815,10 @@ index 94a673dd7..a37700a18 100644
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 7c070d2ad..aed432497 100644
+index d0b82207e..884ebe78c 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -68,6 +68,13 @@ void OnroadWindow::updateState(const UIState &s) {
+@@ -72,6 +72,13 @@ void OnroadWindow::updateState(const UIState &s) {
    }
  
    QColor bgColor = bg_colors[s.status];
@@ -833,10 +833,10 @@ index 7c070d2ad..aed432497 100644
    alerts->updateAlert(alert);
  
 diff --git a/selfdrive/ui/qt/onroad.h b/selfdrive/ui/qt/onroad.h
-index 778322ed0..8b8033871 100644
+index b3ba41145..91f207967 100644
 --- a/selfdrive/ui/qt/onroad.h
 +++ b/selfdrive/ui/qt/onroad.h
-@@ -145,6 +145,9 @@ private:
+@@ -134,6 +134,9 @@ private:
    QColor bg = bg_colors[STATUS_DISENGAGED];
    QWidget *map = nullptr;
    QHBoxLayout* split;
@@ -847,10 +847,10 @@ index 778322ed0..8b8033871 100644
  private slots:
    void offroadTransition(bool offroad);
 diff --git a/selfdrive/ui/ui.h b/selfdrive/ui/ui.h
-index 31488431b..67d03e845 100644
+index bd9d05942..2ea2dbee5 100644
 --- a/selfdrive/ui/ui.h
 +++ b/selfdrive/ui/ui.h
-@@ -93,12 +93,18 @@ typedef enum UIStatus {
+@@ -94,6 +94,9 @@ typedef enum UIStatus {
    STATUS_DISENGAGED,
    STATUS_OVERRIDE,
    STATUS_ENGAGED,
@@ -859,7 +859,8 @@ index 31488431b..67d03e845 100644
 +  // }} PFEIFER - AOL
  } UIStatus;
  
- const QColor bg_colors [] = {
+ enum PrimeType {
+@@ -109,6 +112,9 @@ const QColor bg_colors [] = {
    [STATUS_DISENGAGED] = QColor(0x17, 0x33, 0x49, 0xc8),
    [STATUS_OVERRIDE] = QColor(0x91, 0x9b, 0x95, 0xf1),
    [STATUS_ENGAGED] = QColor(0x17, 0x86, 0x44, 0xf1),

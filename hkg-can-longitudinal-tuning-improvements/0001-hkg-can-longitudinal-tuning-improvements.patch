@@ -1,4 +1,4 @@
-From 004ed11bacea336009fd4b7f7bb3382daf059276 Mon Sep 17 00:00:00 2001
+From b246f8fcacc5fc93ad825c2321ce819b47be99c5 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 19 Aug 2023 21:02:19 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -10,7 +10,7 @@ Subject: [PATCH] hkg-can longitudinal tuning improvements
  3 files changed, 23 insertions(+), 10 deletions(-)
 
 diff --git a/selfdrive/car/hyundai/carcontroller.py b/selfdrive/car/hyundai/carcontroller.py
-index 6af5f572d..47e586b85 100644
+index 1ff211e86..f1f5cda0f 100644
 --- a/selfdrive/car/hyundai/carcontroller.py
 +++ b/selfdrive/car/hyundai/carcontroller.py
 @@ -169,12 +169,20 @@ class CarController:
@@ -40,7 +40,7 @@ index 6af5f572d..47e586b85 100644
        # 20 Hz LFA MFA message
        if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
 diff --git a/selfdrive/car/hyundai/hyundaican.py b/selfdrive/car/hyundai/hyundaican.py
-index c0c60fba0..432164fc7 100644
+index 008397402..034c330d2 100644
 --- a/selfdrive/car/hyundai/hyundaican.py
 +++ b/selfdrive/car/hyundai/hyundaican.py
 @@ -125,7 +125,7 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
@@ -52,7 +52,7 @@ index c0c60fba0..432164fc7 100644
    commands = []
  
    scc11_values = {
-@@ -156,8 +156,8 @@ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, s
+@@ -163,8 +163,8 @@ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, s
    scc14_values = {
      "ComfortBandUpper": 0.0, # stock usually is 0 but sometimes uses higher values
      "ComfortBandLower": 0.0, # stock usually is 0 but sometimes uses higher values
@@ -64,10 +64,10 @@ index c0c60fba0..432164fc7 100644
      "ObjGap": 2 if lead_visible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
    }
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 3e25863f4..edd1c38f3 100644
+index 16e93e162..38b2aa993 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -246,9 +246,14 @@ class CarInterface(CarInterfaceBase):
+@@ -248,9 +248,14 @@ class CarInterface(CarInterfaceBase):
        ret.longitudinalTuning.kiV = [0.0]
        ret.experimentalLongitudinalAvailable = candidate in (HYBRID_CAR | EV_CAR) and candidate not in CANFD_RADAR_SCC_CAR
      else:
