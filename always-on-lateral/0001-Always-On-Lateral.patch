@@ -1,6 +1,6 @@
-From a75269f81a9212235e965465abee136d914cf52f Mon Sep 17 00:00:00 2001
+From e2234f004100132f56f1e2bef07bd94329f18c0f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Thu, 24 Aug 2023 20:57:46 -0400
+Date: Sat, 26 Aug 2023 10:58:38 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -60,17 +60,17 @@ index e8ab42c0b..aa4fb3409 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 0587f22bf..e7144cbf4 160000
+index 0eb04fae6..ef5a90598 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 0587f22bf359c77296f9b03bef6c3bbcbc820f87
-+Subproject commit e7144cbf42654bb6e3ab5fb6b1e18057cc338849
+-Subproject commit 0eb04fae67646e283b7d750d1e2119e37c398f95
++Subproject commit ef5a9059835c898a0be186aa4896df8713c7f544
 diff --git a/release/files_common b/release/files_common
-index f9acce885..57e9b4add 100644
+index b375c18dc..9f8c86a49 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -603,3 +603,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -252,10 +252,10 @@ index ee35bf666..515247727 100644
      ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
  
 diff --git a/selfdrive/car/interfaces.py b/selfdrive/car/interfaces.py
-index 53b3e381f..b91b42ff0 100644
+index 1b68b1dbc..23d2f53e8 100644
 --- a/selfdrive/car/interfaces.py
 +++ b/selfdrive/car/interfaces.py
-@@ -326,6 +326,10 @@ class CarStateBase(ABC):
+@@ -327,6 +327,10 @@ class CarStateBase(ABC):
      self.car_fingerprint = CP.carFingerprint
      self.out = car.CarState.new_message()
  

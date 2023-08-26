@@ -1,4 +1,4 @@
-From f50c46132f137822c8d6b7f10c8b4e8e2d65e17c Mon Sep 17 00:00:00 2001
+From a8cdf65aa68f805c9574b26321a49ad5b5b602a7 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
@@ -28,10 +28,10 @@ index e8ab42c0b..58b2fe03b 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index f9acce885..8c53338f9 100644
+index b375c18dc..55b56dfbe 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -603,3 +603,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

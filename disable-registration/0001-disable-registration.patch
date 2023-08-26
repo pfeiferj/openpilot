@@ -1,4 +1,4 @@
-From 7476a0bc280ba68c62a0509c84efdde13fec510c Mon Sep 17 00:00:00 2001
+From 6911ae2bab7a7628bc2eb90bfbbdc24c81cc23ca Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 22 Aug 2023 19:05:58 -0400
 Subject: [PATCH] disable registration

@@ -1,4 +1,4 @@
-From 41c9246c5fbe1cf5d69d686f3850249b915d849d Mon Sep 17 00:00:00 2001
+From 89a45eabccd8f23bb4728aac18047ceeed306129 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -30,10 +30,10 @@ index e8ab42c0b..797a54ea3 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index f9acce885..40ef72e7d 100644
+index b375c18dc..811f6c20b 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -607,3 +607,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -603,3 +603,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

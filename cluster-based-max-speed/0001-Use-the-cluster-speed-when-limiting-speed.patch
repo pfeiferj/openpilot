@@ -1,4 +1,4 @@
-From b80d874d3f4c6f694f199d0eba3bd2c823603656 Mon Sep 17 00:00:00 2001
+From 11b49411b35081beeb67adbb0355e1cb37f61635 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 18:48:03 -0400
 Subject: [PATCH] Use the cluster speed when limiting speed
