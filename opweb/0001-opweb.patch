@@ -1,4 +1,4 @@
-From b3a1431d152b0f3a251ac07ce276146c5afbcb52 Mon Sep 17 00:00:00 2001
+From a3ed03c141dd320f1123fc6750f4cd321edc9fb7 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -8,20 +8,22 @@ Subject: [PATCH] opweb
  selfdrive/manager/process_config.py           |  4 +
  selfdrive/opwebd/__init__.py                  |  0
  selfdrive/opwebd/components/__init__.py       |  0
+ selfdrive/opwebd/components/gpx.py            | 53 +++++++++++
  selfdrive/opwebd/components/home.py           | 16 ++++
- selfdrive/opwebd/components/log.py            | 63 +++++++++++++
+ selfdrive/opwebd/components/log.py            | 65 +++++++++++++
  selfdrive/opwebd/components/params.py         | 51 ++++++++++
  selfdrive/opwebd/components/settings.py       | 28 ++++++
  selfdrive/opwebd/components/update.py         | 92 +++++++++++++++++++
  selfdrive/opwebd/components/video.py          | 80 ++++++++++++++++
- selfdrive/opwebd/opwebd.py                    | 25 +++++
+ selfdrive/opwebd/opwebd.py                    | 27 ++++++
  selfdrive/opwebd/static/hls.min.js            |  2 +
  selfdrive/opwebd/static/htmx.min.js           |  1 +
  selfdrive/opwebd/static/tailwind.min.js       | 63 +++++++++++++
  selfdrive/opwebd/templates/base.html          | 51 ++++++++++
+ selfdrive/opwebd/templates/gpx/segment.gpx    | 13 +++
  selfdrive/opwebd/templates/head.html          | 34 +++++++
  selfdrive/opwebd/templates/log/log_type.html  | 11 +++
- selfdrive/opwebd/templates/log/logs.html      | 37 ++++++++
+ selfdrive/opwebd/templates/log/logs.html      | 41 +++++++++
  selfdrive/opwebd/templates/pages/index.html   | 19 ++++
  selfdrive/opwebd/templates/pages/log.html     | 20 ++++
  selfdrive/opwebd/templates/pages/logs.html    | 23 +++++
@@ -40,9 +42,10 @@ Subject: [PATCH] opweb
  selfdrive/opwebd/templates/video/video.html   |  3 +
  selfdrive/opwebd/templates/wheel.html         |  3 +
  selfdrive/opwebd/utils.py                     | 14 +++
- 36 files changed, 847 insertions(+)
+ 38 files changed, 921 insertions(+)
  create mode 100644 selfdrive/opwebd/__init__.py
  create mode 100644 selfdrive/opwebd/components/__init__.py
+ create mode 100644 selfdrive/opwebd/components/gpx.py
  create mode 100644 selfdrive/opwebd/components/home.py
  create mode 100644 selfdrive/opwebd/components/log.py
  create mode 100644 selfdrive/opwebd/components/params.py
@@ -54,6 +57,7 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/static/htmx.min.js
  create mode 100644 selfdrive/opwebd/static/tailwind.min.js
  create mode 100644 selfdrive/opwebd/templates/base.html
+ create mode 100644 selfdrive/opwebd/templates/gpx/segment.gpx
  create mode 100644 selfdrive/opwebd/templates/head.html
  create mode 100644 selfdrive/opwebd/templates/log/log_type.html
  create mode 100644 selfdrive/opwebd/templates/log/logs.html
@@ -110,6 +114,65 @@ index 000000000..e69de29bb
 diff --git a/selfdrive/opwebd/components/__init__.py b/selfdrive/opwebd/components/__init__.py
 new file mode 100644
 index 000000000..e69de29bb
+diff --git a/selfdrive/opwebd/components/gpx.py b/selfdrive/opwebd/components/gpx.py
+new file mode 100644
+index 000000000..818a5df81
+--- /dev/null
++++ b/selfdrive/opwebd/components/gpx.py
+@@ -0,0 +1,53 @@
++from flask import Flask, render_template, Response
++from openpilot.common.params import Params
++from cereal import log
++from ..utils import SEGMENTS_DIR
++import os
++from datetime import datetime
++
++params = Params()
++keys = params.all_keys()
++
++def valid_location(event):
++  return event["liveLocationKalman"]["positionGeodetic"]["valid"]
++
++def make_point(event, offset):
++  dt = mono_datetime(event, offset)
++  return {
++    "latitude": event["liveLocationKalman"]["positionGeodetic"]["value"][0],
++    "longitude": event["liveLocationKalman"]["positionGeodetic"]["value"][1],
++    "elevation": event["liveLocationKalman"]["positionGeodetic"]["value"][2],
++    "timestamp": dt.isoformat() + "Z",
++  }
++
++def mono_offset(clock):
++  wall_time = clock["clocks"]["wallTimeNanos"]
++  mono_time = clock["clocks"]["monotonicNanos"]
++  return wall_time - mono_time
++
++def mono_datetime(event, offset):
++  mono_time = event["logMonoTime"]
++  wall_time = mono_time + offset
++  return datetime.fromtimestamp(wall_time/1000/1000/1000)
++
++def route_gpx(app: Flask):
++
++  @app.route("/gpx/<segment>.gpx")
++  def gpx_file(segment):
++    full_path = os.path.join(SEGMENTS_DIR, segment, "rlog")
++    file = open(full_path, "rb")
++    events = log.Event.read_multiple(file)
++    filtered_events = [e for e in events if 'liveLocationKalman' == e.which()]
++    filtered_events = [e.to_dict() for e in filtered_events]
++    filtered_events = [e for e in filtered_events if valid_location(e)]
++    file.close()
++
++    file = open(full_path, "rb")
++    events = log.Event.read_multiple(file)
++    filtered_clocks = [e for e in events if 'clocks' == e.which()]
++    clock = filtered_clocks[0].to_dict()
++    offset = mono_offset(clock)
++    file.close()
++
++    points = [make_point(e, offset) for e in filtered_events]
++    return Response(render_template('gpx/segment.gpx', points=points), mimetype='application/octet-stream')
 diff --git a/selfdrive/opwebd/components/home.py b/selfdrive/opwebd/components/home.py
 new file mode 100644
 index 000000000..41e935b6d
@@ -134,10 +197,10 @@ index 000000000..41e935b6d
 +    return render_template('pages/index.html', route=dirs[0])
 diff --git a/selfdrive/opwebd/components/log.py b/selfdrive/opwebd/components/log.py
 new file mode 100644
-index 000000000..e60cff451
+index 000000000..c8f50dcef
 --- /dev/null
 +++ b/selfdrive/opwebd/components/log.py
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,65 @@
 +from flask import Flask, render_template, request, Response
 +import json
 +import os
@@ -164,6 +227,7 @@ index 000000000..e60cff451
 +    filtered_events = [e for e in events if event_type == e.which()]
 +    events_slice = filtered_events[page*10-10:page*10]
 +    str_events = [json.dumps(e.to_dict(), indent=2, default=lambda ev : ev.hex()) for e in events_slice]
++    file.close()
 +
 +    next_page=None
 +    if len(str_events) == 10:
@@ -197,6 +261,7 @@ index 000000000..e60cff451
 +    events = log.Event.read_multiple(file)
 +    events = [e.to_dict() for e in events]
 +    events = json.dumps(events, indent=2, default=lambda x: "")
++    file.close()
 +    return Response(events,
 +                    mimetype="text/json",
 +                    headers={"Content-Disposition":
@@ -478,10 +543,10 @@ index 000000000..3a6f3ed2d
 +    return send_from_directory(SEGMENTS_DIR, path, as_attachment=True)
 diff --git a/selfdrive/opwebd/opwebd.py b/selfdrive/opwebd/opwebd.py
 new file mode 100644
-index 000000000..d3dc66307
+index 000000000..c022a1ab7
 --- /dev/null
 +++ b/selfdrive/opwebd/opwebd.py
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,27 @@
 +from flask import Flask
 +from .components.home import route_home
 +from .components.log import route_log
@@ -489,6 +554,7 @@ index 000000000..d3dc66307
 +from .components.settings import route_settings
 +from .components.update import route_update
 +from .components.video import route_video
++from .components.gpx import route_gpx
 +
 +
 +app = Flask(__name__)
@@ -499,6 +565,7 @@ index 000000000..d3dc66307
 +route_settings(app)
 +route_update(app)
 +route_video(app)
++route_gpx(app)
 +
 +
 +def main():
@@ -649,6 +716,25 @@ index 000000000..bd6223cca
 +    </div>
 +  </body>
 +</html>
+diff --git a/selfdrive/opwebd/templates/gpx/segment.gpx b/selfdrive/opwebd/templates/gpx/segment.gpx
+new file mode 100644
+index 000000000..8f65afa9d
+--- /dev/null
++++ b/selfdrive/opwebd/templates/gpx/segment.gpx
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="opweb -- https://github.com/pfeiferj/openpilot">
++  <trk>
++    <trkseg>
++      {% for point in points %}
++      <trkpt lat="{{point.latitude}}" lon="{{point.longitude}}">
++        <ele>{{point.elevation}}</ele>
++        <time>{{point.timestamp}}</time>
++      </trkpt>
++      {% endfor %}
++    </trkseg>
++  </trk>
++</gpx>
 diff --git a/selfdrive/opwebd/templates/head.html b/selfdrive/opwebd/templates/head.html
 new file mode 100644
 index 000000000..7f393f92f
@@ -708,10 +794,10 @@ index 000000000..4527a9381
 +</div>
 diff --git a/selfdrive/opwebd/templates/log/logs.html b/selfdrive/opwebd/templates/log/logs.html
 new file mode 100644
-index 000000000..1c5a120b6
+index 000000000..a996e851b
 --- /dev/null
 +++ b/selfdrive/opwebd/templates/log/logs.html
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,41 @@
 +<div class="flow-root w-full">
 +  <div class="overflow-x-auto">
 +    <div class="inline-block min-w-full align-middle">
@@ -723,6 +809,7 @@ index 000000000..1c5a120b6
 +              <th scope="col" class="px-3 py-3.5 text-left font-semibold text-slate-600 dark:text-gray-400">Raw Logs</th>
 +              <th scope="col" class="px-3 py-3.5 text-left font-semibold text-slate-600 dark:text-gray-400">JSON Logs</th>
 +              <th scope="col" class="px-3 py-3.5 text-left font-semibold text-slate-600 dark:text-gray-400">View Logs</th>
++              <th scope="col" class="px-3 py-3.5 text-left font-semibold text-slate-600 dark:text-gray-400">GPX</th>
 +            </tr>
 +          </thead>
 +          <tbody class="divide-y divide-slate-900 bg-gray-50 dark:bg-slate-700">
@@ -740,6 +827,9 @@ index 000000000..1c5a120b6
 +              <td class="break-all px-3 py-4 text-slate-600 dark:text-gray-300">
 +                <a href="/log?path={{segment}}/rlog">rlog</a>
 +                <a href="/log?path={{segment}}/qlog">qlog</a>
++              </td>
++              <td class="break-all px-3 py-4 text-slate-600 dark:text-gray-300">
++                <a href="/gpx/{{segment}}.gpx">gpx</a>
 +              </td>
 +            </tr>
 +            {% endfor %}

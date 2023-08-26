@@ -1,5 +1,8 @@
 # OPWeb Changelog
 
+## 08/26/23
+* Generate gpx files from logs
+
 ## 08/17/23
 * Reformat code to 2 space tabs
 * Improve ui on mobile
