@@ -1,4 +1,4 @@
-From 5e6e801238f3da149acc81061f7c7586ae699233 Mon Sep 17 00:00:00 2001
+From a836dad90985bfec1b4e9fd3f800473d727c3c67 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 14:19:30 -0400
 Subject: [PATCH] mapd
@@ -10843,7 +10843,7 @@ index 000000000..fe4c4edce
 +    return areas, ways
 diff --git a/selfdrive/mapd/mapd.py b/selfdrive/mapd/mapd.py
 new file mode 100644
-index 000000000..78bf8fef0
+index 000000000..c76812ba3
 --- /dev/null
 +++ b/selfdrive/mapd/mapd.py
 @@ -0,0 +1,184 @@
@@ -10996,14 +10996,14 @@ index 000000000..78bf8fef0
 +      # PFEIFER - SLC {{
 +      slc.load_state()
 +      slc.map_speed_limit = 0
-+      slc.write_state()
++      slc.write_map_state()
 +      # }} PFEIFER - SLC
 +      return
 +
 +    # PFEIFER - SLC {{
 +    slc.load_state()
 +    slc.map_speed_limit = self.route.current_speed_limit
-+    slc.write_state()
++    slc.write_map_state()
 +    # }} PFEIFER - SLC
 +
 +

@@ -1,5 +1,8 @@
 # Speed Limit Control Changelog
 
+## 08/25/23
+* Separate speed limit data into individual params
+
 ## 08/20/23
 * HKG car based slc fix
 
