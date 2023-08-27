@@ -1,4 +1,4 @@
-From b620632f1310306398028245b3bb8bfe50fca742 Mon Sep 17 00:00:00 2001
+From b97e1fcc3bb4d197bac7ef5cce744b8aa2cd35c2 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -8,7 +8,7 @@ Subject: [PATCH] opweb
  selfdrive/manager/process_config.py           |  4 +
  selfdrive/opwebd/__init__.py                  |  0
  selfdrive/opwebd/components/__init__.py       |  0
- selfdrive/opwebd/components/gpx.py            | 53 +++++++++++
+ selfdrive/opwebd/components/gpx.py            | 56 +++++++++++
  selfdrive/opwebd/components/home.py           | 16 ++++
  selfdrive/opwebd/components/log.py            | 65 +++++++++++++
  selfdrive/opwebd/components/params.py         | 51 ++++++++++
@@ -42,7 +42,7 @@ Subject: [PATCH] opweb
  selfdrive/opwebd/templates/video/video.html   |  3 +
  selfdrive/opwebd/templates/wheel.html         |  3 +
  selfdrive/opwebd/utils.py                     | 14 +++
- 38 files changed, 921 insertions(+)
+ 38 files changed, 924 insertions(+)
  create mode 100644 selfdrive/opwebd/__init__.py
  create mode 100644 selfdrive/opwebd/components/__init__.py
  create mode 100644 selfdrive/opwebd/components/gpx.py
@@ -116,16 +116,17 @@ new file mode 100644
 index 000000000..e69de29bb
 diff --git a/selfdrive/opwebd/components/gpx.py b/selfdrive/opwebd/components/gpx.py
 new file mode 100644
-index 000000000..818a5df81
+index 000000000..7ce364ec9
 --- /dev/null
 +++ b/selfdrive/opwebd/components/gpx.py
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,56 @@
 +from flask import Flask, render_template, Response
 +from openpilot.common.params import Params
 +from cereal import log
 +from ..utils import SEGMENTS_DIR
 +import os
 +from datetime import datetime
++import math
 +
 +params = Params()
 +keys = params.all_keys()
@@ -135,10 +136,12 @@ index 000000000..818a5df81
 +
 +def make_point(event, offset):
 +  dt = mono_datetime(event, offset)
++  bearing_rad = event["liveLocationKalman"]["calibratedOrientationNED"]["value"][2]
 +  return {
 +    "latitude": event["liveLocationKalman"]["positionGeodetic"]["value"][0],
 +    "longitude": event["liveLocationKalman"]["positionGeodetic"]["value"][1],
 +    "elevation": event["liveLocationKalman"]["positionGeodetic"]["value"][2],
++    "bearing": math.degrees(bearing_rad),
 +    "timestamp": dt.isoformat() + "Z",
 +  }
 +
