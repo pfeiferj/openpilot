@@ -73,3 +73,7 @@ mv *.patch ../openpilot-patches/cluster-based-max-speed/
 git checkout pfeifer-disable-registration
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/disable-registration/
+
+git checkout pfeifer-tailscale
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/tailscale/

@@ -49,6 +49,9 @@ git pull
 git checkout pfeifer-disable-registration
 git pull
 
+git checkout pfeifer-tailscale
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

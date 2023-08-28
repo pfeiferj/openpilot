@@ -49,6 +49,9 @@ git reset --hard origin/pfeifer-distance-based-curvature
 git checkout pfeifer-disable-registration
 git reset --hard origin/pfeifer-disable-registration
 
+git checkout pfeifer-tailscale
+git reset --hard origin/pfeifer-tailscale
+
 
 # Upstream PRs
 git checkout cluster-based-max-speed

@@ -65,6 +65,9 @@ git pull --rebase origin master
 git checkout pfeifer-disable-registration
 git pull --rebase origin master
 
+git checkout pfeifer-tailscale
+git pull --rebase origin master
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed
