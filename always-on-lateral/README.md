@@ -14,6 +14,9 @@ The following cars were reported working by members of the community:
 * HKG can-fd (Thanks @hoomoose!)
 * Toyota (Thanks @FrogAi!)
 * GM (Thanks [@OPGM Community!](https://discord.gg/G2xp9AH94U))
+* VW (Thanks [@Frogpilot Community!](https://l.linklyhq.com/l/1t3Il))
+    - Note: frogpilot implementation is _slightly_ different but uses same panda
+    code so YYMV
 
 ### Untested Cars
 The following cars _may_ be supported, but they have not been verified working.
