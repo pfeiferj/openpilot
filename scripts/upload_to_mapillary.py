@@ -118,7 +118,7 @@ def main():
     video_start = mono_datetime(first_frame["roadCameraState"]["timestampEof"], offset)
     video_start_string = video_start.strftime("%Y_%m_%d_%H_%M_%S_%f")[:-3]
 
-    subprocess.run(["mapillary_tools", "video_process_and_upload", "--geotag_source", "gpx", "--geotag_source_path", gpx_path, "--video_sample_distance", "-1", "--video_sample_interval", "0.2", "--video_start_time", video_start_string, "--skip_process_errors", video_path])
+    subprocess.run(["mapillary_tools", "video_process_and_upload", "--geotag_source", "gpx", "--geotag_source_path", gpx_path, "--video_sample_distance", "-1", "--video_sample_interval", "0.12", "--video_start_time", video_start_string, "--skip_process_errors", video_path])
 
 
 if __name__ == "__main__":
