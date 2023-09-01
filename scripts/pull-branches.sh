@@ -52,6 +52,9 @@ git pull
 git checkout pfeifer-tailscale
 git pull
 
+git checkout pfeifer-high-bitrate
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

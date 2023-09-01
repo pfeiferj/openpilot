@@ -24,6 +24,7 @@ git merge pfeifer-mapd
 git merge pfeifer-opweb
 git merge pfeifer-distance-based-curvature
 git merge pfeifer-tailscale
+git merge pfeifer-high-bitrate
 
 # Upstream PRs
 git merge cluster-based-max-speed

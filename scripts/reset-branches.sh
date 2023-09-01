@@ -52,6 +52,9 @@ git reset --hard origin/pfeifer-disable-registration
 git checkout pfeifer-tailscale
 git reset --hard origin/pfeifer-tailscale
 
+git checkout pfeifer-high-bitrate
+git reset --hard origin/pfeifer-high-bitrate
+
 
 # Upstream PRs
 git checkout cluster-based-max-speed

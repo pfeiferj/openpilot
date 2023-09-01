@@ -77,3 +77,7 @@ mv *.patch ../openpilot-patches/disable-registration/
 git checkout pfeifer-tailscale
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/tailscale/
+
+git checkout pfeifer-high-bitrate
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/high-bitrate/

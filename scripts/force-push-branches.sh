@@ -52,6 +52,9 @@ git push --force
 git checkout pfeifer-tailscale
 git push --force
 
+git checkout pfeifer-high-bitrate
+git push --force
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

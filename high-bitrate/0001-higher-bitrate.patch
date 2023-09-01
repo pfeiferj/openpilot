@@ -1,0 +1,25 @@
+From 2908b59a863f724656368447c751ce728fb7ace0 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Mon, 28 Aug 2023 17:20:55 -0400
+Subject: [PATCH] higher bitrate
+
+---
+ system/loggerd/loggerd.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/system/loggerd/loggerd.h b/system/loggerd/loggerd.h
+index cfc06c28d..3cd130bb7 100644
+--- a/system/loggerd/loggerd.h
++++ b/system/loggerd/loggerd.h
+@@ -14,7 +14,7 @@
+ #include "system/loggerd/logger.h"
+ 
+ constexpr int MAIN_FPS = 20;
+-const int MAIN_BITRATE = 1e7;
++const int MAIN_BITRATE = 20000000;
+ const int LIVESTREAM_BITRATE = 1e6;
+ const int QCAM_BITRATE = 256000;
+ 
+-- 
+2.39.2
+
