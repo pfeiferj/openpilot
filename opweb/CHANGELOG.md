@@ -1,5 +1,8 @@
 # OPWeb Changelog
 
+## 09/01/23
+* display map of last route
+
 ## 08/26/23
 * Generate gpx files from logs
 
