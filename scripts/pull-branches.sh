@@ -55,6 +55,9 @@ git pull
 git checkout pfeifer-high-bitrate
 git pull
 
+git checkout pfeifer-sounds
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed
