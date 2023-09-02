@@ -1,4 +1,4 @@
-From 28c476ef482f9860ea33ef221821d892a20f06c1 Mon Sep 17 00:00:00 2001
+From 6c77f907d4ec7637143854fd7ca75fb0265cdfcc Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH] button manager
@@ -10,10 +10,10 @@ Subject: [PATCH] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index b375c18dc..8a85458e6 100644
+index 54aece853..fe54866c7 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -603,3 +603,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

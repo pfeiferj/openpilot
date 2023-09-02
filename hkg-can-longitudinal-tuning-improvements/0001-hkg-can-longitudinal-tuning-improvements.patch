@@ -1,4 +1,4 @@
-From 1848c0f326a700e985ae70be6d5b6e4c7e17a108 Mon Sep 17 00:00:00 2001
+From 9d50995629802eab238fa9b7af2e32724c64edd9 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 19 Aug 2023 21:02:19 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -10,11 +10,11 @@ Subject: [PATCH] hkg-can longitudinal tuning improvements
  3 files changed, 23 insertions(+), 10 deletions(-)
 
 diff --git a/selfdrive/car/hyundai/carcontroller.py b/selfdrive/car/hyundai/carcontroller.py
-index 1ff211e86..f1f5cda0f 100644
+index 0b5f724ab..6ddc6e0ca 100644
 --- a/selfdrive/car/hyundai/carcontroller.py
 +++ b/selfdrive/car/hyundai/carcontroller.py
-@@ -169,12 +169,20 @@ class CarController:
-               self.last_button_frame = self.frame
+@@ -143,12 +143,20 @@ class CarController:
+         can_sends.extend(self.create_button_messages(CC, CS, use_clu11=True))
  
        if self.frame % 2 == 0 and self.CP.openpilotLongitudinalControl:
 -        # TODO: unclear if this is needed
@@ -64,10 +64,10 @@ index 008397402..034c330d2 100644
      "ObjGap": 2 if lead_visible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
    }
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index d2c91ad45..8436af854 100644
+index ff278d54e..5e6b18c94 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -249,9 +249,14 @@ class CarInterface(CarInterfaceBase):
+@@ -251,9 +251,14 @@ class CarInterface(CarInterfaceBase):
        ret.longitudinalTuning.kiV = [0.0]
        ret.experimentalLongitudinalAvailable = candidate in (HYBRID_CAR | EV_CAR) and candidate not in CANFD_RADAR_SCC_CAR
      else:

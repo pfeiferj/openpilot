@@ -1,4 +1,4 @@
-From 89a45eabccd8f23bb4728aac18047ceeed306129 Mon Sep 17 00:00:00 2001
+From 53472b97ef284d0d3133d87dfaadfb5eaaa044ea Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -14,10 +14,10 @@ Subject: [PATCH] distance based curvature
  create mode 100644 selfdrive/controls/distance_based_curvature.py
 
 diff --git a/common/params.cc b/common/params.cc
-index e8ab42c0b..797a54ea3 100644
+index 63baa3031..516e21a28 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,11 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,11 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -30,10 +30,10 @@ index e8ab42c0b..797a54ea3 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index b375c18dc..811f6c20b 100644
+index 54aece853..8ab38f0b7 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -603,3 +603,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -125,7 +125,7 @@ index 00916ddf7..915df8f4f 100644
  
    # This is the "desired rate of the setpoint" not an actual desired rate
 diff --git a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
-index eaa782efe..b613b84c1 100644
+index a23ba1eaf..1b5a4777d 100644
 --- a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 +++ b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.modeld.constants import index_function
@@ -150,7 +150,7 @@ index eaa782efe..b613b84c1 100644
      self.a_solution = self.x_sol[:,2]
      self.j_solution = self.u_sol[:,0]
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 8b0f9c1f3..c077a47c6 100644
+index 0af027ca9..549f506f3 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -72,6 +72,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

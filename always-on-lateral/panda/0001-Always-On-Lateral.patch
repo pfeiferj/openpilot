@@ -1,6 +1,6 @@
-From ef5a9059835c898a0be186aa4896df8713c7f544 Mon Sep 17 00:00:00 2001
+From 66e3585e71d289bcbf0e918a8f916a556da5ce09 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 19 Aug 2023 20:57:52 -0400
+Date: Fri, 1 Sep 2023 19:34:09 -0400
 Subject: [PATCH] Always On Lateral
 
 Safety code for Always On Lateral. On supported cars this allows lateral
@@ -148,7 +148,7 @@ index 2c6daddb..7cb99c9a 100644
    return violation;
  }
 diff --git a/board/safety/safety_chrysler.h b/board/safety/safety_chrysler.h
-index 0caaa2c6..a7edf058 100644
+index 324f73a2..e50135ce 100644
 --- a/board/safety/safety_chrysler.h
 +++ b/board/safety/safety_chrysler.h
 @@ -196,6 +196,15 @@ static int chrysler_rx_hook(CANPacket_t *to_push) {
@@ -200,7 +200,7 @@ index 8f48868a..62905523 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_gm.h b/board/safety/safety_gm.h
-index c4727c0a..ff3049ad 100644
+index 82c15476..19b97fae 100644
 --- a/board/safety/safety_gm.h
 +++ b/board/safety/safety_gm.h
 @@ -112,6 +112,18 @@ static int gm_rx_hook(CANPacket_t *to_push) {
@@ -219,7 +219,7 @@ index c4727c0a..ff3049ad 100644
 +    }
 +    // }} PFEIFER - AOL
 +
-     if ((addr == 201) && (gm_hw == GM_CAM)) {
+     if ((addr == 0xC9) && (gm_hw == GM_CAM)) {
        brake_pressed = GET_BIT(to_push, 40U) != 0U;
      }
 diff --git a/board/safety/safety_honda.h b/board/safety/safety_honda.h
@@ -243,10 +243,10 @@ index d1c6eba7..67737a99 100644
  
      // enter controls when PCM enters cruise state
 diff --git a/board/safety/safety_hyundai_canfd.h b/board/safety/safety_hyundai_canfd.h
-index fa6bf0b6..6c1fb7d1 100644
+index 3ea7a486..6671c253 100644
 --- a/board/safety/safety_hyundai_canfd.h
 +++ b/board/safety/safety_hyundai_canfd.h
-@@ -210,6 +210,15 @@ static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
+@@ -222,6 +222,15 @@ static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
  
      // brake press
      if (addr == 0x175) {
@@ -308,10 +308,10 @@ index e17f1ff4..b9da2fd0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index 9d31ff6e..7d44aa7f 100644
+index 0b43ebd8..92b7a49a 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -139,6 +139,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -158,6 +158,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
      if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {
@@ -475,10 +475,10 @@ index 9064bb62..c8d49943 100644
 +#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index 56900d26..76c65c27 100644
+index 828108d7..e785c4ab 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
-@@ -143,6 +143,10 @@ class ALTERNATIVE_EXPERIENCE:
+@@ -129,6 +129,10 @@ class ALTERNATIVE_EXPERIENCE:
    DISABLE_DISENGAGE_ON_GAS = 1
    DISABLE_STOCK_AEB = 2
    RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX = 8

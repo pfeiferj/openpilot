@@ -1,6 +1,6 @@
-From e2234f004100132f56f1e2bef07bd94329f18c0f Mon Sep 17 00:00:00 2001
+From ad5386748e27ade5bb200bd2d87b0b2979e9d370 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 26 Aug 2023 10:58:38 -0400
+Date: Fri, 1 Sep 2023 19:35:15 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -36,10 +36,10 @@ control.
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index e8ab42c0b..aa4fb3409 100644
+index 63baa3031..ebe781410 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,19 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,19 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -60,17 +60,17 @@ index e8ab42c0b..aa4fb3409 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 0eb04fae6..ef5a90598 160000
+index ef1a9338a..66e3585e7 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 0eb04fae67646e283b7d750d1e2119e37c398f95
-+Subproject commit ef5a9059835c898a0be186aa4896df8713c7f544
+-Subproject commit ef1a9338a17f63ad1c666364c695e2b36a47350e
++Subproject commit 66e3585e71d289bcbf0e918a8f916a556da5ce09
 diff --git a/release/files_common b/release/files_common
-index b375c18dc..9f8c86a49 100644
+index 54aece853..f2183a097 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -603,3 +603,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -181,7 +181,7 @@ index 03aedb31d..c43c5335b 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index ee35bf666..515247727 100644
+index b4ff0e9e6..b86e3c2df 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_G
@@ -236,7 +236,7 @@ index ee35bf666..515247727 100644
      ret = car.CarState.new_message()
  
      self.is_metric = cp.vl["CRUISE_BUTTONS_ALT"]["DISTANCE_UNIT"] != 1
-@@ -224,7 +245,14 @@ class CarState(CarStateBase):
+@@ -228,7 +249,14 @@ class CarState(CarStateBase):
  
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
@@ -293,11 +293,11 @@ index 1f7846ca0..ec159b844 100644
  
      ret = car.CarState.new_message()
 diff --git a/selfdrive/car/subaru/carstate.py b/selfdrive/car/subaru/carstate.py
-index ff203f387..6bc552a70 100644
+index c8a6dfe1e..3035605f4 100644
 --- a/selfdrive/car/subaru/carstate.py
 +++ b/selfdrive/car/subaru/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
- from openpilot.selfdrive.car.subaru.values import DBC, CAR, GLOBAL_GEN2, PREGLOBAL_CARS, HYBRID_CARS, CanBus, SubaruFlags
+ from openpilot.selfdrive.car.subaru.values import DBC, GLOBAL_GEN2, PREGLOBAL_CARS, HYBRID_CARS, CanBus, SubaruFlags
  from openpilot.selfdrive.car import CanSignalRateCalculator
  
 +# PFEIFER - AOL {{
@@ -345,7 +345,7 @@ index 2cb4f09d7..175d429bd 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index c96df6f10..ce07eaedd 100644
+index 076668fff..7e4c8be06 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -24,6 +24,10 @@ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)
@@ -748,7 +748,7 @@ index 809403073..9d5144b48 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 8b0f9c1f3..92713495e 100644
+index 0af027ca9..d62d28ded 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -72,6 +72,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

@@ -1,4 +1,4 @@
-From 29d5350a20b2c460c175772d52d09a45f61773ed Mon Sep 17 00:00:00 2001
+From 528a9981b891b4061577dd4123dc39d970ba3dd1 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:03:13 -0400
 Subject: [PATCH] Lane Detection
@@ -15,10 +15,10 @@ Prevents lane changes whenever there is no lane detected.
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
-index e8ab42c0b..99fd6e2bf 100644
+index 63baa3031..2b14aac37 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -30,10 +30,10 @@ index e8ab42c0b..99fd6e2bf 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index b375c18dc..b7da5dae9 100644
+index 54aece853..322bc475a 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -603,3 +603,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -146,7 +146,7 @@ index 92786f73d..7668d1b59 100644
  
      self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 8b0f9c1f3..5dc712012 100644
+index 0af027ca9..9d769dd36 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -72,6 +72,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
