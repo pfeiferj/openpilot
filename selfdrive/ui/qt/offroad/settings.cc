@@ -60,12 +60,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h)."),
       "../assets/offroad/icon_warning.png",
     },
+    //{
+    //  "RecordFront",
+    //  tr("Record and Upload Driver Camera"),
+    //  tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
+    //  "../assets/offroad/icon_monitoring.png",
+    //},
+    // PFEIFER - DDU {{
     {
       "RecordFront",
-      tr("Record and Upload Driver Camera"),
-      tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
+      tr("Record Driver Camera"),
+      tr("Allows the driver camera file to be saved to the device. By default this file can be uploaded to comma connect."),
       "../assets/offroad/icon_monitoring.png",
     },
+    {
+      "DisableDCamUpload",
+      tr("Disable Driver Camera Upload"),
+      tr("Prevents saved driver camera files from being uploaded to comma connect."),
+      "../assets/offroad/icon_monitoring.png",
+    },
+    // }} PFEIFER - DDU
     {
       "IsMetric",
       tr("Use Metric System"),

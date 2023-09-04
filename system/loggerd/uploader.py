@@ -111,6 +111,11 @@ class Uploader:
         continue
 
       for name in sorted(names, key=self.get_upload_sort):
+        # PFEIFER - DDU {{
+        params = Params()
+        if 'dcamera' in name and params.get_bool("DisableDCamUpload"):
+          continue
+        # }} PFEIFER - DDU
         key = os.path.join(logname, name)
         fn = os.path.join(path, name)
         # skip files already uploaded
