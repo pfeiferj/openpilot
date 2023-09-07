@@ -363,6 +363,11 @@ def scan_dir(path: str, prefix: str) -> List[str]:
       else:
         if rel_path.startswith(prefix):
           files.append(rel_path)
+
+  # PFEIFER - DDU {{
+  params = Params()
+  files = [f for f in files if 'dcamera' not in f or not params.get_bool("DisableDCamUpload")]
+  # }} PFEIFER - DDU
   return files
 
 @dispatcher.add_method
