@@ -6,6 +6,7 @@ from .components.settings import route_settings
 from .components.update import route_update
 from .components.video import route_video
 from .components.gpx import route_gpx
+from .components.speed_zones import route_speed_zones
 
 
 app = Flask(__name__)
@@ -17,6 +18,7 @@ route_settings(app)
 route_update(app)
 route_video(app)
 route_gpx(app)
+route_speed_zones(app)
 
 
 def main():

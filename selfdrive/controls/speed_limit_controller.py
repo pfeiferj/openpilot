@@ -10,6 +10,7 @@ class SpeedLimitController:
   nav_speed_limit: float = 0 # m/s
   map_speed_limit: float = 0 # m/s
   car_speed_limit: float = 0 # m/s
+  zone_speed_limit: float = 0 # m/s
   offset: float = 0 # m/s
   nav_enabled: bool = False
   car_enabled: bool = False
@@ -44,6 +45,8 @@ class SpeedLimitController:
   @property
   def speed_limit(self) -> float:
     limit: float = 0
+    if self.zone_speed_limit != 0:
+      limit = self.zone_speed_limit
     if self.nav_enabled and self.nav_speed_limit != 0:
       limit = self.nav_speed_limit
     elif self.map_enabled and self.map_speed_limit != 0:
@@ -92,6 +95,7 @@ class SpeedLimitController:
     self.nav_speed_limit = json.loads(mem_params.get("NavSpeedLimit"))
     self.map_speed_limit = json.loads(mem_params.get("MapSpeedLimit"))
     self.car_speed_limit = json.loads(mem_params.get("CarSpeedLimit"))
+    self.zone_speed_limit = json.loads(mem_params.get("SpeedZonesLimit"))
 
     if load_persistent_enabled:
       self.load_persistent_enabled()

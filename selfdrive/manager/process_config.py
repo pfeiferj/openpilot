@@ -90,6 +90,7 @@ procs = [
   # PFEIFER - OPWEB {{
   PythonProcess("opwebd", "selfdrive.opwebd.opwebd", always_run),
   # }} PFEIFER - OPWEB
+  PythonProcess("speed_zoned", "selfdrive.controls.speed_zoned", always_run),
 
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),

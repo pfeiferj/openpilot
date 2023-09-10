@@ -240,6 +240,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"NavSpeedLimit", PERSISTENT},
     {"CarSpeedLimit", PERSISTENT},
     {"SpeedLimitOffset", PERSISTENT},
+    {"SpeedZonesLimit", PERSISTENT},
     // }} PFEIFER - SLC
     // PFEIFER - VTSC {{
     {"TurnVisionControl", PERSISTENT},
