@@ -38,7 +38,7 @@ class SpeedZoneD:
       self.location_deg = (location.positionGeodetic.value[0], location.positionGeodetic.value[1])
       found = False
       for zone in self.zones:
-        if self.location_deg[0] > zone['bounds'][0] and self.location_deg[1] < zone['bounds'][1] and self.location_deg[1] < zone['bounds'][2] and self.location_deg[0] > zone['bounds'][0]:
+        if self.location_deg[0] > zone['bounds'][0] and self.location_deg[0] < zone['bounds'][1] and self.location_deg[1] > zone['bounds'][2] and self.location_deg[1] < zone['bounds'][3]:
           mem_params.put('SpeedZonesLimit', str(zone['speed']))
           found = True
       if not found:
