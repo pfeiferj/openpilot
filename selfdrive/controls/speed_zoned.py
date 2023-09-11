@@ -1,4 +1,5 @@
 from openpilot.common.conversions import Conversions as CV
+from openpilot.common.realtime import Ratekeeper
 #import json
 import cereal.messaging as messaging
 from openpilot.common.params import Params
