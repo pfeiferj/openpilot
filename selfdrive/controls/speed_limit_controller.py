@@ -47,7 +47,7 @@ class SpeedLimitController:
     limit: float = 0
     if self.zone_speed_limit != 0:
       limit = self.zone_speed_limit
-    if self.nav_enabled and self.nav_speed_limit != 0:
+    elif self.nav_enabled and self.nav_speed_limit != 0:
       limit = self.nav_speed_limit
     elif self.map_enabled and self.map_speed_limit != 0:
       limit = self.map_speed_limit
