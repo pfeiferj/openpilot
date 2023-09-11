@@ -95,7 +95,7 @@ class SpeedLimitController:
     self.nav_speed_limit = json.loads(mem_params.get("NavSpeedLimit"))
     self.map_speed_limit = json.loads(mem_params.get("MapSpeedLimit"))
     self.car_speed_limit = json.loads(mem_params.get("CarSpeedLimit"))
-    self.zone_speed_limit = json.loads(mem_params.get("SpeedZonesLimit"))
+    self.zone_speed_limit = float(mem_params.get("SpeedZonesLimit") or 0)
 
     if load_persistent_enabled:
       self.load_persistent_enabled()
