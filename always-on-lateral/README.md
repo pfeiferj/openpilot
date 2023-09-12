@@ -17,6 +17,25 @@ The following cars were reported working by members of the community:
 * VW (Thanks [@Frogpilot Community!](https://l.linklyhq.com/l/1t3Il))
     - Note: frogpilot implementation is _slightly_ different but uses same panda
     code so YYMV
+* Chrysler (Thanks @Shaggy!)
+
+### Reported Issues
+GM:
+* disables lateral while applying regen braking with paddle. Lateral resumes
+after releasing the paddle. (Thanks @Mangomoose)
+
+    - Have looked into this some. The canbus we see the lateral commands on
+    changes while the paddle is being pressed for some reason. If anyone has any
+    suggestions for what might be happening please let me know.
+
+Honda:
+* AOL does not seem to function. Panda/OP detection of when lateral should be
+applied works but the lateral controls do not activate. (Thanks @sapander)
+
+    - My theory is that the car is rejecting the lateral commands due to a flag
+    on one of the other messages not being set. Have not determined which flags
+    in the can messages may be causing this. If anyone has any suggestions on
+    what may be happening or how to resolve it please let me know. 
 
 ### Untested Cars
 The following cars _may_ be supported, but they have not been verified working.
@@ -25,9 +44,7 @@ verify an implementation is working please create an issue for me to move it to
 the supported cars list. If you find any issues please create an issue
 describing the undesired behavior.
 
-* Chrysler
 * Ford
-* Honda
 * Mazda
 * Subaru
 * Tesla
