@@ -58,6 +58,9 @@ git pull
 git checkout pfeifer-sounds
 git pull
 
+git checkout pfeifer-disable-dcam-upload
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

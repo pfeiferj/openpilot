@@ -74,6 +74,9 @@ git pull --rebase origin master
 git checkout pfeifer-sounds
 git pull --rebase origin master
 
+git checkout pfeifer-disable-dcam-upload
+git pull --rebase origin master
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

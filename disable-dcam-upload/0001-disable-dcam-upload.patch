@@ -1,0 +1,62 @@
+From 8b2731df833cb8d35ca9b54dac49d74aa3a48b39 Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Wed, 13 Sep 2023 20:05:30 -0400
+Subject: [PATCH] disable dcam upload
+
+---
+ common/params.cc                    | 3 +++
+ selfdrive/athena/athenad.py         | 4 ++++
+ selfdrive/ui/qt/offroad/settings.cc | 8 ++++++++
+ 3 files changed, 15 insertions(+)
+
+diff --git a/common/params.cc b/common/params.cc
+index 63baa3031..c025b3569 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -207,6 +207,9 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
++    // PFEIFER - DDU {{
++    {"DisableDCamUpload", PERSISTENT},
++    // }} PFEIFER - DDU
+ };
+ 
+ } // namespace
+diff --git a/selfdrive/athena/athenad.py b/selfdrive/athena/athenad.py
+index 899605d98..dcdd13d6f 100755
+--- a/selfdrive/athena/athenad.py
++++ b/selfdrive/athena/athenad.py
+@@ -362,6 +362,10 @@ def scan_dir(path: str, prefix: str) -> List[str]:
+       else:
+         if rel_path.startswith(prefix):
+           files.append(rel_path)
++  # PFEIFER - DDU {{
++  params = Params()
++  files = [f for f in files if 'dcamera' not in f or not params.get_bool("DisableDCamUpload")]
++  # }} PFEIFER - DDU
+   return files
+ 
+ @dispatcher.add_method
+diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
+index 0af027ca9..ffd92af08 100644
+--- a/selfdrive/ui/qt/offroad/settings.cc
++++ b/selfdrive/ui/qt/offroad/settings.cc
+@@ -66,6 +66,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+       tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
+       "../assets/offroad/icon_monitoring.png",
+     },
++    // PFEIFER - DDU {{
++    {
++      "DisableDCamUpload",
++      tr("Disable Driver Camera Upload"),
++      tr("Disables uploading driver camera to comma connect."),
++      "../assets/offroad/icon_monitoring.png",
++    },
++    // }} PFEIFER - DDU
+     {
+       "IsMetric",
+       tr("Use Metric System"),
+-- 
+2.39.2
+

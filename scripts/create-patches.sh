@@ -85,3 +85,7 @@ mv *.patch ../openpilot-patches/high-bitrate/
 git checkout pfeifer-sounds
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/sounds/
+
+git checkout pfeifer-disable-dcam-upload
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/disable-dcam-upload/

@@ -58,6 +58,9 @@ git reset --hard origin/pfeifer-high-bitrate
 git checkout pfeifer-sounds
 git reset --hard origin/pfeifer-sounds
 
+git checkout pfeifer-disable-dcam-upload
+git reset --hard origin/pfeifer-disable-dcam-upload
+
 
 # Upstream PRs
 git checkout cluster-based-max-speed
