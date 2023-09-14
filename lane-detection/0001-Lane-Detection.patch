@@ -1,4 +1,4 @@
-From 528a9981b891b4061577dd4123dc39d970ba3dd1 Mon Sep 17 00:00:00 2001
+From 6fe6e7822d0187a102a51b3b7893c303710365e1 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:03:13 -0400
 Subject: [PATCH] Lane Detection
@@ -30,10 +30,10 @@ index 63baa3031..2b14aac37 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 54aece853..322bc475a 100644
+index 2d0b5f051..967f58800 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

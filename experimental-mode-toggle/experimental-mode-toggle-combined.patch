@@ -1,4 +1,4 @@
-From 6c77f907d4ec7637143854fd7ca75fb0265cdfcc Mon Sep 17 00:00:00 2001
+From 2bac8d9aeeab3c6043a30ead09e9dd57f75c5f16 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,10 +10,10 @@ Subject: [PATCH 1/3] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index 54aece853..fe54866c7 100644
+index 2d0b5f051..5272b6154 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -243,7 +243,7 @@ index 000000000..343cf6396
 2.39.2
 
 
-From 2e845f5bc39280be2ad3989c28f0ccacfb975bcc Mon Sep 17 00:00:00 2001
+From 18e86b743b4f1c94a484c6461762750afcf0c4b6 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -274,10 +274,10 @@ index 63baa3031..89b03846f 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index fe54866c7..29313a42e 100644
+index 5272b6154..58d593000 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -607,3 +607,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -602,3 +602,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
@@ -310,10 +310,10 @@ index 8585e9f20..ae9c591e0 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index ff278d54e..efe259316 100644
+index c5537993d..40b9635ae 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -11,6 +11,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
+@@ -10,6 +10,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
  from openpilot.selfdrive.car.interfaces import CarInterfaceBase
  from openpilot.selfdrive.car.disable_ecu import disable_ecu
  
@@ -324,7 +324,7 @@ index ff278d54e..efe259316 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -328,6 +332,11 @@ class CarInterface(CarInterfaceBase):
+@@ -335,6 +339,11 @@ class CarInterface(CarInterfaceBase):
      if self.CS.CP.openpilotLongitudinalControl:
        ret.buttonEvents = create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT)
  
@@ -389,7 +389,7 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From a00f9808158e016c5d04afcc9a9a894da1705b70 Mon Sep 17 00:00:00 2001
+From 0b05878e06bd27c59e555ee3f77a9e89aaa108bd Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 17:18:00 -0400
 Subject: [PATCH 3/3] experimental mode toggle
@@ -402,16 +402,16 @@ Subject: [PATCH 3/3] experimental mode toggle
  create mode 100644 selfdrive/controls/experimental_mode_toggle.py
 
 diff --git a/release/files_common b/release/files_common
-index 29313a42e..270167c58 100644
+index 58d593000..0459916b7 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -608,3 +608,4 @@ tinygrad_repo/tinygrad/*.py
+@@ -603,3 +603,4 @@ tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
  selfdrive/controls/gap_adjust_button.py
 +selfdrive/controls/experimental_mode_toggle.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 809403073..3b07790b9 100755
+index 1dc9dd39f..32cd5044d 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -425,7 +425,7 @@ index 809403073..3b07790b9 100755
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -857,6 +861,10 @@ class Controls:
+@@ -855,6 +859,10 @@ class Controls:
      self.update_events(CS)
      cloudlog.timestamp("Events updated")
  

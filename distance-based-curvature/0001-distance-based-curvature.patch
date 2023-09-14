@@ -1,4 +1,4 @@
-From 53472b97ef284d0d3133d87dfaadfb5eaaa044ea Mon Sep 17 00:00:00 2001
+From d78204ec70daf3e2d6ac0d8edfa9202688ee5421 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -30,10 +30,10 @@ index 63baa3031..516e21a28 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 54aece853..8ab38f0b7 100644
+index 2d0b5f051..0a8a1000c 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -125,7 +125,7 @@ index 00916ddf7..915df8f4f 100644
  
    # This is the "desired rate of the setpoint" not an actual desired rate
 diff --git a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
-index a23ba1eaf..1b5a4777d 100644
+index a23ba1eaf..1b5a4777d 100755
 --- a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 +++ b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.modeld.constants import index_function

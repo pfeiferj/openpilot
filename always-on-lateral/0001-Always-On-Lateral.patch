@@ -1,6 +1,6 @@
-From ad5386748e27ade5bb200bd2d87b0b2979e9d370 Mon Sep 17 00:00:00 2001
+From 2aa648c226360a5982edaf6d5041d5c404477be4 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 1 Sep 2023 19:35:15 -0400
+Date: Wed, 13 Sep 2023 19:48:29 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -29,10 +29,10 @@ control.
  selfdrive/controls/always_on_lateral.py | 295 ++++++++++++++++++++++++
  selfdrive/controls/controlsd.py         |  18 +-
  selfdrive/ui/qt/offroad/settings.cc     |  42 ++++
- selfdrive/ui/qt/onroad.cc               |   7 +
+ selfdrive/ui/qt/onroad.cc               |   6 +
  selfdrive/ui/qt/onroad.h                |   3 +
  selfdrive/ui/ui.h                       |   6 +
- 20 files changed, 490 insertions(+), 2 deletions(-)
+ 20 files changed, 489 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -60,17 +60,17 @@ index 63baa3031..ebe781410 100644
  
  } // namespace
 diff --git a/panda b/panda
-index ef1a9338a..66e3585e7 160000
+index 8e8aa5acf..1bb1b2e8a 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit ef1a9338a17f63ad1c666364c695e2b36a47350e
-+Subproject commit 66e3585e71d289bcbf0e918a8f916a556da5ce09
+-Subproject commit 8e8aa5acf6ab0e45d91e72beaab74e69810448cd
++Subproject commit 1bb1b2e8aa381bb80d7bcaec3abefbea762c0cc5
 diff --git a/release/files_common b/release/files_common
-index 54aece853..f2183a097 100644
+index 2d0b5f051..7f0390067 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -181,7 +181,7 @@ index 03aedb31d..c43c5335b 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index b4ff0e9e6..b86e3c2df 100644
+index 8090bbcd8..d67222d3a 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_G
@@ -195,10 +195,10 @@ index b4ff0e9e6..b86e3c2df 100644
  PREV_BUTTON_SAMPLES = 8
  CLUSTER_SAMPLE_RATE = 20  # frames
  STANDSTILL_THRESHOLD = 12 * 0.03125 * CV.KPH_TO_MS
-@@ -105,11 +109,17 @@ class CarState(CarStateBase):
-       ret.cruiseState.available = cp.vl["TCS13"]["ACCEnable"] == 0
+@@ -106,12 +110,18 @@ class CarState(CarStateBase):
        ret.cruiseState.enabled = cp.vl["TCS13"]["ACC_REQ"] == 1
        ret.cruiseState.standstill = False
+       ret.cruiseState.nonAdaptive = False
 +      # PFEIFER - AOL {{
 +      AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.BUTTON)
 +      # }} PFEIFER - AOL
@@ -206,6 +206,7 @@ index b4ff0e9e6..b86e3c2df 100644
        ret.cruiseState.available = cp_cruise.vl["SCC11"]["MainMode_ACC"] == 1
        ret.cruiseState.enabled = cp_cruise.vl["SCC12"]["ACCMode"] != 0
        ret.cruiseState.standstill = cp_cruise.vl["SCC11"]["SCCInfoDisplay"] == 4.
+       ret.cruiseState.nonAdaptive = cp_cruise.vl["SCC11"]["SCCInfoDisplay"] == 2.  # Shows 'Cruise Control' on dash
        ret.cruiseState.speed = cp_cruise.vl["SCC11"]["VSetDis"] * speed_conv
 +      # PFEIFER - AOL {{
 +      AlwaysOnLateral.set_always_on_lateral_type(AlwaysOnLateralType.CRUISE_STATE)
@@ -213,7 +214,7 @@ index b4ff0e9e6..b86e3c2df 100644
  
      # TODO: Find brake pressure
      ret.brake = 0
-@@ -159,11 +169,22 @@ class CarState(CarStateBase):
+@@ -161,11 +171,22 @@ class CarState(CarStateBase):
      self.steer_state = cp.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
@@ -236,7 +237,7 @@ index b4ff0e9e6..b86e3c2df 100644
      ret = car.CarState.new_message()
  
      self.is_metric = cp.vl["CRUISE_BUTTONS_ALT"]["DISTANCE_UNIT"] != 1
-@@ -228,7 +249,14 @@ class CarState(CarStateBase):
+@@ -237,7 +258,14 @@ class CarState(CarStateBase):
  
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
@@ -698,7 +699,7 @@ index 000000000..e7e7a2a7b
 +      experience |= ALTERNATIVE_EXPERIENCE.AOL_ENABLE_ON_MAIN
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 809403073..9d5144b48 100755
+index 1dc9dd39f..59ab8a451 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -815,15 +816,14 @@ index 0af027ca9..d62d28ded 100644
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index d0b82207e..884ebe78c 100644
+index bb97ebd5e..86a132336 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -72,6 +72,13 @@ void OnroadWindow::updateState(const UIState &s) {
+@@ -72,6 +72,12 @@ void OnroadWindow::updateState(const UIState &s) {
    }
  
    QColor bgColor = bg_colors[s.status];
 +  // PFEIFER - AOL {{
-+  params = Params();
 +  if(s.status == STATUS_DISENGAGED && params.getBool("LateralActive")){
 +      bgColor = bg_colors[STATUS_LAT_ACTIVE];
 +  }

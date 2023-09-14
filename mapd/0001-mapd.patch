@@ -1,4 +1,4 @@
-From 0b54303e005191f35b5b88da12da52040e2f830c Mon Sep 17 00:00:00 2001
+From c30fcb8dedec60c4ebc7d56446070708a2118b39 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 14:19:30 -0400
 Subject: [PATCH] mapd
@@ -51,10 +51,10 @@ index 9fe9b1bd1..f2848a58b 100755
    # if broken, keep on screen error
    while true; do sleep 1; done
 diff --git a/release/files_common b/release/files_common
-index 54aece853..7b9e5bb73 100644
+index 2d0b5f051..fbd97d12f 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -605,3 +605,8 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,8 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -204,7 +204,7 @@ index 82cc8d74a..903823077 100644
  def launcher(proc: str, name: str) -> None:
    try:
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 50e684fcb..6a2ac2b11 100644
+index aee4748a2..7a87ff1ab 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
 @@ -84,6 +84,10 @@ procs = [

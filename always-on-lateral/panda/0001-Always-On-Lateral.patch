@@ -1,4 +1,4 @@
-From 66e3585e71d289bcbf0e918a8f916a556da5ce09 Mon Sep 17 00:00:00 2001
+From 1bb1b2e8aa381bb80d7bcaec3abefbea762c0cc5 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 1 Sep 2023 19:34:09 -0400
 Subject: [PATCH] Always On Lateral
@@ -243,10 +243,10 @@ index d1c6eba7..67737a99 100644
  
      // enter controls when PCM enters cruise state
 diff --git a/board/safety/safety_hyundai_canfd.h b/board/safety/safety_hyundai_canfd.h
-index 3ea7a486..6671c253 100644
+index 4e172b34..07dd860e 100644
 --- a/board/safety/safety_hyundai_canfd.h
 +++ b/board/safety/safety_hyundai_canfd.h
-@@ -222,6 +222,15 @@ static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
+@@ -231,6 +231,15 @@ static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
  
      // brake press
      if (addr == 0x175) {
@@ -263,10 +263,10 @@ index 3ea7a486..6671c253 100644
      }
  
 diff --git a/board/safety/safety_hyundai_common.h b/board/safety/safety_hyundai_common.h
-index 7d16b83b..f8db5ed7 100644
+index 34974a4a..da5c532f 100644
 --- a/board/safety/safety_hyundai_common.h
 +++ b/board/safety/safety_hyundai_common.h
-@@ -65,6 +65,12 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main
+@@ -68,6 +68,12 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main
      hyundai_last_button_interaction = MIN(hyundai_last_button_interaction + 1U, HYUNDAI_PREV_BUTTON_SAMPLES);
    }
  
@@ -279,7 +279,7 @@ index 7d16b83b..f8db5ed7 100644
    if (hyundai_longitudinal) {
      // enter controls on falling edge of resume or set
      bool set = (cruise_button != HYUNDAI_BTN_SET) && (cruise_button_prev == HYUNDAI_BTN_SET);
-@@ -79,6 +85,7 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main
+@@ -82,6 +88,7 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main
      }
  
      cruise_button_prev = cruise_button;
@@ -308,10 +308,10 @@ index e17f1ff4..b9da2fd0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index 0b43ebd8..92b7a49a 100644
+index bac8a765..4fcb2e47 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -158,6 +158,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -165,6 +165,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
      if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {
@@ -398,7 +398,7 @@ index 0bc7f3c6..0c757668 100644
      // exit controls on rising edge of gas press
      if (addr == 0x1D2) {
 diff --git a/board/safety/safety_volkswagen_mqb.h b/board/safety/safety_volkswagen_mqb.h
-index 4cd9c2ec..3db12c5b 100644
+index 0716cdf8..77a59c1e 100644
 --- a/board/safety/safety_volkswagen_mqb.h
 +++ b/board/safety/safety_volkswagen_mqb.h
 @@ -158,7 +158,15 @@ static int volkswagen_mqb_rx_hook(CANPacket_t *to_push) {
@@ -418,7 +418,7 @@ index 4cd9c2ec..3db12c5b 100644
  
      if (addr == MSG_GRA_ACC_01) {
 diff --git a/board/safety/safety_volkswagen_pq.h b/board/safety/safety_volkswagen_pq.h
-index b310ef2c..7e02dce3 100644
+index 93d180a8..af08ce7d 100644
 --- a/board/safety/safety_volkswagen_pq.h
 +++ b/board/safety/safety_volkswagen_pq.h
 @@ -124,6 +124,18 @@ static int volkswagen_pq_rx_hook(CANPacket_t *to_push) {
@@ -441,10 +441,10 @@ index b310ef2c..7e02dce3 100644
        if (addr == MSG_MOTOR_5) {
          // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
 diff --git a/board/safety_declarations.h b/board/safety_declarations.h
-index 9064bb62..c8d49943 100644
+index 3050755c..d6e4013c 100644
 --- a/board/safety_declarations.h
 +++ b/board/safety_declarations.h
-@@ -191,6 +191,9 @@ void safety_tick(const addr_checks *addr_checks);
+@@ -193,6 +193,9 @@ void safety_tick(const addr_checks *addr_checks);
  
  // This can be set by the safety hooks
  bool controls_allowed = false;
@@ -454,7 +454,7 @@ index 9064bb62..c8d49943 100644
  bool relay_malfunction = false;
  bool gas_interceptor_detected = false;
  int gas_interceptor_prev = 0;
-@@ -205,6 +208,10 @@ struct sample_t vehicle_speed;
+@@ -207,6 +210,10 @@ struct sample_t vehicle_speed;
  bool vehicle_moving = false;
  bool acc_main_on = false;  // referred to as "ACC off" in ISO 15622:2018
  int cruise_button_prev = 0;
@@ -465,7 +465,7 @@ index 9064bb62..c8d49943 100644
  bool safety_rx_checks_invalid = false;
  
  // for safety modes with torque steering control
-@@ -247,3 +254,8 @@ int alternative_experience = 0;
+@@ -249,3 +256,8 @@ int alternative_experience = 0;
  uint32_t safety_mode_cnt = 0U;
  // allow 1s of transition timeout after relay changes state before assessing malfunctioning
  const uint32_t RELAY_TRNS_TIMEOUT = 1U;
@@ -475,7 +475,7 @@ index 9064bb62..c8d49943 100644
 +#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index 828108d7..e785c4ab 100644
+index 91523e8f..dbd253ce 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
 @@ -129,6 +129,10 @@ class ALTERNATIVE_EXPERIENCE:

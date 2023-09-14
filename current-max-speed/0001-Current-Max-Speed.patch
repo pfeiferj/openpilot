@@ -1,4 +1,4 @@
-From 43d7d1ff6611ef684d186d7c5f993d6c4b2d7f89 Mon Sep 17 00:00:00 2001
+From 3ffe26dbccc13db45c65c88e4f4ab9bff381761e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 20:59:47 -0400
 Subject: [PATCH] Current Max Speed
@@ -31,17 +31,17 @@ index 63baa3031..456ccda80 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 54aece853..948b84e6e 100644
+index 2d0b5f051..4e796ac58 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -605,3 +605,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 809403073..1737325a6 100755
+index 1dc9dd39f..1ff577370 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET

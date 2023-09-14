@@ -1,4 +1,4 @@
-From 9d50995629802eab238fa9b7af2e32724c64edd9 Mon Sep 17 00:00:00 2001
+From 4a56419d14d15d184e54bf8c99a3254213736b7c Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 19 Aug 2023 21:02:19 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -40,10 +40,10 @@ index 0b5f724ab..6ddc6e0ca 100644
        # 20 Hz LFA MFA message
        if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
 diff --git a/selfdrive/car/hyundai/hyundaican.py b/selfdrive/car/hyundai/hyundaican.py
-index 008397402..034c330d2 100644
+index 3b9843261..60f4d9d0a 100644
 --- a/selfdrive/car/hyundai/hyundaican.py
 +++ b/selfdrive/car/hyundai/hyundaican.py
-@@ -125,7 +125,7 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
+@@ -126,7 +126,7 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
    }
    return packer.make_can_msg("LFAHDA_MFC", 0, values)
  
@@ -52,7 +52,7 @@ index 008397402..034c330d2 100644
    commands = []
  
    scc11_values = {
-@@ -163,8 +163,8 @@ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, s
+@@ -164,8 +164,8 @@ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, s
    scc14_values = {
      "ComfortBandUpper": 0.0, # stock usually is 0 but sometimes uses higher values
      "ComfortBandLower": 0.0, # stock usually is 0 but sometimes uses higher values
@@ -64,10 +64,10 @@ index 008397402..034c330d2 100644
      "ObjGap": 2 if lead_visible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
    }
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index ff278d54e..5e6b18c94 100644
+index c5537993d..38e3930cd 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -251,9 +251,14 @@ class CarInterface(CarInterfaceBase):
+@@ -258,9 +258,14 @@ class CarInterface(CarInterfaceBase):
        ret.longitudinalTuning.kiV = [0.0]
        ret.experimentalLongitudinalAvailable = candidate in (HYBRID_CAR | EV_CAR) and candidate not in CANFD_RADAR_SCC_CAR
      else:
