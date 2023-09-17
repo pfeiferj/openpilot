@@ -1,6 +1,6 @@
-From 2aa648c226360a5982edaf6d5041d5c404477be4 Mon Sep 17 00:00:00 2001
+From a818302f8da6faaae09f9c93aa36b5d715ea97c7 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Wed, 13 Sep 2023 19:48:29 -0400
+Date: Sat, 16 Sep 2023 22:53:38 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -60,12 +60,12 @@ index 63baa3031..ebe781410 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 8e8aa5acf..1bb1b2e8a 160000
+index 546087125..acb4f2667 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 8e8aa5acf6ab0e45d91e72beaab74e69810448cd
-+Subproject commit 1bb1b2e8aa381bb80d7bcaec3abefbea762c0cc5
+-Subproject commit 546087125ff72877e4273eef78aa03dae5244a22
++Subproject commit acb4f2667f0e844844f27a0702dd2362d9c301d6
 diff --git a/release/files_common b/release/files_common
 index 2d0b5f051..7f0390067 100644
 --- a/release/files_common
@@ -129,7 +129,7 @@ index 5c787b787..e253a26c2 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index 8585e9f20..4e9564934 100644
+index 89c1a3596..eaca3336a 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser

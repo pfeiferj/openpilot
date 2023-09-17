@@ -28,15 +28,6 @@ after releasing the paddle. (Thanks @Mangomoose)
     changes while the paddle is being pressed for some reason. If anyone has any
     suggestions for what might be happening please let me know.
 
-Honda:
-* AOL does not seem to function. Panda/OP detection of when lateral should be
-applied works but the lateral controls do not activate. (Thanks @sapander)
-
-    - My theory is that the car is rejecting the lateral commands due to a flag
-    on one of the other messages not being set. Have not determined which flags
-    in the can messages may be causing this. If anyone has any suggestions on
-    what may be happening or how to resolve it please let me know. 
-
 ### Untested Cars
 The following cars _may_ be supported, but they have not been verified working.
 Test them at your own risk and offroad before using them onroad. If you do
@@ -45,6 +36,7 @@ the supported cars list. If you find any issues please create an issue
 describing the undesired behavior.
 
 * Ford
+* Honda
 * Mazda
 * Subaru
 * Tesla

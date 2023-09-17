@@ -1,4 +1,4 @@
-From 1bb1b2e8aa381bb80d7bcaec3abefbea762c0cc5 Mon Sep 17 00:00:00 2001
+From acb4f2667f0e844844f27a0702dd2362d9c301d6 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 1 Sep 2023 19:34:09 -0400
 Subject: [PATCH] Always On Lateral
@@ -13,7 +13,7 @@ always on lateral is not enabled.
  board/safety/safety_defaults.h       |  1 +
  board/safety/safety_ford.h           |  9 +++++
  board/safety/safety_gm.h             | 12 ++++++
- board/safety/safety_honda.h          |  8 ++++
+ board/safety/safety_honda.h          | 13 ++++++-
  board/safety/safety_hyundai_canfd.h  |  9 +++++
  board/safety/safety_hyundai_common.h |  7 ++++
  board/safety/safety_mazda.h          |  9 +++++
@@ -25,7 +25,7 @@ always on lateral is not enabled.
  board/safety_declarations.h          | 12 ++++++
  python/__init__.py                   |  4 ++
  tests/libpanda/safety_helpers.h      |  3 ++
- 17 files changed, 197 insertions(+), 5 deletions(-)
+ 17 files changed, 201 insertions(+), 6 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
 index 2c6daddb..7cb99c9a 100644
@@ -223,7 +223,7 @@ index 82c15476..19b97fae 100644
        brake_pressed = GET_BIT(to_push, 40U) != 0U;
      }
 diff --git a/board/safety/safety_honda.h b/board/safety/safety_honda.h
-index d1c6eba7..67737a99 100644
+index d1c6eba7..33ee600e 100644
 --- a/board/safety/safety_honda.h
 +++ b/board/safety/safety_honda.h
 @@ -143,7 +143,15 @@ static int honda_rx_hook(CANPacket_t *to_push) {
@@ -242,6 +242,18 @@ index d1c6eba7..67737a99 100644
      }
  
      // enter controls when PCM enters cruise state
+@@ -334,7 +342,10 @@ static int honda_tx_hook(CANPacket_t *to_send) {
+ 
+   // STEER: safety check
+   if ((addr == 0xE4) || (addr == 0x194)) {
+-    if (!controls_allowed) {
++    // if (!controls_allowed) {
++    // PFEIFER - AOL {{
++    if (!lateral_controls_allowed) {
++    // }} PFEIFER - AOL
+       bool steer_applied = GET_BYTE(to_send, 0) | GET_BYTE(to_send, 1);
+       if (steer_applied) {
+         tx = 0;
 diff --git a/board/safety/safety_hyundai_canfd.h b/board/safety/safety_hyundai_canfd.h
 index 4e172b34..07dd860e 100644
 --- a/board/safety/safety_hyundai_canfd.h

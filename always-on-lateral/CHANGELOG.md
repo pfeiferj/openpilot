@@ -1,6 +1,10 @@
 # Always On Lateral Changelog
 
 ## 08/23/23
+Panda:
+    * Fix steer check for honda (should resolve honda aol not working)
+
+## 08/23/23
 Openpilot:
     * Disable lat on blinker only disables while op is not active
 
