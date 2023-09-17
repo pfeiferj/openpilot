@@ -1,13 +1,13 @@
-From ffc6a4b8d414e9e01d47ac8df8d03987aaf8aa45 Mon Sep 17 00:00:00 2001
+From 4c2a9123649f8e439cd36ff177ef9587822c2e7b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 13 Sep 2023 20:05:30 -0400
 Subject: [PATCH] disable dcam upload
 
 ---
- common/params.cc                    | 3 +++
- selfdrive/athena/athenad.py         | 4 ++++
- selfdrive/ui/qt/offroad/settings.cc | 8 ++++++++
- 3 files changed, 15 insertions(+)
+ common/params.cc                    |  3 +++
+ selfdrive/athena/athenad.py         | 12 ++++++++++++
+ selfdrive/ui/qt/offroad/settings.cc |  8 ++++++++
+ 3 files changed, 23 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
 index 63baa3031..c025b3569 100644
@@ -24,20 +24,42 @@ index 63baa3031..c025b3569 100644
  
  } // namespace
 diff --git a/selfdrive/athena/athenad.py b/selfdrive/athena/athenad.py
-index 899605d98..dcdd13d6f 100755
+index 899605d98..cb727da21 100755
 --- a/selfdrive/athena/athenad.py
 +++ b/selfdrive/athena/athenad.py
-@@ -362,6 +362,10 @@ def scan_dir(path: str, prefix: str) -> List[str]:
+@@ -42,6 +42,10 @@ from openpilot.system.swaglog import cloudlog
+ from openpilot.system.version import get_commit, get_origin, get_short_branch, get_version
+ from openpilot.selfdrive.hardware.hw import Paths
+ 
++# PFEIFER - DDU {{
++params = Params()
++# }} PFEIFER - DDU
++
+ 
+ # TODO: use socket constant when mypy recognizes this as a valid attribute
+ TCP_USER_TIMEOUT = 18
+@@ -362,6 +366,9 @@ def scan_dir(path: str, prefix: str) -> List[str]:
        else:
          if rel_path.startswith(prefix):
            files.append(rel_path)
 +  # PFEIFER - DDU {{
-+  params = Params()
-+  files = [f for f in files if 'dcamera' not in f or not params.get_bool("DisableDCamUpload")]
++  files = [f for f in files if 'dcam' not in f or not params.get_bool("DisableDCamUpload")]
 +  # }} PFEIFER - DDU
    return files
  
  @dispatcher.add_method
+@@ -403,6 +410,11 @@ def uploadFilesToUrls(files_data: List[UploadFileDict]) -> UploadFilesToUrlRespo
+   items: List[UploadItemDict] = []
+   failed: List[str] = []
+   for file in files:
++    # PFEIFER - DDU {{
++    if params.get_bool("DisableDCamUpload") and 'dcam' in file.fn:
++      failed.append(file.fn)
++      continue
++    # }} PFEIFER - DDU
+     if len(file.fn) == 0 or file.fn[0] == '/' or '..' in file.fn or len(file.url) == 0:
+       failed.append(file.fn)
+       continue
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
 index 0af027ca9..ffd92af08 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
