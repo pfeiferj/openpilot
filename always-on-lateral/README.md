@@ -18,6 +18,7 @@ The following cars were reported working by members of the community:
     - Note: frogpilot implementation is _slightly_ different but uses same panda
     code so YYMV
 * Chrysler (Thanks @Shaggy!)
+* Honda (Thanks @sapander!)
 
 ### Reported Issues
 GM:
@@ -36,7 +37,6 @@ the supported cars list. If you find any issues please create an issue
 describing the undesired behavior.
 
 * Ford
-* Honda
 * Mazda
 * Subaru
 * Tesla
