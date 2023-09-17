@@ -1,4 +1,4 @@
-From 18e86b743b4f1c94a484c6461762750afcf0c4b6 Mon Sep 17 00:00:00 2001
+From 41f259faccd8dd556d8d8108fe0ccd4b9579209e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
@@ -38,7 +38,7 @@ index 5272b6154..58d593000 100644
  selfdrive/controls/button_manager.py
 +selfdrive/controls/gap_adjust_button.py
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index 8585e9f20..ae9c591e0 100644
+index 89c1a3596..6ef137a2f 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser

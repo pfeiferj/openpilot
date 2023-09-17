@@ -1,4 +1,4 @@
-From 8b2731df833cb8d35ca9b54dac49d74aa3a48b39 Mon Sep 17 00:00:00 2001
+From ffc6a4b8d414e9e01d47ac8df8d03987aaf8aa45 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 13 Sep 2023 20:05:30 -0400
 Subject: [PATCH] disable dcam upload
