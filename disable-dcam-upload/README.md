@@ -13,10 +13,7 @@ footage on comma connect._
 
 
 ## Status
-Beta
-
-Currently this just makes comma connect think the dcam file doesn't exist rather
-than explicitly prevent the upload.
+Stable
 
 ## Comment Blocks Text
 PFEIFER - DDU
