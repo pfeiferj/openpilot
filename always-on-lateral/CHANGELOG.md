@@ -1,6 +1,6 @@
 # Always On Lateral Changelog
 
-## 08/23/23
+## 09/17/23
 Panda:
     * Fix steer check for honda (should resolve honda aol not working)
 
