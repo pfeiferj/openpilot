@@ -1,4 +1,6 @@
 # opweb
+(DEPRECATED)
+
 A webserver for accessing openpilot data and files. Listens on port 5050. Access
 via http://ip-address:5050 or http://tici:5050 if your router supports device
 hostname dns queries.
@@ -10,11 +12,12 @@ hostname dns queries.
 
 
 ## Status
-Beta
+Deprecated
 
 [Changelog](./CHANGELOG.md)
 
-Limited functionality
+Development is being done on a rewrite using the go programming language for
+better performance.
 
 ## Comment Blocks Text
 PFEIFER - OPWEB
