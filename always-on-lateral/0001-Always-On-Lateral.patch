@@ -1,6 +1,6 @@
-From a818302f8da6faaae09f9c93aa36b5d715ea97c7 Mon Sep 17 00:00:00 2001
+From e9275e7e10f1b9c7f58c2d6d8f2e02d833a2e406 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 16 Sep 2023 22:53:38 -0400
+Date: Wed, 27 Sep 2023 09:22:40 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -36,10 +36,10 @@ control.
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 63baa3031..ebe781410 100644
+index 6722dbb3e..9af8f6790 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,19 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -209,6 +209,19 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -60,12 +60,12 @@ index 63baa3031..ebe781410 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 546087125..acb4f2667 160000
+index 62db60595..631e9bef2 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 546087125ff72877e4273eef78aa03dae5244a22
-+Subproject commit acb4f2667f0e844844f27a0702dd2362d9c301d6
+-Subproject commit 62db60595bb5129cc2f295fdc42f2cda473777fd
++Subproject commit 631e9bef21c4bd5fa9970dbe962c93f707e70da5
 diff --git a/release/files_common b/release/files_common
 index 2d0b5f051..7f0390067 100644
 --- a/release/files_common
@@ -181,7 +181,7 @@ index 03aedb31d..c43c5335b 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 8090bbcd8..d67222d3a 100644
+index bd3ef828f..1ce0c5926 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_G
@@ -699,7 +699,7 @@ index 000000000..e7e7a2a7b
 +      experience |= ALTERNATIVE_EXPERIENCE.AOL_ENABLE_ON_MAIN
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 1dc9dd39f..59ab8a451 100755
+index 4f3b6a912..7baa00140 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -713,7 +713,7 @@ index 1dc9dd39f..59ab8a451 100755
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -107,7 +111,10 @@ class Controls:
+@@ -108,7 +112,10 @@ class Controls:
      self.CP.alternativeExperience = 0
      if not self.disengage_on_accelerator:
        self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
@@ -725,7 +725,7 @@ index 1dc9dd39f..59ab8a451 100755
      # read params
      self.is_metric = self.params.get_bool("IsMetric")
      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
-@@ -559,6 +566,11 @@ class Controls:
+@@ -560,6 +567,11 @@ class Controls:
      self.active = self.state in ACTIVE_STATES
      if self.active:
        self.current_alert_types.append(ET.WARNING)
@@ -737,7 +737,7 @@ index 1dc9dd39f..59ab8a451 100755
  
    def state_control(self, CS):
      """Given the state, this function returns a CarControl packet"""
-@@ -586,6 +598,10 @@ class Controls:
+@@ -587,6 +599,10 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
@@ -749,10 +749,10 @@ index 1dc9dd39f..59ab8a451 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 0af027ca9..d62d28ded 100644
+index 669de5eae..3de41a1e2 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -72,6 +72,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -71,6 +71,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -789,7 +789,7 @@ index 0af027ca9..d62d28ded 100644
  #ifdef ENABLE_MAPS
      {
        "NavSettingTime24h",
-@@ -114,6 +144,10 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -113,6 +143,10 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
    toggles["ExperimentalMode"]->setActiveIcon("../assets/img_experimental.svg");
    toggles["ExperimentalMode"]->setConfirmation(true, true);
    toggles["ExperimentalLongitudinalEnabled"]->setConfirmation(true, false);
@@ -800,7 +800,7 @@ index 0af027ca9..d62d28ded 100644
  
    connect(toggles["ExperimentalLongitudinalEnabled"], &ToggleControl::toggleFlipped, [=]() {
      updateToggles();
-@@ -151,6 +185,14 @@ void TogglesPanel::updateToggles() {
+@@ -150,6 +184,14 @@ void TogglesPanel::updateToggles() {
                                    .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner. "
                                            "When a navigation destination is set and the driving model is using it as input, the driving path on the map will turn green."));
  

@@ -1,4 +1,4 @@
-From 4c2a9123649f8e439cd36ff177ef9587822c2e7b Mon Sep 17 00:00:00 2001
+From 5aab39327bcffbb29f3a712489bd23140ae0143a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 13 Sep 2023 20:05:30 -0400
 Subject: [PATCH] disable dcam upload
@@ -10,10 +10,10 @@ Subject: [PATCH] disable dcam upload
  3 files changed, 23 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 63baa3031..c025b3569 100644
+index 6722dbb3e..406a216f7 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,9 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -209,6 +209,9 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -24,7 +24,7 @@ index 63baa3031..c025b3569 100644
  
  } // namespace
 diff --git a/selfdrive/athena/athenad.py b/selfdrive/athena/athenad.py
-index 899605d98..cb727da21 100755
+index 82c00b3bf..64c238984 100755
 --- a/selfdrive/athena/athenad.py
 +++ b/selfdrive/athena/athenad.py
 @@ -42,6 +42,10 @@ from openpilot.system.swaglog import cloudlog
@@ -61,10 +61,10 @@ index 899605d98..cb727da21 100755
        failed.append(file.fn)
        continue
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 0af027ca9..ffd92af08 100644
+index 669de5eae..23c06008e 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -66,6 +66,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -65,6 +65,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
        "../assets/offroad/icon_monitoring.png",
      },

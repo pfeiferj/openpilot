@@ -1,4 +1,4 @@
-From eaea03bf581ff6761676d676468d53d515740b6c Mon Sep 17 00:00:00 2001
+From 0b40ed36e5dbeeb96dca4482f035f09165196b35 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -14,10 +14,10 @@ Subject: [PATCH] distance based curvature
  create mode 100644 selfdrive/controls/distance_based_curvature.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 63baa3031..516e21a28 100644
+index 6722dbb3e..ddc751f4f 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,11 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -209,6 +209,11 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -150,10 +150,10 @@ index a23ba1eaf..1b5a4777d 100755
      self.a_solution = self.x_sol[:,2]
      self.j_solution = self.u_sol[:,0]
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 0af027ca9..549f506f3 100644
+index 669de5eae..80672a2b7 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -72,6 +72,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -71,6 +71,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },

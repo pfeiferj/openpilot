@@ -1,4 +1,4 @@
-From acb4f2667f0e844844f27a0702dd2362d9c301d6 Mon Sep 17 00:00:00 2001
+From 631e9bef21c4bd5fa9970dbe962c93f707e70da5 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 1 Sep 2023 19:34:09 -0400
 Subject: [PATCH] Always On Lateral
