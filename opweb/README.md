@@ -1,5 +1,6 @@
 # opweb
-(DEPRECATED)
+(DEPRECATED) - All future development will be done on a version written in go.
+Please see [opweb-go](https://github.com/pfeiferj/openpilot/tree/pfeifer-openpilot-patches/opweb-go).
 
 A webserver for accessing openpilot data and files. Listens on port 5050. Access
 via http://ip-address:5050 or http://tici:5050 if your router supports device
