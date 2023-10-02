@@ -61,6 +61,9 @@ git pull
 git checkout pfeifer-disable-dcam-upload
 git pull
 
+git checkout pfeifer-opweb-go
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

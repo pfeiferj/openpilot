@@ -77,6 +77,9 @@ git pull --rebase origin master
 git checkout pfeifer-disable-dcam-upload
 git pull --rebase origin master
 
+git checkout pfeifer-opweb-go
+git pull --rebase origin master
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

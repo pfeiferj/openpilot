@@ -89,3 +89,7 @@ mv *.patch ../openpilot-patches/sounds/
 git checkout pfeifer-disable-dcam-upload
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/disable-dcam-upload/
+
+git checkout pfeifer-opweb-go
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/opweb-go/

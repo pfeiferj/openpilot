@@ -21,12 +21,12 @@ git merge pfeifer-nudgeless-lane-change
 git merge pfeifer-speed-limit-control
 git merge pfeifer-vtsc
 git merge pfeifer-mapd
-git merge pfeifer-opweb
 git merge pfeifer-distance-based-curvature
 git merge pfeifer-tailscale
 git merge pfeifer-high-bitrate
 git merge pfeifer-sounds
 git merge pfeifer-disable-dcam-upload
+git merge pfeifer-opweb-go
 
 # Upstream PRs
 git merge cluster-based-max-speed
