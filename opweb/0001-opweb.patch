@@ -1,4 +1,4 @@
-From 9bb25fb3d0fcb638ecf43eabe86440380f2b0e9d Mon Sep 17 00:00:00 2001
+From 338cfe1132e4d0299898b80efe949126c5593c80 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -87,10 +87,10 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/utils.py
 
 diff --git a/release/files_common b/release/files_common
-index 2d0b5f051..561b50bad 100644
+index ef9f5266e..b0c9fcd56 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,8 @@ tinygrad_repo/tinygrad/nn/*
+@@ -597,3 +597,8 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

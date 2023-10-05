@@ -1,4 +1,4 @@
-From 5aab39327bcffbb29f3a712489bd23140ae0143a Mon Sep 17 00:00:00 2001
+From a95d92575ffc817b578eb23dd6c03ed1da5094d1 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 13 Sep 2023 20:05:30 -0400
 Subject: [PATCH] disable dcam upload
@@ -10,10 +10,10 @@ Subject: [PATCH] disable dcam upload
  3 files changed, 23 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 6722dbb3e..406a216f7 100644
+index 9212a6edf..886784715 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -209,6 +209,9 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,9 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -24,12 +24,12 @@ index 6722dbb3e..406a216f7 100644
  
  } // namespace
 diff --git a/selfdrive/athena/athenad.py b/selfdrive/athena/athenad.py
-index 82c00b3bf..64c238984 100755
+index 70e18bbed..fb67422f4 100755
 --- a/selfdrive/athena/athenad.py
 +++ b/selfdrive/athena/athenad.py
 @@ -42,6 +42,10 @@ from openpilot.system.swaglog import cloudlog
  from openpilot.system.version import get_commit, get_origin, get_short_branch, get_version
- from openpilot.selfdrive.hardware.hw import Paths
+ from openpilot.system.hardware.hw import Paths
  
 +# PFEIFER - DDU {{
 +params = Params()

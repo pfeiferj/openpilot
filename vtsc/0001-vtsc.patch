@@ -1,4 +1,4 @@
-From 68e6a8d060db5b4f2c53599134de9bf1170f4633 Mon Sep 17 00:00:00 2001
+From fc725fe20485d13d5fbeb00b1b2810dac7273a50 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
@@ -13,10 +13,10 @@ Subject: [PATCH] vtsc
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 6722dbb3e..617332a8c 100644
+index 9212a6edf..84e4b874f 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -209,6 +209,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -28,10 +28,10 @@ index 6722dbb3e..617332a8c 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 2d0b5f051..dd35357c0 100644
+index ef9f5266e..58384420a 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -597,3 +597,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

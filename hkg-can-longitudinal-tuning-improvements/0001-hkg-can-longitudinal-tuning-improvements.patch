@@ -1,4 +1,4 @@
-From ae5b93a03b35217245f56603c95d644954be6b23 Mon Sep 17 00:00:00 2001
+From 577d2eb52b96ce160523d18565050213fa2cb687 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 19 Aug 2023 21:02:19 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -64,7 +64,7 @@ index bc29aeb98..8d4ddd4f5 100644
      "ObjGap": 2 if lead_visible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
    }
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 199dfd9b6..be5e2df54 100644
+index 8ccc24d10..1a0877ba0 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -262,9 +262,14 @@ class CarInterface(CarInterfaceBase):

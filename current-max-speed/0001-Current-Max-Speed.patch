@@ -1,4 +1,4 @@
-From 7e253d94c9e53f95c6d7e6481787db0e45f22a96 Mon Sep 17 00:00:00 2001
+From f62f4e2c2a812b4a85383068ba76c5558dd4e95d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 20:59:47 -0400
 Subject: [PATCH] Current Max Speed
@@ -16,10 +16,10 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 6722dbb3e..7826db013 100644
+index 9212a6edf..c1b78bed0 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -209,6 +209,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -31,10 +31,10 @@ index 6722dbb3e..7826db013 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 2d0b5f051..4e796ac58 100644
+index ef9f5266e..33d9fb44b 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -597,3 +597,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

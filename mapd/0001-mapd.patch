@@ -1,4 +1,4 @@
-From cc5f0d666b2e00c14bc746670a9e161346a3b6d4 Mon Sep 17 00:00:00 2001
+From fb3640807776df261d198c036aca63a4291a2178 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 17 Jun 2023 14:19:30 -0400
 Subject: [PATCH] mapd
@@ -51,10 +51,10 @@ index 9fe9b1bd1..f2848a58b 100755
    # if broken, keep on screen error
    while true; do sleep 1; done
 diff --git a/release/files_common b/release/files_common
-index 2d0b5f051..fbd97d12f 100644
+index ef9f5266e..702f07649 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,8 @@ tinygrad_repo/tinygrad/nn/*
+@@ -597,3 +597,8 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
