@@ -1,5 +1,11 @@
 # Always On Lateral Changelog
 
+## 10/14/32
+Openpilot:
+    * Disable lateral on blinker at low speed
+    * Performance Improvements
+    * Code cleanup
+
 ## 09/17/23
 Panda:
     * Fix steer check for honda (should resolve honda aol not working)
