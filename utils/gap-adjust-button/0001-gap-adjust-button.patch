@@ -1,4 +1,4 @@
-From b6f028a19c7a8111b613d3bdf968282ff1c1bee3 Mon Sep 17 00:00:00 2001
+From 11f08c3b2f64d4ece3ec39292c6e3c3b788aa8d2 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
@@ -14,10 +14,10 @@ Subject: [PATCH] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 9212a6edf..8a13e9304 100644
+index 3f6cb7044..6deaaa896 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -29,10 +29,10 @@ index 9212a6edf..8a13e9304 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index fea6655f5..3165d8c7e 100644
+index 08d7e9a22..2aa4c7454 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -599,3 +599,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -600,3 +600,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
@@ -92,7 +92,7 @@ index 8ccc24d10..8be090bd9 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 076668fff..ef7d498a0 100644
+index 6f54aba6e..f22492579 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
@@ -106,7 +106,7 @@ index 076668fff..ef7d498a0 100644
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -163,6 +167,14 @@ class CarState(CarStateBase):
+@@ -161,6 +165,14 @@ class CarState(CarStateBase):
      if self.CP.carFingerprint != CAR.PRIUS_V:
        self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
  

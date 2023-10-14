@@ -1,4 +1,4 @@
-From f49885af746fcd56efaa4cc326155a8083f68aae Mon Sep 17 00:00:00 2001
+From 5b67babfe3255c2360fc6e00bbd1c630d362928f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:03:13 -0400
 Subject: [PATCH] Lane Detection
@@ -15,10 +15,10 @@ Prevents lane changes whenever there is no lane detected.
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 9212a6edf..466bee1ab 100644
+index 3f6cb7044..92f2091c4 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -30,10 +30,10 @@ index 9212a6edf..466bee1ab 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index ef9f5266e..d8837c623 100644
+index 7fa7ad50d..fad371e8d 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -597,3 +597,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -598,3 +598,5 @@ tinygrad_repo/tinygrad/nn/*
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
