@@ -389,7 +389,7 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From d49488a9ec0b89db948f62cf1906059efbe20e0a Mon Sep 17 00:00:00 2001
+From 51939ce2c1ad7f545b40abb6a599216e08e41feb Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -522,7 +522,7 @@ index c1e782fa5..3e3c28719 100755
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/speed_limit_controller.py b/selfdrive/controls/speed_limit_controller.py
 new file mode 100644
-index 000000000..4b231f9a6
+index 000000000..7b4858802
 --- /dev/null
 +++ b/selfdrive/controls/speed_limit_controller.py
 @@ -0,0 +1,114 @@
@@ -613,9 +613,9 @@ index 000000000..4b231f9a6
 +    mem_params.put("SpeedLimitOffset", json.dumps(self.offset))
 +
 +  def load_state(self, load_persistent_enabled=False):
-+    self.nav_enabled = mem_params.get("NavSpeedLimitControl")
-+    self.car_enabled = mem_params.get("CarSpeedLimitControl")
-+    self.map_enabled = mem_params.get("MapSpeedLimitControl")
++    self.nav_enabled = mem_params.get_bool("NavSpeedLimitControl")
++    self.car_enabled = mem_params.get_bool("CarSpeedLimitControl")
++    self.map_enabled = mem_params.get_bool("MapSpeedLimitControl")
 +    self.offset = json.loads(mem_params.get("SpeedLimitOffset"))
 +    self.nav_speed_limit = json.loads(mem_params.get("NavSpeedLimit"))
 +    self.map_speed_limit = json.loads(mem_params.get("MapSpeedLimit"))

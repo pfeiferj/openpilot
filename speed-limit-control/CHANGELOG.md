@@ -1,5 +1,8 @@
 # Speed Limit Control Changelog
 
+## 10/17/23
+* Fixes a bug that caused all speed limit control toggles to be treated as on
+
 ## 08/25/23
 * Separate speed limit data into individual params
 
