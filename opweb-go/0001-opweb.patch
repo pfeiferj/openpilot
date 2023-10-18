@@ -1,4 +1,4 @@
-From bfd435ce82c1aa5a24e836a983bd33c9f8967441 Mon Sep 17 00:00:00 2001
+From 1533c21eb0e14614f4c00210d978c790a2b7ec24 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 1 Oct 2023 15:26:30 -0400
 Subject: [PATCH] opweb
@@ -26,7 +26,7 @@ index aee4748a2..36c5619bc 100644
    PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/opwebd.py b/selfdrive/opwebd.py
 new file mode 100644
-index 000000000..6f2d57c36
+index 000000000..0ec0c81fb
 --- /dev/null
 +++ b/selfdrive/opwebd.py
 @@ -0,0 +1,52 @@
@@ -37,7 +37,7 @@ index 000000000..6f2d57c36
 +from openpilot.common.realtime import Ratekeeper
 +import stat
 +
-+VERSION = 'v1.1.2'
++VERSION = 'v1.2.0'
 +URL = f"https://github.com/pfeiferj/opweb/releases/download/{VERSION}/opwebd"
 +OPWEBD_PATH = '/data/openpilot/opwebd'
 +VERSION_PATH = '/data/openpilot/opwebd_version'
