@@ -15,7 +15,7 @@ program as a binary. To view the program source code go to the
 [diff](https://github.com/commaai/openpilot/compare/master...pfeiferj:openpilot:pfeifer-mapd)
 
 ## Program Code
-[mapd](https://github.com/pfeiferj/mapd)
+[mapd](https://github.com/pfeiferj/openpilot-mapd)
 
 
 ## Status
