@@ -1,15 +1,31 @@
-From ccb3f527c0d46ab4281acfbf5f160640d6f9a398 Mon Sep 17 00:00:00 2001
+From 11ab04387a8a9a872a95b87c91acaedd5dd4faf2 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
 
 ---
+ common/params.cc                    |  4 +++
  selfdrive/manager/process_config.py |  4 +++
  selfdrive/mapd.py                   | 52 +++++++++++++++++++++++++++++
  selfdrive/navd/navd.py              |  7 ++++
- 3 files changed, 63 insertions(+)
+ 4 files changed, 67 insertions(+)
  create mode 100644 selfdrive/mapd.py
 
+diff --git a/common/params.cc b/common/params.cc
+index 3f6cb7044..5a392025f 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
++
++    // PFEIFER - MAPD {{
++    {"RoadName", PERSISTENT},
++    // }} PFEIFER - MAPD
+ };
+ 
+ } // namespace
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
 index aee4748a2..39c4bf67b 100644
 --- a/selfdrive/manager/process_config.py
@@ -27,7 +43,7 @@ index aee4748a2..39c4bf67b 100644
    PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/mapd.py b/selfdrive/mapd.py
 new file mode 100644
-index 000000000..d92274416
+index 000000000..bc9495f13
 --- /dev/null
 +++ b/selfdrive/mapd.py
 @@ -0,0 +1,52 @@
@@ -38,7 +54,7 @@ index 000000000..d92274416
 +from openpilot.common.realtime import Ratekeeper
 +import stat
 +
-+VERSION = 'v1.0.4'
++VERSION = 'v1.1.0'
 +URL = f"https://github.com/pfeiferj/openpilot-mapd/releases/download/{VERSION}/mapd"
 +MAPD_PATH = '/data/openpilot/mapd'
 +VERSION_PATH = '/data/openpilot/mapd_version'
