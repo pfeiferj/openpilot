@@ -1,4 +1,4 @@
-From 0d47c265306873a456f617c789b76b44c925adf5 Mon Sep 17 00:00:00 2001
+From 6eb4adec24bb47c022ccd2bbaedd281b0f5fc9fd Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,10 +10,10 @@ Subject: [PATCH 1/3] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index 7fa7ad50d..08d7e9a22 100644
+index 1e16cb943..788cf0e6b 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -598,3 +598,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -243,7 +243,7 @@ index 000000000..343cf6396
 2.39.2
 
 
-From 11f08c3b2f64d4ece3ec39292c6e3c3b788aa8d2 Mon Sep 17 00:00:00 2001
+From bc47ef1bd9de237b1771d907ae3585fe22997577 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -274,10 +274,10 @@ index 3f6cb7044..6deaaa896 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 08d7e9a22..2aa4c7454 100644
+index 788cf0e6b..34e53720f 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -602,3 +602,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
@@ -310,7 +310,7 @@ index 89c1a3596..6ef137a2f 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 8ccc24d10..8be090bd9 100644
+index 26b349135..5103e1a2d 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
@@ -324,7 +324,7 @@ index 8ccc24d10..8be090bd9 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -339,6 +343,11 @@ class CarInterface(CarInterfaceBase):
+@@ -340,6 +344,11 @@ class CarInterface(CarInterfaceBase):
      if self.CS.CP.openpilotLongitudinalControl:
        ret.buttonEvents = create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT)
  
@@ -337,7 +337,7 @@ index 8ccc24d10..8be090bd9 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 6f54aba6e..f22492579 100644
+index 3a89d655d..4fa92ab60 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
@@ -351,7 +351,7 @@ index 6f54aba6e..f22492579 100644
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -161,6 +165,14 @@ class CarState(CarStateBase):
+@@ -160,6 +164,14 @@ class CarState(CarStateBase):
      if self.CP.carFingerprint != CAR.PRIUS_V:
        self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
  
@@ -389,7 +389,7 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From 51939ce2c1ad7f545b40abb6a599216e08e41feb Mon Sep 17 00:00:00 2001
+From ba58f16dde710cde44776f44010a3eeca5bd7596 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -427,10 +427,10 @@ index 6deaaa896..a051563c5 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 2aa4c7454..df358cb23 100644
+index 34e53720f..afe19c854 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -601,3 +601,4 @@ tinygrad_repo/tinygrad/*.py
+@@ -603,3 +603,4 @@ tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
  selfdrive/controls/gap_adjust_button.py
@@ -493,7 +493,7 @@ index bd3ef828f..474275a57 100644
  
    @staticmethod
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index c1e782fa5..3e3c28719 100755
+index b1eff5302..58ce8f242 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX

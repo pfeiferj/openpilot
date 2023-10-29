@@ -1,4 +1,4 @@
-From 11ab04387a8a9a872a95b87c91acaedd5dd4faf2 Mon Sep 17 00:00:00 2001
+From 0336bfff82368293329bb16cebc1b485f8ce8efd Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
@@ -27,10 +27,10 @@ index 3f6cb7044..5a392025f 100644
  
  } // namespace
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index aee4748a2..39c4bf67b 100644
+index 320958d34..6ed41bb4b 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -84,6 +84,10 @@ procs = [
+@@ -82,6 +82,10 @@ procs = [
    PythonProcess("uploader", "system.loggerd.uploader", always_run),
    PythonProcess("statsd", "selfdrive.statsd", always_run),
  
@@ -43,7 +43,7 @@ index aee4748a2..39c4bf67b 100644
    PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/mapd.py b/selfdrive/mapd.py
 new file mode 100644
-index 000000000..bc9495f13
+index 000000000..4d173638b
 --- /dev/null
 +++ b/selfdrive/mapd.py
 @@ -0,0 +1,52 @@
@@ -54,7 +54,7 @@ index 000000000..bc9495f13
 +from openpilot.common.realtime import Ratekeeper
 +import stat
 +
-+VERSION = 'v1.1.0'
++VERSION = 'v1.3.3'
 +URL = f"https://github.com/pfeiferj/openpilot-mapd/releases/download/{VERSION}/mapd"
 +MAPD_PATH = '/data/openpilot/mapd'
 +VERSION_PATH = '/data/openpilot/mapd_version'

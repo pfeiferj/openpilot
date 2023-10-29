@@ -1,4 +1,4 @@
-From 7ca7b4ea28652ea56337fd3667d70877e8d4c93f Mon Sep 17 00:00:00 2001
+From d8c16f841f05f9dc2276d11c16b9c51faadd4a26 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 1 Sep 2023 19:34:09 -0400
 Subject: [PATCH] Always On Lateral
@@ -487,7 +487,7 @@ index cbef3a25..44fcf680 100644
 +#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index bfa37684..f8007edc 100644
+index 6f99f4fa..b2c9ec12 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
 @@ -111,6 +111,10 @@ class ALTERNATIVE_EXPERIENCE:

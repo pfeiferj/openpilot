@@ -1,6 +1,6 @@
-From 5178e27ccbfce40f885191af5ade56ff96bb5f01 Mon Sep 17 00:00:00 2001
+From d3a71cef1453b54fd53f0ba96d8405070d2f90dc Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Thu, 5 Oct 2023 12:14:49 -0400
+Date: Sun, 29 Oct 2023 14:39:32 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -61,17 +61,17 @@ index 3f6cb7044..0268e53c4 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 6bf6ba773..7ca7b4ea2 160000
+index 549fa32fc..d8c16f841 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 6bf6ba773ea4174c702ac9c4af4e8a6fd3cef655
-+Subproject commit 7ca7b4ea28652ea56337fd3667d70877e8d4c93f
+-Subproject commit 549fa32fc7b0354ebbb48bae846bff380eab9446
++Subproject commit d8c16f841f05f9dc2276d11c16b9c51faadd4a26
 diff --git a/release/files_common b/release/files_common
-index 7fa7ad50d..b3be12d95 100644
+index 1e16cb943..9efd9fed2 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -598,3 +598,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -347,7 +347,7 @@ index 2cb4f09d7..175d429bd 100644
      ret = car.CarState.new_message()
  
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 6f54aba6e..3966bb173 100644
+index 3a89d655d..1aff56f8c 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -24,6 +24,10 @@ TEMP_STEER_FAULTS = (0, 9, 11, 21, 25)

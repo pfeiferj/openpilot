@@ -1,4 +1,4 @@
-From b1037d754eb992c684bef4ca011abdec8db69253 Mon Sep 17 00:00:00 2001
+From 6d2c86932736cea3cd2fd8c16697ad1e05f5e82d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -30,10 +30,10 @@ index 3f6cb7044..4a291b413 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 7fa7ad50d..2c4f76088 100644
+index 1e16cb943..330a4e62d 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -598,3 +598,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -41,7 +41,7 @@ index 7fa7ad50d..2c4f76088 100644
 +selfdrive/controls/distance_based_curvature.py
 diff --git a/selfdrive/controls/distance_based_curvature.py b/selfdrive/controls/distance_based_curvature.py
 new file mode 100644
-index 000000000..692450af4
+index 000000000..f2a497a3c
 --- /dev/null
 +++ b/selfdrive/controls/distance_based_curvature.py
 @@ -0,0 +1,46 @@
@@ -50,7 +50,7 @@ index 000000000..692450af4
 +import numpy as np
 +from openpilot.selfdrive.modeld.constants import index_function
 +import json
-+from openpilot.selfdrive.modeld.constants import T_IDXS
++from openpilot.selfdrive.modeld.constants import ModelConstants
 +from openpilot.common.params import Params
 +mem_params = Params("/dev/shm/params")
 +
@@ -67,7 +67,7 @@ index 000000000..692450af4
 +    distances = mem_params.get("Distances")
 +    if distances is not None:
 +      distances = json.loads(distances.decode())
-+      distances = np.interp(T_IDXS, T_IDXS_MPC, distances)
++      distances = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, distances)
 +      distances = distances[:CONTROL_N].tolist()
 +    else:
 +      distances = []
@@ -85,19 +85,19 @@ index 000000000..692450af4
 +
 +  def average_curvature_desired(self, psi, v_ego, delay):
 +    distances = self.distances
-+    distance = np.interp(delay, T_IDXS[:CONTROL_N], distances)
++    distance = np.interp(delay, ModelConstants.T_IDXS[:CONTROL_N], distances)
 +    distance = max(0.0001, distance)
 +    average_curvature_desired = psi / distance if mem_params.get_bool("DistanceBasedCurvature") else psi / (v_ego * delay)
 +    return average_curvature_desired
 +
 +dbc = DistanceBasedCurvature()
 diff --git a/selfdrive/controls/lib/drive_helpers.py b/selfdrive/controls/lib/drive_helpers.py
-index 00916ddf7..915df8f4f 100644
+index b728f1114..4134ff598 100644
 --- a/selfdrive/controls/lib/drive_helpers.py
 +++ b/selfdrive/controls/lib/drive_helpers.py
 @@ -6,6 +6,10 @@ from openpilot.common.numpy_fast import clip, interp
  from openpilot.common.realtime import DT_MDL
- from openpilot.selfdrive.modeld.constants import T_IDXS
+ from openpilot.selfdrive.modeld.constants import ModelConstants
  
 +# PFEIFER - DBC {{
 +from openpilot.selfdrive.controls.distance_based_curvature import dbc
@@ -116,7 +116,7 @@ index 00916ddf7..915df8f4f 100644
    # TODO this needs more thought, use .2s extra for now to estimate other delays
 @@ -179,6 +184,9 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
    current_curvature_desired = curvatures[0]
-   psi = interp(delay, T_IDXS[:CONTROL_N], psis)
+   psi = interp(delay, ModelConstants.T_IDXS[:CONTROL_N], psis)
    average_curvature_desired = psi / (v_ego * delay)
 +  # PFEIFER - DBC {{
 +  average_curvature_desired = dbc.average_curvature_desired(psi, v_ego, delay)

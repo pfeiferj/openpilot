@@ -1,4 +1,4 @@
-From 0478eec008bab45db31f187b0ccecb8192968306 Mon Sep 17 00:00:00 2001
+From d72f66109873a55769229edb52d8a7776109dae2 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 18:48:03 -0400
 Subject: [PATCH] Use the cluster speed when limiting speed
@@ -8,7 +8,7 @@ Subject: [PATCH] Use the cluster speed when limiting speed
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index c1e782fa5..cb09eb621 100755
+index b1eff5302..96d0400f6 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -94,8 +94,11 @@ class LongitudinalPlanner:

@@ -1,4 +1,4 @@
-From be76c888606a51723e0cd9562eab5aa9b652879f Mon Sep 17 00:00:00 2001
+From c87ca2ba628746fb81af4c46b3a5e29c58414329 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
@@ -28,17 +28,17 @@ index 3f6cb7044..f0871812f 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 7fa7ad50d..67faa8a3c 100644
+index 1e16cb943..c0e7a2965 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -598,3 +598,5 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/vtsc.py
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index c1e782fa5..2277c2969 100755
+index b1eff5302..d3e97aa74 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX

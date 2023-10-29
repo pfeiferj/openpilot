@@ -1,4 +1,4 @@
-From f3317226a216f76509c59a598917a804a8ff45b2 Mon Sep 17 00:00:00 2001
+From e9380dc3d5a2c608a29f4a54e878dc072d18808a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -87,10 +87,10 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/utils.py
 
 diff --git a/release/files_common b/release/files_common
-index 7fa7ad50d..a6de3c7e3 100644
+index 1e16cb943..9d789c5b7 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -598,3 +598,8 @@ tinygrad_repo/tinygrad/nn/*
+@@ -600,3 +600,8 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -100,10 +100,10 @@ index 7fa7ad50d..a6de3c7e3 100644
 +selfdrive/static/*
 +selfdrive/templates/**/*
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index aee4748a2..0e75cb75a 100644
+index 320958d34..41e1fca84 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -84,6 +84,10 @@ procs = [
+@@ -82,6 +82,10 @@ procs = [
    PythonProcess("uploader", "system.loggerd.uploader", always_run),
    PythonProcess("statsd", "selfdrive.statsd", always_run),
  

@@ -1,4 +1,4 @@
-From 8b57b0b626aaf5254741fd74e6a40314e553b11e Mon Sep 17 00:00:00 2001
+From 5bf00c50fe769d194a7e6409b2857135feac3168 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 13 Sep 2023 20:05:30 -0400
 Subject: [PATCH] disable dcam upload
@@ -24,7 +24,7 @@ index 3f6cb7044..7bbe7d0ad 100644
  
  } // namespace
 diff --git a/selfdrive/athena/athenad.py b/selfdrive/athena/athenad.py
-index 70e18bbed..fb67422f4 100755
+index c93b43467..bbd74505e 100755
 --- a/selfdrive/athena/athenad.py
 +++ b/selfdrive/athena/athenad.py
 @@ -42,6 +42,10 @@ from openpilot.system.swaglog import cloudlog
@@ -38,7 +38,7 @@ index 70e18bbed..fb67422f4 100755
  
  # TODO: use socket constant when mypy recognizes this as a valid attribute
  TCP_USER_TIMEOUT = 18
-@@ -362,6 +366,9 @@ def scan_dir(path: str, prefix: str) -> List[str]:
+@@ -358,6 +362,9 @@ def scan_dir(path: str, prefix: str) -> List[str]:
        else:
          if rel_path.startswith(prefix):
            files.append(rel_path)
@@ -48,7 +48,7 @@ index 70e18bbed..fb67422f4 100755
    return files
  
  @dispatcher.add_method
-@@ -403,6 +410,11 @@ def uploadFilesToUrls(files_data: List[UploadFileDict]) -> UploadFilesToUrlRespo
+@@ -399,6 +406,11 @@ def uploadFilesToUrls(files_data: List[UploadFileDict]) -> UploadFilesToUrlRespo
    items: List[UploadItemDict] = []
    failed: List[str] = []
    for file in files:
