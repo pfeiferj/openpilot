@@ -1,6 +1,10 @@
 # Always On Lateral Changelog
 
-## 10/14/32
+## 10/30/23
+Openpilot:
+    * Fixes a bug that prevented any lateral control while aol was disabled (thanks for the heads up @nworby!)
+
+## 10/14/23
 Openpilot:
     * Disable lateral on blinker at low speed
     * Performance Improvements

@@ -1,4 +1,4 @@
-From d3a71cef1453b54fd53f0ba96d8405070d2f90dc Mon Sep 17 00:00:00 2001
+From 8780739e1647a4f3e29bb1d06b20e27a24f5e86b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 29 Oct 2023 14:39:32 -0400
 Subject: [PATCH] Always On Lateral
@@ -27,11 +27,11 @@ control.
  selfdrive/car/toyota/carstate.py        |   8 +
  selfdrive/car/volkswagen/carstate.py    |   8 +
  selfdrive/controls/always_on_lateral.py | 320 ++++++++++++++++++++++++
- selfdrive/controls/controlsd.py         |  17 +-
+ selfdrive/controls/controlsd.py         |  18 +-
  selfdrive/ui/qt/offroad/settings.cc     |  57 +++++
  selfdrive/ui/qt/onroad.cc               |   6 +
  selfdrive/ui/ui.h                       |   6 +
- 19 files changed, 527 insertions(+), 2 deletions(-)
+ 19 files changed, 528 insertions(+), 2 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -725,7 +725,7 @@ index 000000000..cffc1b9cf
 +      experience |= ALTERNATIVE_EXPERIENCE.AOL_ENABLE_ON_MAIN
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index d800d895d..bf90ab5fc 100755
+index d800d895d..d8f54720d 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -762,13 +762,14 @@ index d800d895d..bf90ab5fc 100755
    def set_initial_state(self):
      if REPLAY:
        controls_state = Params().get("ReplayControlsState")
-@@ -581,6 +592,10 @@ class Controls:
+@@ -581,6 +592,11 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
 +    # PFEIFER - AOL {{
 +    self.aol.update(CS, self.state, self.CP)
-+    CC.latActive = self.aol.lat_active
++    if self.aol.enabled:
++        CC.latActive = self.aol.lat_active
 +    # }} PFEIFER - AOL
      CC.longActive = self.enabled and not self.events.contains(ET.OVERRIDE_LONGITUDINAL) and self.CP.openpilotLongitudinalControl
  
