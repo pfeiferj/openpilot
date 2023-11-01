@@ -1,4 +1,4 @@
-From 0336bfff82368293329bb16cebc1b485f8ce8efd Mon Sep 17 00:00:00 2001
+From 0cb043506b587546b538e7e25d9ebb8ec5630625 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
@@ -43,7 +43,7 @@ index 320958d34..6ed41bb4b 100644
    PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/mapd.py b/selfdrive/mapd.py
 new file mode 100644
-index 000000000..4d173638b
+index 000000000..d6eca71e7
 --- /dev/null
 +++ b/selfdrive/mapd.py
 @@ -0,0 +1,52 @@
@@ -54,7 +54,7 @@ index 000000000..4d173638b
 +from openpilot.common.realtime import Ratekeeper
 +import stat
 +
-+VERSION = 'v1.3.3'
++VERSION = 'v1.4.0'
 +URL = f"https://github.com/pfeiferj/openpilot-mapd/releases/download/{VERSION}/mapd"
 +MAPD_PATH = '/data/openpilot/mapd'
 +VERSION_PATH = '/data/openpilot/mapd_version'
