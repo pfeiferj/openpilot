@@ -71,6 +71,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Display speed in km/h instead of mph."),
       "../assets/offroad/icon_metric.png",
     },
+    // PFEIFER - MTSC {{
+    {
+      "MTSCEnabled",
+      tr("M-TSC - Map Turn Speed Control"),
+      tr("Enables M-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2."),
+      "../assets/img_experimental_white.svg",
+    },
+    // }} PFEIFER - MTSC
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",
