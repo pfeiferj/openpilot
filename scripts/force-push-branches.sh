@@ -64,6 +64,9 @@ git push --force
 git checkout pfeifer-opweb-go
 git push --force
 
+git checkout pfeifer-mtsc
+git push --force
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

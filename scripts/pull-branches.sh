@@ -64,6 +64,9 @@ git pull
 git checkout pfeifer-opweb-go
 git pull
 
+git checkout pfeifer-mtsc
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

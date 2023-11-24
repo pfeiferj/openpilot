@@ -93,3 +93,7 @@ mv *.patch ../openpilot-patches/disable-dcam-upload/
 git checkout pfeifer-opweb-go
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/opweb-go/
+
+git checkout pfeifer-mtsc
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/mtsc/

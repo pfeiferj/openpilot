@@ -64,6 +64,9 @@ git reset --hard origin/pfeifer-disable-dcam-upload
 git checkout pfeifer-opweb-go
 git reset --hard origin/pfeifer-opweb-go
 
+git checkout pfeifer-mtsc
+git reset --hard origin/pfeifer-mtsc
+
 
 # Upstream PRs
 git checkout cluster-based-max-speed

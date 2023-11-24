@@ -27,6 +27,7 @@ git merge pfeifer-high-bitrate
 git merge pfeifer-sounds
 git merge pfeifer-disable-dcam-upload
 git merge pfeifer-opweb-go
+git merge pfeifer-mtsc
 
 # Upstream PRs
 git merge cluster-based-max-speed
