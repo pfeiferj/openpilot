@@ -1,4 +1,4 @@
-From b4df2c735d5ea695e1a512da23563a420bb12bf1 Mon Sep 17 00:00:00 2001
+From 6247031e4b448f68c33b2e2db8ed99482ff78092 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 23 Nov 2023 21:25:32 -0500
 Subject: [PATCH] mtsc
@@ -29,10 +29,10 @@ index 54168165a..61ecbd13c 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 5a076f2b1..c1d0c6a1d 100644
+index cfc3830e0..1cd801cc8 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -601,3 +601,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
