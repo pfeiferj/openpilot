@@ -1,4 +1,4 @@
-From 6eb4adec24bb47c022ccd2bbaedd281b0f5fc9fd Mon Sep 17 00:00:00 2001
+From 735734d6da1019604cb01ff03adc33bc20ad2bfd Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,7 +10,7 @@ Subject: [PATCH 1/3] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index 1e16cb943..788cf0e6b 100644
+index cfc3830e0..4d49047c3 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
@@ -243,7 +243,7 @@ index 000000000..343cf6396
 2.39.2
 
 
-From bc47ef1bd9de237b1771d907ae3585fe22997577 Mon Sep 17 00:00:00 2001
+From 45f18f9e38491b74fac3f98adc1751208a6d9255 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -259,10 +259,10 @@ Subject: [PATCH 2/3] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 3f6cb7044..6deaaa896 100644
+index 54168165a..5966675ab 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -274,7 +274,7 @@ index 3f6cb7044..6deaaa896 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 788cf0e6b..34e53720f 100644
+index 4d49047c3..22172d851 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -602,3 +602,4 @@ tinygrad_repo/tinygrad/shape/*
@@ -389,28 +389,29 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From ba58f16dde710cde44776f44010a3eeca5bd7596 Mon Sep 17 00:00:00 2001
+From 77d7203d0d4dd8292ed279747a1be02e8b22230b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
 
 Limits the speed based on the current speed limit.
 ---
- common/params.cc                              |   9 ++
+ common/params.cc                              |  11 ++
  release/files_common                          |   1 +
- selfdrive/car/hyundai/carstate.py             |  25 ++++
+ selfdrive/car/hyundai/carstate.py             |  25 +++
  .../controls/lib/longitudinal_planner.py      |  10 ++
- selfdrive/controls/speed_limit_controller.py  | 114 ++++++++++++++++++
- selfdrive/navd/navd.py                        |  24 ++++
+ selfdrive/controls/speed_limit_controller.py  | 157 ++++++++++++++++++
+ selfdrive/navd/navd.py                        |  18 ++
  selfdrive/ui/qt/offroad/settings.cc           |  20 +++
- 7 files changed, 203 insertions(+)
+ selfdrive/ui/qt/onroad.cc                     |  17 ++
+ 8 files changed, 259 insertions(+)
  create mode 100644 selfdrive/controls/speed_limit_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 6deaaa896..a051563c5 100644
+index 5966675ab..a4418e354 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -211,6 +211,15 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -212,6 +212,17 @@ std::unordered_map<std::string, uint32_t> keys = {
      // PFEIFER - GAB {{
      {"GapAdjustButton", PERSISTENT},
      // }} PFEIFER - GAB
@@ -419,6 +420,8 @@ index 6deaaa896..a051563c5 100644
 +    {"MapSpeedLimitControl", PERSISTENT},
 +    {"CarSpeedLimitControl", PERSISTENT},
 +    {"MapSpeedLimit", PERSISTENT},
++    {"NextMapSpeedLimit", PERSISTENT},
++    {"MapAdvisoryLimit", PERSISTENT},
 +    {"NavSpeedLimit", PERSISTENT},
 +    {"CarSpeedLimit", PERSISTENT},
 +    {"SpeedLimitOffset", PERSISTENT},
@@ -427,7 +430,7 @@ index 6deaaa896..a051563c5 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 34e53720f..afe19c854 100644
+index 22172d851..8959b73ae 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -603,3 +603,4 @@ tinygrad_repo/tinygrad/*.py
@@ -436,7 +439,7 @@ index 34e53720f..afe19c854 100644
  selfdrive/controls/gap_adjust_button.py
 +selfdrive/controls/speed_limit_controller.py
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index bd3ef828f..474275a57 100644
+index edc9e4855..67429215b 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_G
@@ -493,7 +496,7 @@ index bd3ef828f..474275a57 100644
  
    @staticmethod
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index b1eff5302..58ce8f242 100755
+index b1eff5302..21f7195aa 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
@@ -512,7 +515,7 @@ index b1eff5302..58ce8f242 100755
      accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
  
 +    # PFEIFER - SLC {{
-+    slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS)
++    slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS, v_ego)
 +    if slc.speed_limit > 0 and (slc.speed_limit + slc.offset) < v_cruise:
 +      v_cruise = slc.speed_limit + slc.offset
 +    # }} PFEIFER - SLC
@@ -522,21 +525,41 @@ index b1eff5302..58ce8f242 100755
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/speed_limit_controller.py b/selfdrive/controls/speed_limit_controller.py
 new file mode 100644
-index 000000000..7b4858802
+index 000000000..24ab476ff
 --- /dev/null
 +++ b/selfdrive/controls/speed_limit_controller.py
-@@ -0,0 +1,114 @@
+@@ -0,0 +1,157 @@
 +from openpilot.common.params import Params
 +from openpilot.common.conversions import Conversions as CV
 +from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button, GapButtonState
 +import json
++import math
 +
 +mem_params = Params("/dev/shm/params")
 +params = Params()
 +
++R = 6373000.0 # approximate radius of earth in meters
++TO_RADIANS = math.pi / 180
++TO_DEGREES = 180 / math.pi
++NEXT_SPEED_DIST = 5 # seconds
++
++# points should be in radians
++# output is meters
++def distance_to_point(ax, ay, bx, by):
++  a = math.sin((bx-ax)/2)*math.sin((bx-ax)/2) + math.cos(ax) * math.cos(bx)*math.sin((by-ay)/2)*math.sin((by-ay)/2)
++  c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
++
++  return R * c  # in meters
++
 +class SpeedLimitController:
 +  nav_speed_limit: float = 0 # m/s
 +  map_speed_limit: float = 0 # m/s
++  map_advisory_limit: float = 0 # m/s
++  next_map_speed_limit: float = 0 # m/s
++  next_map_speed_limit_lat: float = 0 # deg
++  next_map_speed_limit_lon: float = 0 # deg
++  lat: float = 0 # deg
++  lon: float = 0 # deg
 +  car_speed_limit: float = 0 # m/s
 +  offset: float = 0 # m/s
 +  nav_enabled: bool = False
@@ -544,6 +567,7 @@ index 000000000..7b4858802
 +  speed_enabled: bool = False
 +  last_transition_id: int = 0
 +  current_max_velocity_update_count: int = 0
++  current_velocity: float = 0
 +
 +  def __init__(self) -> None:
 +    self.load_persistent_enabled()
@@ -552,7 +576,8 @@ index 000000000..7b4858802
 +    self.write_car_state()
 +    self.write_offset_state()
 +
-+  def update_current_max_velocity(self, max_v: float, load_state: bool = True, write_state: bool = True) -> None:
++  def update_current_max_velocity(self, max_v: float, v_ego: float, load_state: bool = True, write_state: bool = True) -> None:
++    self.current_velocity = v_ego
 +    self.current_max_velocity_update_count += 1
 +    self.current_max_velocity_update_count = self.current_max_velocity_update_count % 100
 +    if load_state:
@@ -572,10 +597,18 @@ index 000000000..7b4858802
 +  @property
 +  def speed_limit(self) -> float:
 +    limit: float = 0
++    if self.map_enabled and self.next_map_speed_limit != 0:
++      d = distance_to_point(self.lat * TO_RADIANS, self.lon * TO_RADIANS, self.next_map_speed_limit_lat * TO_RADIANS, self.next_map_speed_limit_lon * TO_RADIANS)
++      max_d = NEXT_SPEED_DIST * self.current_velocity
++      if d < max_d:
++        return self.next_map_speed_limit
++
 +    if self.nav_enabled and self.nav_speed_limit != 0:
 +      limit = self.nav_speed_limit
 +    elif self.map_enabled and self.map_speed_limit != 0:
 +      limit = self.map_speed_limit
++      if self.map_advisory_limit != 0 and self.map_advisory_limit < limit:
++        limit = self.map_advisory_limit
 +    elif self.car_enabled and self.car_speed_limit != 0:
 +      limit = self.car_speed_limit
 +
@@ -603,6 +636,7 @@ index 000000000..7b4858802
 +
 +  def write_map_state(self):
 +    mem_params.put("MapSpeedLimit", json.dumps(self.map_speed_limit))
++    mem_params.put("MapAdvisoryLimit", json.dumps(self.map_speed_limit))
 +    mem_params.put_bool("MapSpeedLimitControl", self.map_enabled)
 +
 +  def write_car_state(self):
@@ -619,6 +653,18 @@ index 000000000..7b4858802
 +    self.offset = json.loads(mem_params.get("SpeedLimitOffset"))
 +    self.nav_speed_limit = json.loads(mem_params.get("NavSpeedLimit"))
 +    self.map_speed_limit = json.loads(mem_params.get("MapSpeedLimit"))
++    try:
++      next_map_speed_limit = json.loads(mem_params.get("NextMapSpeedLimit"))
++      self.next_map_speed_limit = next_map_speed_limit["speedlimit"]
++      self.next_map_speed_limit_lat = next_map_speed_limit["latitude"]
++      self.next_map_speed_limit_lon = next_map_speed_limit["longitude"]
++    except: pass
++    try:
++      position = json.loads(mem_params.get("LastGPSPosition"))
++      self.lat = position["latitude"]
++      self.lon = position["longitude"]
++    except: pass
++    self.map_advisory_limit = json.loads(mem_params.get("MapAdvisoryLimit"))
 +    self.car_speed_limit = json.loads(mem_params.get("CarSpeedLimit"))
 +
 +    if load_persistent_enabled:
@@ -641,7 +687,7 @@ index 000000000..7b4858802
 +
 +slc = SpeedLimitController()
 diff --git a/selfdrive/navd/navd.py b/selfdrive/navd/navd.py
-index da2b8c06b..b618a4ce0 100755
+index da2b8c06b..d4a9f3c70 100755
 --- a/selfdrive/navd/navd.py
 +++ b/selfdrive/navd/navd.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
@@ -655,7 +701,7 @@ index da2b8c06b..b618a4ce0 100755
  REROUTE_DISTANCE = 25
  MANEUVER_TRANSITION_THRESHOLD = 10
  REROUTE_COUNTER_MIN = 3
-@@ -200,6 +204,14 @@ class RouteEngine:
+@@ -200,6 +204,11 @@ class RouteEngine:
  
      if self.step_idx is None:
        msg.valid = False
@@ -663,14 +709,11 @@ index da2b8c06b..b618a4ce0 100755
 +      slc.load_state()
 +      slc.nav_speed_limit = 0
 +      slc.write_nav_state()
-+
-+      if slc.speed_limit != 0:
-+        msg.navInstruction.speedLimit = slc.speed_limit
 +      # }} PFEIFER - SLC
        self.pm.send('navInstruction', msg)
        return
  
-@@ -271,6 +283,18 @@ class RouteEngine:
+@@ -271,6 +280,15 @@ class RouteEngine:
  
      if ('maxspeed' in closest.annotations) and self.localizer_valid:
        msg.navInstruction.speedLimit = closest.annotations['maxspeed']
@@ -682,9 +725,6 @@ index da2b8c06b..b618a4ce0 100755
 +      slc.load_state()
 +      slc.nav_speed_limit = 0
 +      slc.write_nav_state()
-+
-+    if slc.speed_limit != 0:
-+      msg.navInstruction.speedLimit = slc.speed_limit
 +    # }} PFEIFER - SLC
  
      # Speed limit sign type
@@ -720,6 +760,34 @@ index 669de5eae..121101c7b 100644
  #ifdef ENABLE_MAPS
      {
        "NavSettingTime24h",
+diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
+index 971eb673e..c8bafb1f5 100644
+--- a/selfdrive/ui/qt/onroad.cc
++++ b/selfdrive/ui/qt/onroad.cc
+@@ -312,6 +312,23 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
+   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
+   status = s.status;
+ 
++  // PFEIFER - SLC {{
++  if(speedLimit == 0) {
++    float carSpeedLimit = stof(Params("/dev/shm/params").get("CarSpeedLimit"));
++    float mapSpeedLimit = stof(Params("/dev/shm/params").get("MapSpeedLimit"));
++    if(carSpeedLimit != 0 || mapSpeedLimit != 0) {
++      speedLimit = mapSpeedLimit != 0 ? mapSpeedLimit : carSpeedLimit;
++      if(is_metric) {
++        has_eu_speed_limit = true;
++        speedLimit *= MS_TO_KPH;
++      } else {
++        has_us_speed_limit = true;
++        speedLimit *= MS_TO_MPH;
++      }
++    }
++  }
++  // }} PFEIFER - SLC
++
+   // update engageability/experimental mode button
+   experimental_btn->updateState(s);
+ 
 -- 
 2.39.2
 

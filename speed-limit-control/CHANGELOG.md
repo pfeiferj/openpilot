@@ -1,5 +1,9 @@
 # Speed Limit Control Changelog
 
+## 12/01/23
+* Displays the speed limit from sources other than nav
+* Adds advisory speed limits to map speed limits
+
 ## 10/17/23
 * Fixes a bug that caused all speed limit control toggles to be treated as on
 
