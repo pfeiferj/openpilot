@@ -1,5 +1,17 @@
 # Always On Lateral Changelog
 
+## 12/01/23
+Openpilot:
+    * Large refactor to panda code. Greatly simplifies the lateral allowed checks.
+    * Panda no longer has an alt experience flag for enabling upon main button press, it is default behavior now. all
+      cars appear to be stable when enabling with main button press so a distinction is no longer needed.
+    * Adds untested nissan support.
+    * Removes aol type setting in openpilot code. All cars now use cruise available state. HKG with oplong tracks button
+      presses but the button presses now set the cruise available state directly.
+    * Openpilot code no longer explicitly specifies whether a car may use aol, nearly all cars are supported so the
+      additional code is not needed.
+    * HKG no longer maintains aol state across ignition cycles. aol will always default to off upon starting car.
+
 ## 10/30/23
 Openpilot:
     * Fixes a bug that prevented any lateral control while aol was disabled (thanks for the heads up @nworby!)

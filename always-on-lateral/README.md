@@ -38,6 +38,7 @@ describing the undesired behavior.
 
 * Ford
 * Mazda
+* Nissan
 * Subaru
 * Tesla
 * VW/Audi/Skoda

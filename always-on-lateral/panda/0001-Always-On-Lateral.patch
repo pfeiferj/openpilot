@@ -1,6 +1,6 @@
-From d8c16f841f05f9dc2276d11c16b9c51faadd4a26 Mon Sep 17 00:00:00 2001
+From d167cb4fb29215cbefb3d0688097b32acc643d50 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 1 Sep 2023 19:34:09 -0400
+Date: Wed, 29 Nov 2023 18:21:00 -0500
 Subject: [PATCH] Always On Lateral
 
 Safety code for Always On Lateral. On supported cars this allows lateral
@@ -8,364 +8,264 @@ commands to be sent in situations where longitudinal commands are not
 allowed. Supports alt experience flags to ensure stock behavior when
 always on lateral is not enabled.
 ---
- board/safety.h                       | 55 +++++++++++++++++++++++++---
- board/safety/safety_chrysler.h       |  9 +++++
- board/safety/safety_defaults.h       |  1 +
- board/safety/safety_ford.h           |  9 +++++
- board/safety/safety_gm.h             | 12 ++++++
- board/safety/safety_honda.h          | 13 ++++++-
- board/safety/safety_hyundai_canfd.h  |  9 +++++
- board/safety/safety_hyundai_common.h |  7 ++++
- board/safety/safety_mazda.h          |  9 +++++
- board/safety/safety_subaru.h         |  9 +++++
- board/safety/safety_tesla.h          | 14 +++++++
- board/safety/safety_toyota.h         | 21 +++++++++++
- board/safety/safety_volkswagen_mqb.h |  8 ++++
- board/safety/safety_volkswagen_pq.h  | 12 ++++++
- board/safety_declarations.h          | 12 ++++++
- python/__init__.py                   |  4 ++
- tests/libpanda/safety_helpers.h      |  3 ++
- 17 files changed, 201 insertions(+), 6 deletions(-)
+ board/safety.h                       | 39 ++++++++++++++++++++++++----
+ board/safety/safety_chrysler.h       |  3 +++
+ board/safety/safety_ford.h           |  3 +++
+ board/safety/safety_gm.h             |  3 +++
+ board/safety/safety_honda.h          |  6 ++++-
+ board/safety/safety_hyundai_common.h |  6 +++++
+ board/safety/safety_mazda.h          |  3 +++
+ board/safety/safety_nissan.h         | 13 ++++++++++
+ board/safety/safety_subaru.h         |  3 +++
+ board/safety/safety_tesla.h          | 10 +++++++
+ board/safety/safety_toyota.h         | 11 ++++++++
+ board/safety_declarations.h          |  7 +++++
+ python/__init__.py                   |  3 +++
+ 13 files changed, 104 insertions(+), 6 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
-index 78c02941..776dfd4e 100644
+index abff1ada..e7b3bd10 100644
 --- a/board/safety.h
 +++ b/board/safety.h
-@@ -256,18 +256,45 @@ void generic_rx_checks(bool stock_ecu_detected) {
-   if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS)) {
-     controls_allowed = false;
-   }
-+  // PFEIFER - AOL {{
-+  if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL)) {
-+    lateral_controls_allowed = 0;
-+  }
-+  // }} PFEIFER - AOL
-   gas_pressed_prev = gas_pressed;
- 
-   // exit controls on rising edge of brake press
-   if (brake_pressed && (!brake_pressed_prev || vehicle_moving)) {
-     controls_allowed = false;
-   }
-+  // PFEIFER - AOL {{
-+  if (brake_pressed && (!brake_pressed_prev || vehicle_moving) && !(alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL)) {
-+    lateral_controls_allowed = 0;
-+  }
-+  // }} PFEIFER - AOL
-+  if (brake_pressed && (!brake_pressed_prev || vehicle_moving)) {
-+    controls_allowed = 0;
-+  }
-   brake_pressed_prev = brake_pressed;
- 
-   // exit controls on rising edge of regen paddle
-   if (regen_braking && (!regen_braking_prev || vehicle_moving)) {
-     controls_allowed = false;
-   }
-+  // PFEIFER - AOL {{
-+  if (regen_braking && (!regen_braking_prev || vehicle_moving) && !(alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL)) {
-+    lateral_controls_allowed = 0;
-+  }
-+
-+  // If always on lateral is not enabled we set lateral_controls_allowed to controls_allowed to maintain stock behavior
-+  if (!(alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL)) {
-+    lateral_controls_allowed = controls_allowed;
-+  }
-+
-+  if (controls_allowed == 1) { // always allow lateral_controls when long controls are allowed, makes syncing easier
-+    lateral_controls_allowed = 1;
-+  }
-+  // }} PFEIFER - AOL
-   regen_braking_prev = regen_braking;
- 
-   // check if stock ECU is on bus broken by car harness
-@@ -335,6 +362,9 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
-   vehicle_moving = false;
-   acc_main_on = false;
-   cruise_button_prev = 0;
-+  // PFEIFER - AOL {{
-+  main_button_prev = 0;
-+  // }} PFEIFER - AOL
-   desired_torque_last = 0;
-   rt_torque_last = 0;
-   ts_angle_last = 0;
-@@ -541,7 +571,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -557,8 +557,18 @@ bool longitudinal_interceptor_checks(CANPacket_t *to_send) {
+ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLimits limits) {
    bool violation = false;
    uint32_t ts = microsecond_timer_get();
++  // PFEIFER - AOL {{
++  bool aol_allowed = acc_main_on && (alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL);
++  if(controls_allowed) {
++    // acc main must be on if controls are allowed
++    acc_main_on = controls_allowed;
++  }
++  // }} PFEIFER - AOL
  
 -  if (controls_allowed) {
-+//  if (controls_allowed) {
-+//  PFEIFER - AOL {{
-+  if(lateral_controls_allowed) {
-+// }} PFEIFER - AOL
++  //if (controls_allowed) {
++  // PFEIFER - AOL {{
++  if (controls_allowed || aol_allowed) {
++  // }} PFEIFER - AOL
      // *** global torque limit check ***
      violation |= max_limit_check(desired_torque, limits.max_steer, -limits.max_steer);
  
-@@ -568,7 +601,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -585,7 +595,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // no torque if controls is not allowed
 -  if (!controls_allowed && (desired_torque != 0)) {
-+//  if (!controls_allowed && (desired_torque != 0)) {
-+//  PFEIFER - AOL {{
-+  if(!lateral_controls_allowed && (desired_torque != 0)) {
-+//  }} PFEIFER - AOL
++  // if (!controls_allowed && (desired_torque != 0)) {
++  // PFEIFER - AOL {{
++  if (!(controls_allowed || aol_allowed) && (desired_torque != 0)) {
++  // }} PFEIFER - AOL
      violation = true;
    }
  
-@@ -610,7 +646,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -627,7 +640,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // reset to 0 if either controls is not allowed or there's a violation
 -  if (violation || !controls_allowed) {
-+//  if (violation || !controls_allowed) {
-+//  PFEIFER - AOL {{
-+  if (violation || !lateral_controls_allowed) {
-+//  }} PFEIFER - AOL
++  // if (violation || !controls_allowed) {
++  // PFEIFER - AOL {{
++  if (violation || !(controls_allowed || aol_allowed)) {
++  // }} PFEIFER - AOL
      valid_steer_req_count = 0;
      invalid_steer_req_count = 0;
      desired_torque_last = 0;
-@@ -626,7 +665,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -642,8 +658,18 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+ // Safety checks for angle-based steering commands
  bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const SteeringLimits limits) {
    bool violation = false;
++  // PFEIFER - AOL {{
++  bool aol_allowed = acc_main_on && (alternative_experience & ALT_EXP_ENABLE_ALWAYS_ON_LATERAL);
++  if(controls_allowed) {
++    // acc main must be on if controls are allowed
++    acc_main_on = controls_allowed;
++  }
++  // }} PFEIFER - AOL
  
 -  if (controls_allowed && steer_control_enabled) {
-+//  if (controls_allowed && steer_control_enabled) {
-+//  PFEIFER - AOL {{
-+  if (lateral_controls_allowed && steer_control_enabled) {
-+//  }} PFEIFER - AOL
++  // if (controls_allowed && steer_control_enabled) {
++  // PFEIFER - AOL {{
++  if ((controls_allowed || aol_allowed) && steer_control_enabled) {
++  // }} PFEIFER - AOL
      // convert floating point angle rate limits to integers in the scale of the desired angle on CAN,
      // add 1 to not false trigger the violation. also fudge the speed by 1 m/s so rate limits are
      // always slightly above openpilot's in case we read an updated speed in between angle commands
-@@ -669,7 +711,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
+@@ -686,7 +712,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
    }
  
    // No angle control allowed when controls are not allowed
 -  violation |= !controls_allowed && steer_control_enabled;
-+//  violation |= !controls_allowed && steer_control_enabled;
-+//  PFEIFER - AOL {{
-+  violation |= !lateral_controls_allowed && steer_control_enabled;
-+//  }} PFEIFER - AOL
++  // violation |= !controls_allowed && steer_control_enabled;
++  // PFEIFER - AOL {{
++  violation |= !(controls_allowed || aol_allowed) && steer_control_enabled;
++  // }} PFEIFER - AOL
  
    return violation;
  }
 diff --git a/board/safety/safety_chrysler.h b/board/safety/safety_chrysler.h
-index 324f73a2..e50135ce 100644
+index d2618122..914b29e3 100644
 --- a/board/safety/safety_chrysler.h
 +++ b/board/safety/safety_chrysler.h
-@@ -196,6 +196,15 @@ static int chrysler_rx_hook(CANPacket_t *to_push) {
-     // enter controls on rising edge of ACC, exit controls on ACC off
-     const int das_3_bus = (chrysler_platform == CHRYSLER_PACIFICA) ? 0 : 2;
-     if ((bus == das_3_bus) && (addr == chrysler_addrs->DAS_3)) {
-+      // PFEIFER - AOL {{
-+      bool cruise_available = GET_BIT(to_push, 20U) == 1U;
-+      if(!cruise_available) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = cruise_available;
-+      }
+@@ -185,6 +185,9 @@ static void chrysler_rx_hook(CANPacket_t *to_push) {
+   // enter controls on rising edge of ACC, exit controls on ACC off
+   const int das_3_bus = (chrysler_platform == CHRYSLER_PACIFICA) ? 0 : 2;
+   if ((bus == das_3_bus) && (addr == chrysler_addrs->DAS_3)) {
++    // PFEIFER - AOL {{
++    acc_main_on = GET_BIT(to_push, 20U) == 1U;
 +      // }} PFEIFER - AOL
-       bool cruise_engaged = GET_BIT(to_push, 21U) == 1U;
-       pcm_cruise_check(cruise_engaged);
-     }
-diff --git a/board/safety/safety_defaults.h b/board/safety/safety_defaults.h
-index 90c8a065..4edc7441 100644
---- a/board/safety/safety_defaults.h
-+++ b/board/safety/safety_defaults.h
-@@ -49,6 +49,7 @@ bool alloutput_passthrough = false;
- 
- static const addr_checks* alloutput_init(uint16_t param) {
-   controls_allowed = true;
-+  lateral_controls_allowed = true;
-   alloutput_passthrough = GET_FLAG(param, ALLOUTPUT_PARAM_PASSTHROUGH);
-   return &default_rx_checks;
- }
+     bool cruise_engaged = GET_BIT(to_push, 21U) == 1U;
+     pcm_cruise_check(cruise_engaged);
+   }
 diff --git a/board/safety/safety_ford.h b/board/safety/safety_ford.h
-index 8f48868a..62905523 100644
+index 13d17ca1..32103ce0 100644
 --- a/board/safety/safety_ford.h
 +++ b/board/safety/safety_ford.h
-@@ -264,6 +264,15 @@ static int ford_rx_hook(CANPacket_t *to_push) {
+@@ -250,6 +250,9 @@ static void ford_rx_hook(CANPacket_t *to_push) {
  
        // Signal: CcStat_D_Actl
        unsigned int cruise_state = GET_BYTE(to_push, 1) & 0x07U;
 +      // PFEIFER - AOL {{
-+      bool cruise_available = (cruise_state == 3U) ||(cruise_state == 4U) || (cruise_state == 5U);
-+      if(!cruise_available) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = cruise_available;
-+      }
++      acc_main_on = (cruise_state == 3U) ||(cruise_state == 4U) || (cruise_state == 5U);
 +      // }} PFEIFER - AOL
        bool cruise_engaged = (cruise_state == 4U) || (cruise_state == 5U);
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_gm.h b/board/safety/safety_gm.h
-index 82c15476..19b97fae 100644
+index bd8210b5..dcc85383 100644
 --- a/board/safety/safety_gm.h
 +++ b/board/safety/safety_gm.h
-@@ -112,6 +112,18 @@ static int gm_rx_hook(CANPacket_t *to_push) {
-       brake_pressed = GET_BYTE(to_push, 1) >= 8U;
+@@ -108,6 +108,9 @@ static void gm_rx_hook(CANPacket_t *to_push) {
      }
  
-+    // PFEIFER - AOL {{
-+    if (addr == 201) {
-+      bool cruise_available = GET_BIT(to_push, 29U) != 0U;
-+      if(!cruise_available) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = cruise_available;
-+      }
-+    }
-+    // }} PFEIFER - AOL
-+
      if ((addr == 0xC9) && (gm_hw == GM_CAM)) {
++      // PFEIFER - AOL {{
++      acc_main_on = GET_BIT(to_push, 29U) != 0U;
++      // }} PFEIFER - AOL
        brake_pressed = GET_BIT(to_push, 40U) != 0U;
      }
+ 
 diff --git a/board/safety/safety_honda.h b/board/safety/safety_honda.h
-index d1c6eba7..33ee600e 100644
+index 30215c02..e16693ab 100644
 --- a/board/safety/safety_honda.h
 +++ b/board/safety/safety_honda.h
-@@ -143,7 +143,15 @@ static int honda_rx_hook(CANPacket_t *to_push) {
-       acc_main_on = GET_BIT(to_push, ((addr == 0x326) ? 28U : 47U));
-       if (!acc_main_on) {
-         controls_allowed = false;
-+        // PFEIFER - AOL {{
-+        lateral_controls_allowed = false;
-+        // }} PFEIFER - AOL
-       }
-+      // PFEIFER - AOL {{
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = acc_main_on;
-+      }
-+      // }} PFEIFER - AOL
-     }
- 
-     // enter controls when PCM enters cruise state
-@@ -334,7 +342,10 @@ static int honda_tx_hook(CANPacket_t *to_send) {
+@@ -311,7 +311,11 @@ static bool honda_tx_hook(CANPacket_t *to_send) {
  
    // STEER: safety check
    if ((addr == 0xE4) || (addr == 0x194)) {
 -    if (!controls_allowed) {
 +    // if (!controls_allowed) {
 +    // PFEIFER - AOL {{
-+    if (!lateral_controls_allowed) {
-+    // }} PFEIFER - AOL
++    bool aol_allowed = acc_main_on && (alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS);
++    if (!(controls_allowed || aol_allowed)) {
++    // }}
        bool steer_applied = GET_BYTE(to_send, 0) | GET_BYTE(to_send, 1);
        if (steer_applied) {
-         tx = 0;
-diff --git a/board/safety/safety_hyundai_canfd.h b/board/safety/safety_hyundai_canfd.h
-index f0af9060..4b85b047 100644
---- a/board/safety/safety_hyundai_canfd.h
-+++ b/board/safety/safety_hyundai_canfd.h
-@@ -199,6 +199,15 @@ static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
- 
-     // brake press
-     if (addr == 0x175) {
-+      // PFEIFER - AOL {{
-+      bool cruise_available = ((GET_BYTE(to_push, 8) >> 3) & 0x8U) == 0U;
-+      if(!cruise_available) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = cruise_available;
-+      }
-+      // }} PFEIFER - AOL
-       brake_pressed = GET_BIT(to_push, 81U) != 0U;
-     }
- 
+         tx = false;
 diff --git a/board/safety/safety_hyundai_common.h b/board/safety/safety_hyundai_common.h
-index 8fec9b06..40da8936 100644
+index 0b9116d1..edc71f74 100644
 --- a/board/safety/safety_hyundai_common.h
 +++ b/board/safety/safety_hyundai_common.h
-@@ -70,6 +70,12 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main
-     hyundai_last_button_interaction = MIN(hyundai_last_button_interaction + 1U, HYUNDAI_PREV_BUTTON_SAMPLES);
-   }
- 
-+  // PFEIFER - AOL {{
-+  if (main_button != 0 && main_button_prev == 0) { // main_button was pressed
-+    lateral_controls_allowed = (lateral_controls_allowed + 1) % 2; // toggle
-+  }
-+  // }} PFEIFER - AOL
-+
-   if (hyundai_longitudinal) {
-     // enter controls on falling edge of resume or set
-     bool set = (cruise_button != HYUNDAI_BTN_SET) && (cruise_button_prev == HYUNDAI_BTN_SET);
-@@ -84,6 +90,7 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main
-     }
- 
-     cruise_button_prev = cruise_button;
-+    main_button_prev = main_button;
-   }
+@@ -63,6 +63,12 @@ void hyundai_common_cruise_state_check(const int cruise_engaged) {
  }
  
+ void hyundai_common_cruise_buttons_check(const int cruise_button, const int main_button) {
++  // PFEIFER - AOL {{
++  if(main_button != 0 && main_button != cruise_main_prev) {
++    acc_main_on = !acc_main_on;
++  }
++  cruise_main_prev = main_button;
++  // }} PFEIFER - AOL
+   if ((cruise_button == HYUNDAI_BTN_RESUME) || (cruise_button == HYUNDAI_BTN_SET) || (cruise_button == HYUNDAI_BTN_CANCEL) ||
+       (main_button != 0)) {
+     hyundai_last_button_interaction = 0U;
 diff --git a/board/safety/safety_mazda.h b/board/safety/safety_mazda.h
-index e17f1ff4..b9da2fd0 100644
+index 83e76062..04f2f963 100644
 --- a/board/safety/safety_mazda.h
 +++ b/board/safety/safety_mazda.h
-@@ -55,6 +55,15 @@ static int mazda_rx_hook(CANPacket_t *to_push) {
+@@ -52,6 +52,9 @@ static void mazda_rx_hook(CANPacket_t *to_push) {
  
      // enter controls on rising edge of ACC, exit controls on ACC off
      if (addr == MAZDA_CRZ_CTRL) {
 +      // PFEIFER - AOL {{
-+      bool cruise_available = GET_BIT(to_push, 17U);
-+      if(!cruise_available) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = cruise_available;
-+      }
++      acc_main_on = GET_BIT(to_push, 17U);
 +      // }} PFEIFER - AOL
        bool cruise_engaged = GET_BYTE(to_push, 0) & 0x8U;
        pcm_cruise_check(cruise_engaged);
      }
+diff --git a/board/safety/safety_nissan.h b/board/safety/safety_nissan.h
+index 4bddc065..7a2f6bf4 100644
+--- a/board/safety/safety_nissan.h
++++ b/board/safety/safety_nissan.h
+@@ -21,6 +21,10 @@ const CanMsg NISSAN_TX_MSGS[] = {
+ 
+ // Signals duplicated below due to the fact that these messages can come in on either CAN bus, depending on car model.
+ RxCheck nissan_rx_checks[] = {
++  // PFEIFER - AOL {{
++  {.msg = {{0x1b6, 0, 8, .expected_timestep = 10000U},
++           {0x1b6, 1, 8, .expected_timestep = 10000U}, { 0 }}},  // PRO_PILOT (100HZ)
++  // }} PFEIFER - AOL
+   {.msg = {{0x2, 0, 5, .expected_timestep = 10000U},
+            {0x2, 1, 5, .expected_timestep = 10000U}, { 0 }}},  // STEER_ANGLE_SENSOR (100Hz)
+   {.msg = {{0x285, 0, 8, .expected_timestep = 20000U},
+@@ -64,11 +68,20 @@ static void nissan_rx_hook(CANPacket_t *to_push) {
+       update_sample(&vehicle_speed, ROUND((right_rear + left_rear) / 2.0 * 0.005 / 3.6 * VEHICLE_SPEED_FACTOR));
+     }
+ 
++    // PFEIFER - AOL {{
++    if (addr == 0x1b6) {
++      acc_main_on = GET_BIT(to_push, 36U);
++    }
++    // }} PFEIFER - AOL
++
+     // X-Trail 0x15c, Leaf 0x239
+     if ((addr == 0x15c) || (addr == 0x239)) {
+       if (addr == 0x15c){
+         gas_pressed = ((GET_BYTE(to_push, 5) << 2) | ((GET_BYTE(to_push, 6) >> 6) & 0x3U)) > 3U;
+       } else {
++        // PFEIFER - AOL {{
++        acc_main_on = GET_BIT(to_push, 17U);
++        // }} PFEIFER - AOL
+         gas_pressed = GET_BYTE(to_push, 0) > 3U;
+       }
+     }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index bfe80014..7df9f72d 100644
+index b70180c9..7619f997 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
-@@ -165,6 +165,15 @@ static int subaru_rx_hook(CANPacket_t *to_push) {
+@@ -152,6 +152,9 @@ static void subaru_rx_hook(CANPacket_t *to_push) {
  
-     // enter controls on rising edge of ACC, exit controls on ACC off
-     if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {
-+      // PFEIFER - AOL {{
-+      bool cruise_available = GET_BIT(to_push, 40U) != 0U;
-+      if (!cruise_available) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = cruise_available;
-+      }
-+      // }} PFEIFER - AOL
-       bool cruise_engaged = GET_BIT(to_push, 41U) != 0U;
-       pcm_cruise_check(cruise_engaged);
-     }
+   // enter controls on rising edge of ACC, exit controls on ACC off
+   if ((addr == MSG_SUBARU_CruiseControl) && (bus == alt_main_bus)) {
++    // PFEIFER - AOL {{
++    acc_main_on = GET_BIT(to_push, 40U) != 0U;
++    // }} PFEIFER - AOL
+     bool cruise_engaged = GET_BIT(to_push, 41U) != 0U;
+     pcm_cruise_check(cruise_engaged);
+   }
 diff --git a/board/safety/safety_tesla.h b/board/safety/safety_tesla.h
-index 676670aa..928e432e 100644
+index 17969f74..a60fca70 100644
 --- a/board/safety/safety_tesla.h
 +++ b/board/safety/safety_tesla.h
-@@ -98,6 +98,20 @@ static int tesla_rx_hook(CANPacket_t *to_push) {
-       if(addr == (tesla_powertrain ? 0x256 : 0x368)) {
-         // Cruise state
-         int cruise_state = (GET_BYTE(to_push, 1) >> 4);
-+        // PFEIFER - AOL {{
-+        bool cruise_available = (cruise_state == 1) ||  // STANDBY
-+                                (cruise_state == 2) ||  // ENABLED
-+                                (cruise_state == 3) ||  // STANDSTILL
-+                                (cruise_state == 4) ||  // OVERRIDE
-+                                (cruise_state == 6) ||  // PRE_FAULT
-+                                (cruise_state == 7);    // PRE_CANCEL
-+        if(!cruise_available) {
-+          lateral_controls_allowed = 0;
-+        }
-+        if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+          lateral_controls_allowed = cruise_available;
-+        }
-+        // }} PFEIFER - AOL
-         bool cruise_engaged = (cruise_state == 2) ||  // ENABLED
-                               (cruise_state == 3) ||  // STANDSTILL
-                               (cruise_state == 4) ||  // OVERRIDE
+@@ -88,6 +88,16 @@ static void tesla_rx_hook(CANPacket_t *to_push) {
+     if(addr == (tesla_powertrain ? 0x256 : 0x368)) {
+       // Cruise state
+       int cruise_state = (GET_BYTE(to_push, 1) >> 4);
++
++      // PFEIFER - AOL {{
++      acc_main_on = (cruise_state == 1) ||  // STANDBY
++        (cruise_state == 2) ||  // ENABLED
++        (cruise_state == 3) ||  // STANDSTILL
++        (cruise_state == 4) ||  // OVERRIDE
++        (cruise_state == 6) ||  // PRE_FAULT
++        (cruise_state == 7);    // PRE_CANCEL
++      // }} PFEIFER - AOL
++
+       bool cruise_engaged = (cruise_state == 2) ||  // ENABLED
+                             (cruise_state == 3) ||  // STANDSTILL
+                             (cruise_state == 4) ||  // OVERRIDE
 diff --git a/board/safety/safety_toyota.h b/board/safety/safety_toyota.h
-index 0bc7f3c6..0c757668 100644
+index 4a9326c7..7567a1b3 100644
 --- a/board/safety/safety_toyota.h
 +++ b/board/safety/safety_toyota.h
 @@ -30,12 +30,18 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
@@ -377,7 +277,7 @@ index 0bc7f3c6..0c757668 100644
 +                                 // }} PFEIFER - AOL
                                   {0x200, 0, 6}};  // interceptor
  
- AddrCheckStruct toyota_addr_checks[] = {
+ RxCheck toyota_rx_checks[] = {
    {.msg = {{ 0xaa, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
    {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
    {.msg = {{0x1D2, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
@@ -387,134 +287,54 @@ index 0bc7f3c6..0c757668 100644
    {.msg = {{0x224, 0, 8, .check_checksum = false, .expected_timestep = 25000U},
             {0x226, 0, 8, .check_checksum = false, .expected_timestep = 25000U}, { 0 }}},
  };
-@@ -94,6 +100,21 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
+@@ -87,6 +93,11 @@ static void toyota_rx_hook(CANPacket_t *to_push) {
+       torque_meas.min--;
        torque_meas.max++;
      }
- 
 +    // PFEIFER - AOL {{
-+    // wrap lateral controls on main
 +    if (addr == 0x1D3) {
-+      // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
-+      // Signal: PCM_CRUISE_2/MAIN_ON at 15th bit
 +      acc_main_on = GET_BIT(to_push, 15U);
-+      if (!acc_main_on) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = acc_main_on;
-+      }
 +    }
 +    // }} PFEIFER - AOL
-+
+ 
      // enter controls on rising edge of ACC, exit controls on ACC off
      // exit controls on rising edge of gas press
-     if (addr == 0x1D2) {
-diff --git a/board/safety/safety_volkswagen_mqb.h b/board/safety/safety_volkswagen_mqb.h
-index 0716cdf8..77a59c1e 100644
---- a/board/safety/safety_volkswagen_mqb.h
-+++ b/board/safety/safety_volkswagen_mqb.h
-@@ -158,7 +158,15 @@ static int volkswagen_mqb_rx_hook(CANPacket_t *to_push) {
- 
-       if (!acc_main_on) {
-         controls_allowed = false;
-+        // PFEIFER - AOL {{
-+        lateral_controls_allowed = 0;
-+        // }} PFEIFER - AOL
-       }
-+      // PFEIFER - AOL {{
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = acc_main_on;
-+      }
-+      // }} PFEIFER - AOL
-     }
- 
-     if (addr == MSG_GRA_ACC_01) {
-diff --git a/board/safety/safety_volkswagen_pq.h b/board/safety/safety_volkswagen_pq.h
-index 93d180a8..af08ce7d 100644
---- a/board/safety/safety_volkswagen_pq.h
-+++ b/board/safety/safety_volkswagen_pq.h
-@@ -124,6 +124,18 @@ static int volkswagen_pq_rx_hook(CANPacket_t *to_push) {
-       update_sample(&torque_driver, torque_driver_new);
-     }
- 
-+    // PFEIFER - AOL {{
-+    if (addr == MSG_MOTOR_5) {
-+      acc_main_on = GET_BIT(to_push, 50U);
-+      if (!acc_main_on) {
-+        lateral_controls_allowed = 0;
-+      }
-+      if(alternative_experience & ALT_EXP_AOL_ENABLE_ON_MAIN) {
-+        lateral_controls_allowed = acc_main_on;
-+      }
-+    }
-+    // }} PFEIFER - AOL
-+
-     if (volkswagen_longitudinal) {
-       if (addr == MSG_MOTOR_5) {
-         // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
 diff --git a/board/safety_declarations.h b/board/safety_declarations.h
-index cbef3a25..44fcf680 100644
+index 94426ea8..f24304ae 100644
 --- a/board/safety_declarations.h
 +++ b/board/safety_declarations.h
-@@ -195,6 +195,9 @@ void safety_tick(const addr_checks *addr_checks);
- 
- // This can be set by the safety hooks
- bool controls_allowed = false;
-+// PFEIFER - AOL {{
-+bool lateral_controls_allowed = false;
-+// }} PFEIFER - AOL
- bool relay_malfunction = false;
- bool gas_interceptor_detected = false;
- int gas_interceptor_prev = 0;
-@@ -209,6 +212,10 @@ struct sample_t vehicle_speed;
+@@ -224,6 +224,9 @@ struct sample_t vehicle_speed;
  bool vehicle_moving = false;
  bool acc_main_on = false;  // referred to as "ACC off" in ISO 15622:2018
  int cruise_button_prev = 0;
 +// PFEIFER - AOL {{
-+int main_button_prev = 0;
-+bool set_me_prev = false;
++int cruise_main_prev = 0;
 +// }} PFEIFER - AOL
  bool safety_rx_checks_invalid = false;
  
  // for safety modes with torque steering control
-@@ -251,3 +258,8 @@ int alternative_experience = 0;
+@@ -266,3 +269,7 @@ int alternative_experience = 0;
  uint32_t safety_mode_cnt = 0U;
  // allow 1s of transition timeout after relay changes state before assessing malfunctioning
  const uint32_t RELAY_TRNS_TIMEOUT = 1U;
 +
 +// PFEIFER - AOL {{
 +#define ALT_EXP_ENABLE_ALWAYS_ON_LATERAL 16
-+#define ALT_EXP_AOL_ENABLE_ON_MAIN 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index 6f99f4fa..b2c9ec12 100644
+index 274e7dbe..8eb471b7 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
-@@ -111,6 +111,10 @@ class ALTERNATIVE_EXPERIENCE:
+@@ -111,6 +111,9 @@ class ALTERNATIVE_EXPERIENCE:
    DISABLE_DISENGAGE_ON_GAS = 1
    DISABLE_STOCK_AEB = 2
    RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX = 8
 +  # PFEIFER - AOL {{
 +  ENABLE_ALWAYS_ON_LATERAL = 16
-+  AOL_ENABLE_ON_MAIN = 32
 +  # }} PFEIFER - AOL
  
  class Panda:
  
-diff --git a/tests/libpanda/safety_helpers.h b/tests/libpanda/safety_helpers.h
-index 22a3c4f1..dc07538d 100644
---- a/tests/libpanda/safety_helpers.h
-+++ b/tests/libpanda/safety_helpers.h
-@@ -21,6 +21,9 @@ bool addr_checks_valid() {
- 
- void set_controls_allowed(bool c){
-   controls_allowed = c;
-+  // PFEIFER - AOL {{
-+  lateral_controls_allowed = c;
-+  // }} PFEIFER - AOL
- }
- 
- void set_alternative_experience(int mode){
 -- 
 2.39.2
 
