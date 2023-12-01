@@ -1,4 +1,4 @@
-From bc47ef1bd9de237b1771d907ae3585fe22997577 Mon Sep 17 00:00:00 2001
+From 45f18f9e38491b74fac3f98adc1751208a6d9255 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
@@ -14,10 +14,10 @@ Subject: [PATCH] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 3f6cb7044..6deaaa896 100644
+index 54168165a..5966675ab 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -29,7 +29,7 @@ index 3f6cb7044..6deaaa896 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 788cf0e6b..34e53720f 100644
+index 4d49047c3..22172d851 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -602,3 +602,4 @@ tinygrad_repo/tinygrad/shape/*

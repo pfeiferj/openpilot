@@ -1,4 +1,4 @@
-From c87ca2ba628746fb81af4c46b3a5e29c58414329 Mon Sep 17 00:00:00 2001
+From d140b60769f7ca253e936b3f6980a1f684edfc23 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
@@ -13,10 +13,10 @@ Subject: [PATCH] vtsc
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 3f6cb7044..f0871812f 100644
+index 54168165a..d60756a2e 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -28,7 +28,7 @@ index 3f6cb7044..f0871812f 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 1e16cb943..c0e7a2965 100644
+index cfc3830e0..7d517f388 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py

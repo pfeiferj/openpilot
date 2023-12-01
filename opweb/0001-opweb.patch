@@ -1,4 +1,4 @@
-From e9380dc3d5a2c608a29f4a54e878dc072d18808a Mon Sep 17 00:00:00 2001
+From 74ec5f55aad9dbdde14dc3734778bfbbe3b7f930 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
@@ -87,7 +87,7 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/utils.py
 
 diff --git a/release/files_common b/release/files_common
-index 1e16cb943..9d789c5b7 100644
+index cfc3830e0..88159e439 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -600,3 +600,8 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
@@ -100,7 +100,7 @@ index 1e16cb943..9d789c5b7 100644
 +selfdrive/static/*
 +selfdrive/templates/**/*
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 320958d34..41e1fca84 100644
+index 6f974b068..1fa3d439c 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
 @@ -82,6 +82,10 @@ procs = [

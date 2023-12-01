@@ -1,4 +1,4 @@
-From 8df75da2937e60199dcbf35191260e651a228dd3 Mon Sep 17 00:00:00 2001
+From 550ba4fe7d7c4a265a443a58ee66f1bde4de07a2 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:03:13 -0400
 Subject: [PATCH] Lane Detection
@@ -15,10 +15,10 @@ Prevents lane changes whenever there is no lane detected.
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 3f6cb7044..92f2091c4 100644
+index 54168165a..fbc572a5c 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -30,7 +30,7 @@ index 3f6cb7044..92f2091c4 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 1e16cb943..43a6a8d76 100644
+index cfc3830e0..b9f1c3c0b 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
@@ -122,10 +122,10 @@ index d53803507..33aa1f55d 100644
        # LaneChangeState.laneChangeStarting
        elif self.lane_change_state == LaneChangeState.laneChangeStarting:
 diff --git a/selfdrive/controls/lib/lateral_planner.py b/selfdrive/controls/lib/lateral_planner.py
-index 92786f73d..7668d1b59 100644
+index 2417eb3c6..82cad6fda 100644
 --- a/selfdrive/controls/lib/lateral_planner.py
 +++ b/selfdrive/controls/lib/lateral_planner.py
-@@ -9,6 +9,9 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED,
+@@ -3,6 +3,9 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED,
  from openpilot.selfdrive.controls.lib.desire_helper import DesireHelper
  import cereal.messaging as messaging
  from cereal import log
@@ -135,7 +135,7 @@ index 92786f73d..7668d1b59 100644
  
  TRAJECTORY_SIZE = 33
  CAMERA_OFFSET = 0.04
-@@ -80,6 +83,9 @@ class LateralPlanner:
+@@ -46,6 +49,9 @@ class LateralPlanner:
        self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
        self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
      lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
@@ -144,7 +144,7 @@ index 92786f73d..7668d1b59 100644
 +    # }} PFEIFER - LD
      self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob)
  
-     self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
+   def publish(self, sm, pm):
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
 index 669de5eae..31ffba21e 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc

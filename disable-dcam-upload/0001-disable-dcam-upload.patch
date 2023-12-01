@@ -1,4 +1,4 @@
-From 5bf00c50fe769d194a7e6409b2857135feac3168 Mon Sep 17 00:00:00 2001
+From 152b37fa3ee5d59fc85364698c386c586cd1f913 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 13 Sep 2023 20:05:30 -0400
 Subject: [PATCH] disable dcam upload
@@ -10,10 +10,10 @@ Subject: [PATCH] disable dcam upload
  3 files changed, 23 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 3f6cb7044..7bbe7d0ad 100644
+index 54168165a..cf79d0953 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,9 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,9 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -24,7 +24,7 @@ index 3f6cb7044..7bbe7d0ad 100644
  
  } // namespace
 diff --git a/selfdrive/athena/athenad.py b/selfdrive/athena/athenad.py
-index c93b43467..bbd74505e 100755
+index eb61c6dd5..45cda7d58 100755
 --- a/selfdrive/athena/athenad.py
 +++ b/selfdrive/athena/athenad.py
 @@ -42,6 +42,10 @@ from openpilot.system.swaglog import cloudlog

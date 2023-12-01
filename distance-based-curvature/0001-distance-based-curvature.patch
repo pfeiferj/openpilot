@@ -1,4 +1,4 @@
-From 6d2c86932736cea3cd2fd8c16697ad1e05f5e82d Mon Sep 17 00:00:00 2001
+From e75c51ebdc996f02ebfce792d217b554ebbcb787 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -14,10 +14,10 @@ Subject: [PATCH] distance based curvature
  create mode 100644 selfdrive/controls/distance_based_curvature.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 3f6cb7044..4a291b413 100644
+index 54168165a..100ca2534 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -207,6 +207,11 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,11 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -30,7 +30,7 @@ index 3f6cb7044..4a291b413 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 1e16cb943..330a4e62d 100644
+index cfc3830e0..7b35db3db 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py

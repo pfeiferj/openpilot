@@ -1,4 +1,4 @@
-From 49f18fec6b004be32798ff1cd64253664349b340 Mon Sep 17 00:00:00 2001
+From aa1a83f175a202352a01b9b8d5e9ee533c98eda6 Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
@@ -27,10 +27,10 @@ index 43d4bb2cc..64c9d2db3 100644
    print("gone")
    time.sleep(5.0)
 diff --git a/launch_chffrplus.sh b/launch_chffrplus.sh
-index 9fe9b1bd1..41ca38d19 100755
+index a91bd677a..293a78e8a 100755
 --- a/launch_chffrplus.sh
 +++ b/launch_chffrplus.sh
-@@ -82,6 +82,14 @@ function launch {
+@@ -77,6 +77,14 @@ function launch {
    # write tmux scrollback to a file
    tmux capture-pane -pq -S-1000 > /tmp/launch_log
  
