@@ -1,16 +1,16 @@
-From a29b14a4b7c0d75e72b78697328fbb9fd55bdde9 Mon Sep 17 00:00:00 2001
+From 87ca33a61b169bd4a7e16fdf10ae0df9e356cc9e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 1 Oct 2023 15:26:30 -0400
 Subject: [PATCH] opweb
 
 ---
  selfdrive/manager/process_config.py |  4 +++
- selfdrive/opwebd.py                 | 52 +++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+)
+ selfdrive/opwebd.py                 | 56 +++++++++++++++++++++++++++++
+ 2 files changed, 60 insertions(+)
  create mode 100644 selfdrive/opwebd.py
 
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 320958d34..1e4993645 100644
+index 6f974b068..f7e2675b5 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
 @@ -82,6 +82,10 @@ procs = [
@@ -26,10 +26,10 @@ index 320958d34..1e4993645 100644
    PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/opwebd.py b/selfdrive/opwebd.py
 new file mode 100644
-index 000000000..0ec0c81fb
+index 000000000..7f903f982
 --- /dev/null
 +++ b/selfdrive/opwebd.py
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,56 @@
 +# PFEIFER - OPWEBGO
 +import os
 +import subprocess
@@ -39,15 +39,19 @@ index 000000000..0ec0c81fb
 +
 +VERSION = 'v1.2.0'
 +URL = f"https://github.com/pfeiferj/opweb/releases/download/{VERSION}/opwebd"
-+OPWEBD_PATH = '/data/openpilot/opwebd'
-+VERSION_PATH = '/data/openpilot/opwebd_version'
++OPWEBD_PATH = '/data/media/0/opwebd'
++VERSION_PATH = '/data/media/0/opwebd_version'
 +
 +def download():
++  opwebd_dir = os.path.dirname(OPWEBD_PATH)
++  if not os.path.exists(opwebd_dir):
++    os.makedirs(opwebd_dir)
 +  with urllib.request.urlopen(URL) as f:
 +    with open(OPWEBD_PATH, 'wb') as output:
 +      output.write(f.read())
 +      os.fsync(output)
-+      os.chmod(OPWEBD_PATH, stat.S_IEXEC)
++      current_permissions = stat.S_IMODE(os.lstat(OPWEBD_PATH).st_mode) # <-- preserve permissions
++      os.chmod(OPWEBD_PATH, current_permissions | stat.S_IEXEC) # <-- preserve permissions
 +    with open(VERSION_PATH, 'w') as output:
 +      output.write(VERSION)
 +      os.fsync(output)
@@ -69,7 +73,7 @@ index 000000000..0ec0c81fb
 +          download()
 +          continue
 +
-+      process = subprocess.Popen('/data/openpilot/opwebd', stdout=subprocess.PIPE)
++      process = subprocess.Popen(OPWEBD_PATH)
 +      process.wait()
 +    except Exception as e:
 +      print(e)

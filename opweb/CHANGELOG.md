@@ -1,5 +1,8 @@
 # OPWeb Changelog
 
+## 12/01/23
+* Moves the opweb binary to prevent openpilot from thinking there is an update
+
 ## 09/01/23
 * display map of last route
 
