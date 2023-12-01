@@ -67,6 +67,9 @@ git pull
 git checkout pfeifer-mtsc
 git pull
 
+git checkout pfeifer-road-name
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

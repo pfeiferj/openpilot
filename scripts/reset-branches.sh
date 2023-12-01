@@ -67,6 +67,9 @@ git reset --hard origin/pfeifer-opweb-go
 git checkout pfeifer-mtsc
 git reset --hard origin/pfeifer-mtsc
 
+git checkout pfeifer-road-name
+git reset --hard origin/pfeifer-road-name
+
 
 # Upstream PRs
 git checkout cluster-based-max-speed

@@ -97,3 +97,7 @@ mv *.patch ../openpilot-patches/opweb-go/
 git checkout pfeifer-mtsc
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/mtsc/
+
+git checkout pfeifer-road-name
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/road-name/
