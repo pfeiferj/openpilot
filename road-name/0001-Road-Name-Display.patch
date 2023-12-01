@@ -1,0 +1,49 @@
+From 710882abfd583858add786e13e03867499aa04ce Mon Sep 17 00:00:00 2001
+From: Jacob Pfeifer <jacob@pfeifer.dev>
+Date: Wed, 29 Nov 2023 16:58:22 -0500
+Subject: [PATCH] Road Name Display
+
+---
+ common/params.cc          |  4 ++++
+ selfdrive/ui/qt/onroad.cc | 10 ++++++++++
+ 2 files changed, 14 insertions(+)
+
+diff --git a/common/params.cc b/common/params.cc
+index 54168165a..646a69e3a 100644
+--- a/common/params.cc
++++ b/common/params.cc
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"Version", PERSISTENT},
+     {"VisionRadarToggle", PERSISTENT},
+     {"WheeledBody", PERSISTENT},
++
++    // PFEIFER - RN {{
++    {"RoadName", PERSISTENT},
++    // }} PFEIFER - RN
+ };
+ 
+ } // namespace
+diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
+index 971eb673e..1e1d2632d 100644
+--- a/selfdrive/ui/qt/onroad.cc
++++ b/selfdrive/ui/qt/onroad.cc
+@@ -424,6 +424,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
+   p.setFont(InterFont(66));
+   drawText(p, rect().center().x(), 290, speedUnit, 200);
+ 
++  // PFEIFER - RN {{
++  // Referenced from frogpilot: https://github.com/FrogAi/FrogPilot/
++  const QRect currentRect = rect();
++  const QRect statusBarRect(currentRect.left() - 1, currentRect.bottom() - 50, currentRect.width() + 2, 100);
++  const QString roadName =  QString::fromStdString(Params("/dev/shm/params").get("RoadName"));
++  QRect textRect = p.fontMetrics().boundingRect(statusBarRect, Qt::AlignCenter | Qt::TextWordWrap, roadName);
++  textRect.moveBottom(statusBarRect.bottom() - 50);
++  p.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, roadName);
++  // }} PFEIFER - RN
++
+   p.restore();
+ }
+ 
+-- 
+2.39.2
+
