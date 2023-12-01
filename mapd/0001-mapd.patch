@@ -1,4 +1,4 @@
-From 8827d24948ad6a348d2a932b48f660a8f1c7c339 Mon Sep 17 00:00:00 2001
+From 694310abe2790e76a3aa75a504ec7e010cc0c3ea Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
@@ -56,7 +56,7 @@ index 6f974b068..914ffd15e 100644
    PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 diff --git a/selfdrive/mapd.py b/selfdrive/mapd.py
 new file mode 100644
-index 000000000..97d39f142
+index 000000000..353d8cd97
 --- /dev/null
 +++ b/selfdrive/mapd.py
 @@ -0,0 +1,56 @@
@@ -103,7 +103,7 @@ index 000000000..97d39f142
 +          download()
 +          continue
 +
-+      process = subprocess.Popen(MAPD_PATH, stdout=subprocess.PIPE)
++      process = subprocess.Popen(MAPD_PATH)
 +      process.wait()
 +    except Exception as e:
 +      print(e)
