@@ -1,4 +1,4 @@
-From d167cb4fb29215cbefb3d0688097b32acc643d50 Mon Sep 17 00:00:00 2001
+From 1adc737362d5074ae71ef41ef3bc3101b34c080d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 29 Nov 2023 18:21:00 -0500
 Subject: [PATCH] Always On Lateral
@@ -8,20 +8,21 @@ commands to be sent in situations where longitudinal commands are not
 allowed. Supports alt experience flags to ensure stock behavior when
 always on lateral is not enabled.
 ---
- board/safety.h                       | 39 ++++++++++++++++++++++++----
- board/safety/safety_chrysler.h       |  3 +++
- board/safety/safety_ford.h           |  3 +++
- board/safety/safety_gm.h             |  3 +++
- board/safety/safety_honda.h          |  6 ++++-
- board/safety/safety_hyundai_common.h |  6 +++++
- board/safety/safety_mazda.h          |  3 +++
- board/safety/safety_nissan.h         | 13 ++++++++++
- board/safety/safety_subaru.h         |  3 +++
- board/safety/safety_tesla.h          | 10 +++++++
- board/safety/safety_toyota.h         | 11 ++++++++
- board/safety_declarations.h          |  7 +++++
- python/__init__.py                   |  3 +++
- 13 files changed, 104 insertions(+), 6 deletions(-)
+ board/safety.h                         | 39 ++++++++++++++++++++++----
+ board/safety/safety_chrysler.h         |  3 ++
+ board/safety/safety_ford.h             |  3 ++
+ board/safety/safety_gm.h               |  3 ++
+ board/safety/safety_honda.h            |  6 +++-
+ board/safety/safety_hyundai_common.h   |  6 ++++
+ board/safety/safety_mazda.h            |  3 ++
+ board/safety/safety_nissan.h           | 13 +++++++++
+ board/safety/safety_subaru.h           |  3 ++
+ board/safety/safety_subaru_preglobal.h |  3 ++
+ board/safety/safety_tesla.h            | 10 +++++++
+ board/safety/safety_toyota.h           | 11 ++++++++
+ board/safety_declarations.h            |  7 +++++
+ python/__init__.py                     |  3 ++
+ 14 files changed, 107 insertions(+), 6 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
 index abff1ada..e7b3bd10 100644
@@ -243,6 +244,20 @@ index b70180c9..7619f997 100644
      bool cruise_engaged = GET_BIT(to_push, 41U) != 0U;
      pcm_cruise_check(cruise_engaged);
    }
+diff --git a/board/safety/safety_subaru_preglobal.h b/board/safety/safety_subaru_preglobal.h
+index 03334e5d..4eb10549 100644
+--- a/board/safety/safety_subaru_preglobal.h
++++ b/board/safety/safety_subaru_preglobal.h
+@@ -56,6 +56,9 @@ static void subaru_preglobal_rx_hook(CANPacket_t *to_push) {
+ 
+     // enter controls on rising edge of ACC, exit controls on ACC off
+     if (addr == MSG_SUBARU_PG_CruiseControl) {
++      // PFEIFER - AOL {{
++      acc_main_on = GET_BIT(to_push, 48U) != 0U;
++      // }} PFEIFER - AOL
+       bool cruise_engaged = GET_BIT(to_push, 49U) != 0U;
+       pcm_cruise_check(cruise_engaged);
+     }
 diff --git a/board/safety/safety_tesla.h b/board/safety/safety_tesla.h
 index 17969f74..a60fca70 100644
 --- a/board/safety/safety_tesla.h

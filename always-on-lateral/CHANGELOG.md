@@ -1,5 +1,9 @@
 # Always On Lateral Changelog
 
+## 12/06/23
+Panda:
+    * Untested Subaru pre-global support
+
 ## 12/01/23
 Openpilot:
     * Large refactor to panda code. Greatly simplifies the lateral allowed checks.

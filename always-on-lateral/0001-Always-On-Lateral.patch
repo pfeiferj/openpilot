@@ -1,4 +1,4 @@
-From 06300d73b2357eaf1537ce48d0dc8de1b81ca9ee Mon Sep 17 00:00:00 2001
+From 7d54287f1922f51eb2b570528ce634058ac21520 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 29 Nov 2023 18:55:13 -0500
 Subject: [PATCH] Always On Lateral
@@ -49,12 +49,12 @@ index 54168165a..f80210416 100644
  
  } // namespace
 diff --git a/panda b/panda
-index e6fadef4d..d167cb4fb 160000
+index e6fadef4d..1adc73736 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
 -Subproject commit e6fadef4ddccb9e665fbdf2d377f12879e5af07a
-+Subproject commit d167cb4fb29215cbefb3d0688097b32acc643d50
++Subproject commit 1adc737362d5074ae71ef41ef3bc3101b34c080d
 diff --git a/release/files_common b/release/files_common
 index cfc3830e0..6c6363ec8 100644
 --- a/release/files_common
