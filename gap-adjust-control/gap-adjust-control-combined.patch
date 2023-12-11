@@ -1,4 +1,4 @@
-From 735734d6da1019604cb01ff03adc33bc20ad2bfd Mon Sep 17 00:00:00 2001
+From 93e8b19410b8a66806e729fbeb052cd25d9a3f76 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,10 +10,10 @@ Subject: [PATCH 1/3] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index cfc3830e0..4d49047c3 100644
+index 10bfe4e1f..bf5985a84 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -243,7 +243,7 @@ index 000000000..343cf6396
 2.39.2
 
 
-From 45f18f9e38491b74fac3f98adc1751208a6d9255 Mon Sep 17 00:00:00 2001
+From b1d245c9f4fac9b780d856c80fe2e0924f3a2e0b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -259,7 +259,7 @@ Subject: [PATCH 2/3] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..5966675ab 100644
+index d1d351346..e5e144cfd 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -274,10 +274,10 @@ index 54168165a..5966675ab 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 4d49047c3..22172d851 100644
+index bf5985a84..f0f803d80 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -602,3 +602,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -587,3 +587,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
@@ -310,7 +310,7 @@ index 89c1a3596..6ef137a2f 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 26b349135..5103e1a2d 100644
+index 2127fc320..0bb8383c0 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
@@ -324,7 +324,7 @@ index 26b349135..5103e1a2d 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -340,6 +344,11 @@ class CarInterface(CarInterfaceBase):
+@@ -339,6 +343,11 @@ class CarInterface(CarInterfaceBase):
      if self.CS.CP.openpilotLongitudinalControl:
        ret.buttonEvents = create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT)
  
@@ -389,7 +389,7 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From 460df625333765c4b93f7527d9a048dfb55d54d9 Mon Sep 17 00:00:00 2001
+From f05cb6f31ade0d84952b05a7a2195e854f5ed0a8 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:35:40 -0400
 Subject: [PATCH 3/3] gap adjust control
@@ -399,17 +399,17 @@ Subject: [PATCH 3/3] gap adjust control
  selfdrive/car/gm/gmcan.py                | 12 +++-
  selfdrive/car/hyundai/hyundaican.py      | 12 +++-
  selfdrive/car/toyota/carstate.py         | 14 +++++
- selfdrive/car/toyota/toyotacan.py        | 14 ++++-
+ selfdrive/car/toyota/toyotacan.py        | 15 ++++-
  selfdrive/controls/controlsd.py          |  8 +++
  selfdrive/controls/gap_adjust_control.py | 74 ++++++++++++++++++++++++
- 7 files changed, 132 insertions(+), 3 deletions(-)
+ 7 files changed, 132 insertions(+), 4 deletions(-)
  create mode 100644 selfdrive/controls/gap_adjust_control.py
 
 diff --git a/release/files_common b/release/files_common
-index 22172d851..203a0dd95 100644
+index f0f803d80..9da070d62 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -603,3 +603,4 @@ tinygrad_repo/tinygrad/*.py
+@@ -588,3 +588,4 @@ tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
  selfdrive/controls/gap_adjust_button.py
@@ -518,18 +518,22 @@ index 4fa92ab60..024cadc17 100644
  
      return CANParser(DBC[CP.carFingerprint]["pt"], messages, 2)
 diff --git a/selfdrive/car/toyota/toyotacan.py b/selfdrive/car/toyota/toyotacan.py
-index ed0237c1b..fc56977ec 100644
+index e14e3e53a..9af88f211 100644
 --- a/selfdrive/car/toyota/toyotacan.py
 +++ b/selfdrive/car/toyota/toyotacan.py
-@@ -1,3 +1,7 @@
+@@ -1,7 +1,10 @@
+ from cereal import car
+ 
+-SteerControlType = car.CarParams.SteerControlType
 +# PFEIFER - GAC {{
 +from openpilot.selfdrive.controls.gap_adjust_control import gap_adjust
 +# }} PFEIFER - GAC
-+
+ 
++SteerControlType = car.CarParams.SteerControlType
+ 
  def create_steer_command(packer, steer, steer_req):
    """Creates a CAN message for the Toyota Steer Command."""
- 
-@@ -28,11 +32,19 @@ def create_lta_steer_command(packer, steer_angle, steer_req, frame, setme_x64):
+@@ -34,11 +37,19 @@ def create_lta_steer_command(packer, steer_control_type, steer_angle, steer_req,
  
  
  def create_accel_command(packer, accel, pcm_cancel, standstill_req, lead, acc_type, fcw_alert):
@@ -551,7 +555,7 @@ index ed0237c1b..fc56977ec 100644
      "PERMIT_BRAKING": 1,
      "RELEASE_STANDSTILL": not standstill_req,
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 19ce40793..7a733a108 100755
+index 41866efc3..01e0f8591 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -573,7 +577,7 @@ index 19ce40793..7a733a108 100755
 +    gap_adjust.update()
 +    # }} PFEIFER - GAC
 +
-     if not self.read_only and self.initialized:
+     if not self.CP.passive and self.initialized:
        # Update control state
        self.state_transition(CS)
 diff --git a/selfdrive/controls/gap_adjust_control.py b/selfdrive/controls/gap_adjust_control.py

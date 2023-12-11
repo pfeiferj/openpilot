@@ -1,4 +1,4 @@
-From 140021c3c3c50386f43eafb1a3e319518c0aec22 Mon Sep 17 00:00:00 2001
+From 97fbc84ef005e628a0c6988871892e4b9abd5526 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:04:13 -0400
 Subject: [PATCH] Nudgless Lane Change
@@ -11,7 +11,7 @@ Enables automatically changing lanes when the blinker is turned on.
  3 files changed, 25 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..69868ea35 100644
+index d1d351346..e9630b587 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {

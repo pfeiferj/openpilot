@@ -1,4 +1,4 @@
-From 710882abfd583858add786e13e03867499aa04ce Mon Sep 17 00:00:00 2001
+From f78d4275c75428e3b84cac8f752e60111aa8d594 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 29 Nov 2023 16:58:22 -0500
 Subject: [PATCH] Road Name Display
@@ -9,7 +9,7 @@ Subject: [PATCH] Road Name Display
  2 files changed, 14 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..646a69e3a 100644
+index d1d351346..415d6af06 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {

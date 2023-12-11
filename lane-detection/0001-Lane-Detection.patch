@@ -1,4 +1,4 @@
-From 550ba4fe7d7c4a265a443a58ee66f1bde4de07a2 Mon Sep 17 00:00:00 2001
+From ebf94a9dd20ad6bd3dcf30c5c37d404bf93d312e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:03:13 -0400
 Subject: [PATCH] Lane Detection
@@ -15,7 +15,7 @@ Prevents lane changes whenever there is no lane detected.
  create mode 100644 selfdrive/controls/lane_detection.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..fbc572a5c 100644
+index d1d351346..fc8e4482a 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -30,10 +30,10 @@ index 54168165a..fbc572a5c 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index cfc3830e0..b9f1c3c0b 100644
+index 10bfe4e1f..2283c14b4 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

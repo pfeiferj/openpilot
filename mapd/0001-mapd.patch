@@ -1,4 +1,4 @@
-From 694310abe2790e76a3aa75a504ec7e010cc0c3ea Mon Sep 17 00:00:00 2001
+From 7de8f0e2b668b598ef0e83f01c66fe2927bfce3b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
@@ -11,12 +11,12 @@ Subject: [PATCH] mapd
  create mode 100644 selfdrive/mapd.py
 
 diff --git a/selfdrive/locationd/paramsd.py b/selfdrive/locationd/paramsd.py
-index 0e779c9e3..cc07446e3 100755
+index 4a598e8d4..34ecf387f 100755
 --- a/selfdrive/locationd/paramsd.py
 +++ b/selfdrive/locationd/paramsd.py
 @@ -14,6 +14,9 @@ from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKi
  from openpilot.selfdrive.locationd.models.constants import GENERATED_DIR
- from openpilot.system.swaglog import cloudlog
+ from openpilot.common.swaglog import cloudlog
  
 +# PFEIFER - MAPD {{
 +mem_params = Params("/dev/shm/params")
@@ -40,7 +40,7 @@ index 0e779c9e3..cc07446e3 100755
        P = np.sqrt(learner.kf.P.diagonal())
        if not all(map(math.isfinite, x)):
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 6f974b068..914ffd15e 100644
+index 36d69b03b..73d7a385e 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
 @@ -82,6 +82,10 @@ procs = [
@@ -53,7 +53,7 @@ index 6f974b068..914ffd15e 100644
 +
    # debug procs
    NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
-   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
+   PythonProcess("webrtcd", "system.webrtc.webrtcd", notcar),
 diff --git a/selfdrive/mapd.py b/selfdrive/mapd.py
 new file mode 100644
 index 000000000..353d8cd97

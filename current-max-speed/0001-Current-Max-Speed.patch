@@ -1,4 +1,4 @@
-From b62f42ffe96da22d4cc60d38faaa053e8762cb93 Mon Sep 17 00:00:00 2001
+From 51d2abab67c2ae660c65591ef383c3646a8dc971 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 29 Oct 2023 14:40:35 -0400
 Subject: [PATCH] Current Max Speed
@@ -16,7 +16,7 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..5e7355a51 100644
+index d1d351346..ba8d9a2d1 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -31,17 +31,17 @@ index 54168165a..5e7355a51 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index cfc3830e0..e5ba787b1 100644
+index 10bfe4e1f..81db6e1c1 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 19ce40793..45167ebc6 100755
+index 41866efc3..fc201c54f 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET
@@ -54,7 +54,7 @@ index 19ce40793..45167ebc6 100755
  
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
-@@ -708,6 +711,9 @@ class Controls:
+@@ -706,6 +709,9 @@ class Controls:
  
      hudControl = CC.hudControl
      hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)
@@ -110,12 +110,12 @@ index 000000000..3f2b7863c
 +
 +cms = CurrentMaxSpeed()
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index b1eff5302..4e99ec2cf 100755
+index 13127b463..650229e1a 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
  from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
- from openpilot.system.swaglog import cloudlog
+ from openpilot.common.swaglog import cloudlog
  
 +# PFEIFER - CMS {{
 +from openpilot.selfdrive.controls.current_max_speed import cms

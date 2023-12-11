@@ -1,4 +1,4 @@
-From 6247031e4b448f68c33b2e2db8ed99482ff78092 Mon Sep 17 00:00:00 2001
+From 78a71371781e33316cb4fe6bacc64f264df591bd Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 23 Nov 2023 21:25:32 -0500
 Subject: [PATCH] mtsc
@@ -13,7 +13,7 @@ Subject: [PATCH] mtsc
  create mode 100644 selfdrive/controls/mtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..61ecbd13c 100644
+index d1d351346..d5f269450 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,11 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -29,22 +29,22 @@ index 54168165a..61ecbd13c 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index cfc3830e0..1cd801cc8 100644
+index 10bfe4e1f..aa6a379c1 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/mtsc.py
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index b1eff5302..1b0b8f91d 100755
+index 13127b463..aab803e40 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
  from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
- from openpilot.system.swaglog import cloudlog
+ from openpilot.common.swaglog import cloudlog
  
 +# PFEIFER - MTSC {{
 +from openpilot.selfdrive.controls.mtsc import mtsc

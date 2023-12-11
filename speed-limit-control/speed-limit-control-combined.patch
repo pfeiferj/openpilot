@@ -1,4 +1,4 @@
-From 735734d6da1019604cb01ff03adc33bc20ad2bfd Mon Sep 17 00:00:00 2001
+From 93e8b19410b8a66806e729fbeb052cd25d9a3f76 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,10 +10,10 @@ Subject: [PATCH 1/3] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index cfc3830e0..4d49047c3 100644
+index 10bfe4e1f..bf5985a84 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -243,7 +243,7 @@ index 000000000..343cf6396
 2.39.2
 
 
-From 45f18f9e38491b74fac3f98adc1751208a6d9255 Mon Sep 17 00:00:00 2001
+From b1d245c9f4fac9b780d856c80fe2e0924f3a2e0b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -259,7 +259,7 @@ Subject: [PATCH 2/3] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..5966675ab 100644
+index d1d351346..e5e144cfd 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -274,10 +274,10 @@ index 54168165a..5966675ab 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 4d49047c3..22172d851 100644
+index bf5985a84..f0f803d80 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -602,3 +602,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -587,3 +587,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
@@ -310,7 +310,7 @@ index 89c1a3596..6ef137a2f 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 26b349135..5103e1a2d 100644
+index 2127fc320..0bb8383c0 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
@@ -324,7 +324,7 @@ index 26b349135..5103e1a2d 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -340,6 +344,11 @@ class CarInterface(CarInterfaceBase):
+@@ -339,6 +343,11 @@ class CarInterface(CarInterfaceBase):
      if self.CS.CP.openpilotLongitudinalControl:
        ret.buttonEvents = create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT)
  
@@ -389,7 +389,7 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From 77d7203d0d4dd8292ed279747a1be02e8b22230b Mon Sep 17 00:00:00 2001
+From b6bc7e1c8d90014cdd7f801002e8bbf6dbf4263c Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -408,7 +408,7 @@ Limits the speed based on the current speed limit.
  create mode 100644 selfdrive/controls/speed_limit_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 5966675ab..a4418e354 100644
+index e5e144cfd..c934cbe6a 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -212,6 +212,17 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -430,10 +430,10 @@ index 5966675ab..a4418e354 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 22172d851..8959b73ae 100644
+index f0f803d80..3a6792a5c 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -603,3 +603,4 @@ tinygrad_repo/tinygrad/*.py
+@@ -588,3 +588,4 @@ tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
  selfdrive/controls/gap_adjust_button.py
@@ -496,12 +496,12 @@ index edc9e4855..67429215b 100644
  
    @staticmethod
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index b1eff5302..21f7195aa 100755
+index 13127b463..e7eefa7c9 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
  from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
- from openpilot.system.swaglog import cloudlog
+ from openpilot.common.swaglog import cloudlog
  
 +# PFEIFER - SLC {{
 +from openpilot.selfdrive.controls.speed_limit_controller import slc
@@ -687,12 +687,12 @@ index 000000000..24ab476ff
 +
 +slc = SpeedLimitController()
 diff --git a/selfdrive/navd/navd.py b/selfdrive/navd/navd.py
-index da2b8c06b..d4a9f3c70 100755
+index fcaf46aff..41ee186be 100755
 --- a/selfdrive/navd/navd.py
 +++ b/selfdrive/navd/navd.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
                                      parse_banner_instructions)
- from openpilot.system.swaglog import cloudlog
+ from openpilot.common.swaglog import cloudlog
  
 +# PFEIFER - SLC {{
 +from openpilot.selfdrive.controls.speed_limit_controller import slc

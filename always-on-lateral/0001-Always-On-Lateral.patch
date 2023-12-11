@@ -1,6 +1,6 @@
-From 7d54287f1922f51eb2b570528ce634058ac21520 Mon Sep 17 00:00:00 2001
+From 0c2c99dfffc653be720706c82fae49f1913f28d4 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Wed, 29 Nov 2023 18:55:13 -0500
+Date: Mon, 11 Dec 2023 17:54:59 -0500
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -25,7 +25,7 @@ control.
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..f80210416 100644
+index d1d351346..621975937 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,19 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -49,17 +49,17 @@ index 54168165a..f80210416 100644
  
  } // namespace
 diff --git a/panda b/panda
-index e6fadef4d..1adc73736 160000
+index a88fe8c88..3422866a5 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit e6fadef4ddccb9e665fbdf2d377f12879e5af07a
-+Subproject commit 1adc737362d5074ae71ef41ef3bc3101b34c080d
+-Subproject commit a88fe8c883758951ba2854eb2f6726d5365df099
++Subproject commit 3422866a5bb0a8252f5211bca7fa5334cef9481d
 diff --git a/release/files_common b/release/files_common
-index cfc3830e0..6c6363ec8 100644
+index 10bfe4e1f..75579d178 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -411,7 +411,7 @@ index 000000000..5a5c5f55c
 +      experience = ALTERNATIVE_EXPERIENCE.ENABLE_ALWAYS_ON_LATERAL
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 19ce40793..ba350eff1 100755
+index 41866efc3..e020e2601 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -425,7 +425,7 @@ index 19ce40793..ba350eff1 100755
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -102,7 +106,9 @@ class Controls:
+@@ -101,7 +105,9 @@ class Controls:
      self.CP.alternativeExperience = 0
      if not self.disengage_on_accelerator:
        self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
@@ -436,7 +436,7 @@ index 19ce40793..ba350eff1 100755
      # read params
      self.is_metric = self.params.get_bool("IsMetric")
      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
-@@ -203,6 +209,11 @@ class Controls:
+@@ -200,6 +206,11 @@ class Controls:
      self.rk = Ratekeeper(100, print_delay_threshold=None)
      self.prof = Profiler(False)  # off by default
  
@@ -448,7 +448,7 @@ index 19ce40793..ba350eff1 100755
    def set_initial_state(self):
      if REPLAY:
        controls_state = Params().get("ReplayControlsState")
-@@ -586,6 +597,11 @@ class Controls:
+@@ -584,6 +595,11 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)

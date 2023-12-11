@@ -1,4 +1,4 @@
-From e75c51ebdc996f02ebfce792d217b554ebbcb787 Mon Sep 17 00:00:00 2001
+From 7e8942f4ded434f95fd08ed63d16413fe4af0e12 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 00:48:13 -0400
 Subject: [PATCH] distance based curvature
@@ -14,7 +14,7 @@ Subject: [PATCH] distance based curvature
  create mode 100644 selfdrive/controls/distance_based_curvature.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 54168165a..100ca2534 100644
+index d1d351346..bb13b2e8f 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -208,6 +208,11 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -30,10 +30,10 @@ index 54168165a..100ca2534 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index cfc3830e0..7b35db3db 100644
+index 10bfe4e1f..62d9890c5 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -600,3 +600,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -125,7 +125,7 @@ index b728f1114..4134ff598 100644
  
    # This is the "desired rate of the setpoint" not an actual desired rate
 diff --git a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
-index a23ba1eaf..1b5a4777d 100755
+index 39cfda4e8..a61c05ab8 100755
 --- a/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 +++ b/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.modeld.constants import index_function

@@ -1,6 +1,6 @@
-From 1adc737362d5074ae71ef41ef3bc3101b34c080d Mon Sep 17 00:00:00 2001
+From 3422866a5bb0a8252f5211bca7fa5334cef9481d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Wed, 29 Nov 2023 18:21:00 -0500
+Date: Mon, 11 Dec 2023 17:45:33 -0500
 Subject: [PATCH] Always On Lateral
 
 Safety code for Always On Lateral. On supported cars this allows lateral
@@ -19,16 +19,16 @@ always on lateral is not enabled.
  board/safety/safety_subaru.h           |  3 ++
  board/safety/safety_subaru_preglobal.h |  3 ++
  board/safety/safety_tesla.h            | 10 +++++++
- board/safety/safety_toyota.h           | 11 ++++++++
+ board/safety/safety_toyota.h           |  9 ++++++
  board/safety_declarations.h            |  7 +++++
  python/__init__.py                     |  3 ++
- 14 files changed, 107 insertions(+), 6 deletions(-)
+ 14 files changed, 105 insertions(+), 6 deletions(-)
 
 diff --git a/board/safety.h b/board/safety.h
-index abff1ada..e7b3bd10 100644
+index 758223fb..5cf00e18 100644
 --- a/board/safety.h
 +++ b/board/safety.h
-@@ -557,8 +557,18 @@ bool longitudinal_interceptor_checks(CANPacket_t *to_send) {
+@@ -556,8 +556,18 @@ bool longitudinal_interceptor_checks(CANPacket_t *to_send) {
  bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLimits limits) {
    bool violation = false;
    uint32_t ts = microsecond_timer_get();
@@ -48,7 +48,7 @@ index abff1ada..e7b3bd10 100644
      // *** global torque limit check ***
      violation |= max_limit_check(desired_torque, limits.max_steer, -limits.max_steer);
  
-@@ -585,7 +595,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -584,7 +594,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // no torque if controls is not allowed
@@ -60,7 +60,7 @@ index abff1ada..e7b3bd10 100644
      violation = true;
    }
  
-@@ -627,7 +640,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -626,7 +639,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
    }
  
    // reset to 0 if either controls is not allowed or there's a violation
@@ -72,7 +72,7 @@ index abff1ada..e7b3bd10 100644
      valid_steer_req_count = 0;
      invalid_steer_req_count = 0;
      desired_torque_last = 0;
-@@ -642,8 +658,18 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
+@@ -641,8 +657,18 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
  // Safety checks for angle-based steering commands
  bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const SteeringLimits limits) {
    bool violation = false;
@@ -92,7 +92,7 @@ index abff1ada..e7b3bd10 100644
      // convert floating point angle rate limits to integers in the scale of the desired angle on CAN,
      // add 1 to not false trigger the violation. also fudge the speed by 1 m/s so rate limits are
      // always slightly above openpilot's in case we read an updated speed in between angle commands
-@@ -686,7 +712,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
+@@ -685,7 +711,10 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
    }
  
    // No angle control allowed when controls are not allowed
@@ -105,7 +105,7 @@ index abff1ada..e7b3bd10 100644
    return violation;
  }
 diff --git a/board/safety/safety_chrysler.h b/board/safety/safety_chrysler.h
-index d2618122..914b29e3 100644
+index 7fb237c9..7982fcc7 100644
 --- a/board/safety/safety_chrysler.h
 +++ b/board/safety/safety_chrysler.h
 @@ -185,6 +185,9 @@ static void chrysler_rx_hook(CANPacket_t *to_push) {
@@ -119,7 +119,7 @@ index d2618122..914b29e3 100644
      pcm_cruise_check(cruise_engaged);
    }
 diff --git a/board/safety/safety_ford.h b/board/safety/safety_ford.h
-index 13d17ca1..32103ce0 100644
+index aaf1d7ab..4bf195f2 100644
 --- a/board/safety/safety_ford.h
 +++ b/board/safety/safety_ford.h
 @@ -250,6 +250,9 @@ static void ford_rx_hook(CANPacket_t *to_push) {
@@ -133,7 +133,7 @@ index 13d17ca1..32103ce0 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_gm.h b/board/safety/safety_gm.h
-index bd8210b5..dcc85383 100644
+index 250c103a..399f5ead 100644
 --- a/board/safety/safety_gm.h
 +++ b/board/safety/safety_gm.h
 @@ -108,6 +108,9 @@ static void gm_rx_hook(CANPacket_t *to_push) {
@@ -147,7 +147,7 @@ index bd8210b5..dcc85383 100644
      }
  
 diff --git a/board/safety/safety_honda.h b/board/safety/safety_honda.h
-index 30215c02..e16693ab 100644
+index 6bdc4005..ff32bb98 100644
 --- a/board/safety/safety_honda.h
 +++ b/board/safety/safety_honda.h
 @@ -311,7 +311,11 @@ static bool honda_tx_hook(CANPacket_t *to_send) {
@@ -181,7 +181,7 @@ index 0b9116d1..edc71f74 100644
        (main_button != 0)) {
      hyundai_last_button_interaction = 0U;
 diff --git a/board/safety/safety_mazda.h b/board/safety/safety_mazda.h
-index 83e76062..04f2f963 100644
+index 67561a15..6cc59dd5 100644
 --- a/board/safety/safety_mazda.h
 +++ b/board/safety/safety_mazda.h
 @@ -52,6 +52,9 @@ static void mazda_rx_hook(CANPacket_t *to_push) {
@@ -195,7 +195,7 @@ index 83e76062..04f2f963 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_nissan.h b/board/safety/safety_nissan.h
-index 4bddc065..7a2f6bf4 100644
+index 91b52b7d..7637ebbc 100644
 --- a/board/safety/safety_nissan.h
 +++ b/board/safety/safety_nissan.h
 @@ -21,6 +21,10 @@ const CanMsg NISSAN_TX_MSGS[] = {
@@ -203,14 +203,14 @@ index 4bddc065..7a2f6bf4 100644
  // Signals duplicated below due to the fact that these messages can come in on either CAN bus, depending on car model.
  RxCheck nissan_rx_checks[] = {
 +  // PFEIFER - AOL {{
-+  {.msg = {{0x1b6, 0, 8, .expected_timestep = 10000U},
-+           {0x1b6, 1, 8, .expected_timestep = 10000U}, { 0 }}},  // PRO_PILOT (100HZ)
++  {.msg = {{0x1b6, 0, 8, .frequency = 100U},
++           {0x1b6, 1, 8, .frequency = 100U}, { 0 }}},  // PRO_PILOT
 +  // }} PFEIFER - AOL
-   {.msg = {{0x2, 0, 5, .expected_timestep = 10000U},
-            {0x2, 1, 5, .expected_timestep = 10000U}, { 0 }}},  // STEER_ANGLE_SENSOR (100Hz)
-   {.msg = {{0x285, 0, 8, .expected_timestep = 20000U},
+   {.msg = {{0x2, 0, 5, .frequency = 100U},
+            {0x2, 1, 5, .frequency = 100U}, { 0 }}},  // STEER_ANGLE_SENSOR
+   {.msg = {{0x285, 0, 8, .frequency = 50U},
 @@ -64,11 +68,20 @@ static void nissan_rx_hook(CANPacket_t *to_push) {
-       update_sample(&vehicle_speed, ROUND((right_rear + left_rear) / 2.0 * 0.005 / 3.6 * VEHICLE_SPEED_FACTOR));
+       UPDATE_VEHICLE_SPEED((right_rear + left_rear) / 2.0 * 0.005 / 3.6);
      }
  
 +    // PFEIFER - AOL {{
@@ -231,7 +231,7 @@ index 4bddc065..7a2f6bf4 100644
        }
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index b70180c9..7619f997 100644
+index 4fb19cac..53bf2136 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
 @@ -152,6 +152,9 @@ static void subaru_rx_hook(CANPacket_t *to_push) {
@@ -245,7 +245,7 @@ index b70180c9..7619f997 100644
      pcm_cruise_check(cruise_engaged);
    }
 diff --git a/board/safety/safety_subaru_preglobal.h b/board/safety/safety_subaru_preglobal.h
-index 03334e5d..4eb10549 100644
+index 16a16882..d82f8343 100644
 --- a/board/safety/safety_subaru_preglobal.h
 +++ b/board/safety/safety_subaru_preglobal.h
 @@ -56,6 +56,9 @@ static void subaru_preglobal_rx_hook(CANPacket_t *to_push) {
@@ -259,7 +259,7 @@ index 03334e5d..4eb10549 100644
        pcm_cruise_check(cruise_engaged);
      }
 diff --git a/board/safety/safety_tesla.h b/board/safety/safety_tesla.h
-index 17969f74..a60fca70 100644
+index 66d11960..c037dba0 100644
 --- a/board/safety/safety_tesla.h
 +++ b/board/safety/safety_tesla.h
 @@ -88,6 +88,16 @@ static void tesla_rx_hook(CANPacket_t *to_push) {
@@ -280,10 +280,10 @@ index 17969f74..a60fca70 100644
                              (cruise_state == 3) ||  // STANDSTILL
                              (cruise_state == 4) ||  // OVERRIDE
 diff --git a/board/safety/safety_toyota.h b/board/safety/safety_toyota.h
-index 4a9326c7..7567a1b3 100644
+index 56c5382e..329cbcd2 100644
 --- a/board/safety/safety_toyota.h
 +++ b/board/safety/safety_toyota.h
-@@ -30,12 +30,18 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
+@@ -46,6 +46,9 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
  const CanMsg TOYOTA_TX_MSGS[] = {{0x283, 0, 7}, {0x2E6, 0, 8}, {0x2E7, 0, 8}, {0x33E, 0, 7}, {0x344, 0, 8}, {0x365, 0, 7}, {0x366, 0, 7}, {0x4CB, 0, 8},  // DSU bus 0
                                   {0x128, 1, 6}, {0x141, 1, 4}, {0x160, 1, 8}, {0x161, 1, 7}, {0x470, 1, 4},  // DSU bus 1
                                   {0x2E4, 0, 5}, {0x191, 0, 8}, {0x411, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8},  // LKAS + ACC
@@ -292,19 +292,18 @@ index 4a9326c7..7567a1b3 100644
 +                                 // }} PFEIFER - AOL
                                   {0x200, 0, 6}};  // interceptor
  
- RxCheck toyota_rx_checks[] = {
-   {.msg = {{ 0xaa, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
-   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-   {.msg = {{0x1D2, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
-+  // PFEIFER - AOL {{
-+  {.msg = {{0x1D3, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
-+  // }} PFEIFER - AOL
-   {.msg = {{0x224, 0, 8, .check_checksum = false, .expected_timestep = 25000U},
-            {0x226, 0, 8, .check_checksum = false, .expected_timestep = 25000U}, { 0 }}},
- };
-@@ -87,6 +93,11 @@ static void toyota_rx_hook(CANPacket_t *to_push) {
-       torque_meas.min--;
-       torque_meas.max++;
+ #define TOYOTA_COMMON_RX_CHECKS(lta)                                                                        \
+@@ -54,6 +57,7 @@ const CanMsg TOYOTA_TX_MSGS[] = {{0x283, 0, 7}, {0x2E6, 0, 8}, {0x2E7, 0, 8}, {0
+   {.msg = {{0x1D2, 0, 8, .check_checksum = true, .frequency = 33U}, { 0 }, { 0 }}},                         \
+   {.msg = {{0x224, 0, 8, .check_checksum = false, .frequency = 40U},                                        \
+            {0x226, 0, 8, .check_checksum = false, .frequency = 40U}, { 0 }}},                               \
++  {.msg = {{0x1D3, 0, 8, .check_checksum = true, .frequency = 33U}, { 0 }, { 0 }}},                         \
+ 
+ RxCheck toyota_lka_rx_checks[] = {
+   TOYOTA_COMMON_RX_CHECKS(false)
+@@ -135,6 +139,11 @@ static void toyota_rx_hook(CANPacket_t *to_push) {
+         update_sample(&angle_meas, angle_meas_new);
+       }
      }
 +    // PFEIFER - AOL {{
 +    if (addr == 0x1D3) {
@@ -315,10 +314,10 @@ index 4a9326c7..7567a1b3 100644
      // enter controls on rising edge of ACC, exit controls on ACC off
      // exit controls on rising edge of gas press
 diff --git a/board/safety_declarations.h b/board/safety_declarations.h
-index 94426ea8..f24304ae 100644
+index 7ac0a460..f04b5a4c 100644
 --- a/board/safety_declarations.h
 +++ b/board/safety_declarations.h
-@@ -224,6 +224,9 @@ struct sample_t vehicle_speed;
+@@ -225,6 +225,9 @@ struct sample_t vehicle_speed;
  bool vehicle_moving = false;
  bool acc_main_on = false;  // referred to as "ACC off" in ISO 15622:2018
  int cruise_button_prev = 0;
@@ -328,7 +327,7 @@ index 94426ea8..f24304ae 100644
  bool safety_rx_checks_invalid = false;
  
  // for safety modes with torque steering control
-@@ -266,3 +269,7 @@ int alternative_experience = 0;
+@@ -267,3 +270,7 @@ int alternative_experience = 0;
  uint32_t safety_mode_cnt = 0U;
  // allow 1s of transition timeout after relay changes state before assessing malfunctioning
  const uint32_t RELAY_TRNS_TIMEOUT = 1U;

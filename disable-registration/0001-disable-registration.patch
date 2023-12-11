@@ -1,4 +1,4 @@
-From 894861c79b194328b25108acdf4512751314bbb8 Mon Sep 17 00:00:00 2001
+From 59d9c2241b708bfc6dfacb915b704174f411e64e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 22 Aug 2023 19:05:58 -0400
 Subject: [PATCH] disable registration
@@ -8,7 +8,7 @@ Subject: [PATCH] disable registration
  1 file changed, 3 insertions(+)
 
 diff --git a/selfdrive/athena/registration.py b/selfdrive/athena/registration.py
-index 0ab69371c..44b38f0dc 100755
+index c9a4b949a..aec30961e 100755
 --- a/selfdrive/athena/registration.py
 +++ b/selfdrive/athena/registration.py
 @@ -31,6 +31,9 @@ def register(show_spinner=False) -> Optional[str]:
@@ -19,7 +19,7 @@ index 0ab69371c..44b38f0dc 100755
 +  needs_registration = False
 +  # }} PFEIFER - DR
  
-   pubkey = Path(PERSIST+"/comma/id_rsa.pub")
+   pubkey = Path(Paths.persist_root()+"/comma/id_rsa.pub")
    if not pubkey.is_file():
 -- 
 2.39.2
