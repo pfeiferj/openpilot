@@ -1,5 +1,9 @@
 # Always On Lateral Changelog
 
+## 12/11/23
+Openpilot:
+    * Fix for hkg can-fd
+
 ## 12/06/23
 Panda:
     * Untested Subaru pre-global support

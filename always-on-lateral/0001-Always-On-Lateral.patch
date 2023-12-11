@@ -1,4 +1,4 @@
-From 0c2c99dfffc653be720706c82fae49f1913f28d4 Mon Sep 17 00:00:00 2001
+From 613f11d8ce31e624a0a27d768cd0aa62163f8162 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Mon, 11 Dec 2023 17:54:59 -0500
 Subject: [PATCH] Always On Lateral
@@ -66,7 +66,7 @@ index 10bfe4e1f..75579d178 100644
 +
 +selfdrive/controls/always_on_lateral.py
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index edc9e4855..9d0da2440 100644
+index edc9e4855..d41108265 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -52,6 +52,10 @@ class CarState(CarStateBase):
@@ -128,7 +128,7 @@ index edc9e4855..9d0da2440 100644
 +    # }} PFEIFER - AOL
      self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
 +    # PFEIFER - AOL {{
-+    if self.main_buttons[-1] != self.prev_main_buttons:
++    if self.prev_main_buttons == 0 and self.main_buttons[-1] != 0:
 +      self.main_enabled = not self.main_enabled
 +    # }} PFEIFER - AOL
      self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
