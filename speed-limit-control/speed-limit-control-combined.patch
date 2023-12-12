@@ -389,7 +389,7 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From b6bc7e1c8d90014cdd7f801002e8bbf6dbf4263c Mon Sep 17 00:00:00 2001
+From 8630288a9136348e3fe229ef43d3085f9bef20bc Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -400,11 +400,11 @@ Limits the speed based on the current speed limit.
  release/files_common                          |   1 +
  selfdrive/car/hyundai/carstate.py             |  25 +++
  .../controls/lib/longitudinal_planner.py      |  10 ++
- selfdrive/controls/speed_limit_controller.py  | 157 ++++++++++++++++++
- selfdrive/navd/navd.py                        |  18 ++
+ selfdrive/controls/speed_limit_controller.py  | 152 ++++++++++++++++++
+ selfdrive/navd/navd.py                        |  18 +++
  selfdrive/ui/qt/offroad/settings.cc           |  20 +++
  selfdrive/ui/qt/onroad.cc                     |  17 ++
- 8 files changed, 259 insertions(+)
+ 8 files changed, 254 insertions(+)
  create mode 100644 selfdrive/controls/speed_limit_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
@@ -525,10 +525,10 @@ index 13127b463..e7eefa7c9 100755
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/speed_limit_controller.py b/selfdrive/controls/speed_limit_controller.py
 new file mode 100644
-index 000000000..24ab476ff
+index 000000000..58f3ec8a4
 --- /dev/null
 +++ b/selfdrive/controls/speed_limit_controller.py
-@@ -0,0 +1,157 @@
+@@ -0,0 +1,152 @@
 +from openpilot.common.params import Params
 +from openpilot.common.conversions import Conversions as CV
 +from openpilot.selfdrive.controls.gap_adjust_button import gap_adjust_button, GapButtonState
@@ -554,7 +554,6 @@ index 000000000..24ab476ff
 +class SpeedLimitController:
 +  nav_speed_limit: float = 0 # m/s
 +  map_speed_limit: float = 0 # m/s
-+  map_advisory_limit: float = 0 # m/s
 +  next_map_speed_limit: float = 0 # m/s
 +  next_map_speed_limit_lat: float = 0 # deg
 +  next_map_speed_limit_lon: float = 0 # deg
@@ -607,8 +606,6 @@ index 000000000..24ab476ff
 +      limit = self.nav_speed_limit
 +    elif self.map_enabled and self.map_speed_limit != 0:
 +      limit = self.map_speed_limit
-+      if self.map_advisory_limit != 0 and self.map_advisory_limit < limit:
-+        limit = self.map_advisory_limit
 +    elif self.car_enabled and self.car_speed_limit != 0:
 +      limit = self.car_speed_limit
 +
@@ -636,7 +633,6 @@ index 000000000..24ab476ff
 +
 +  def write_map_state(self):
 +    mem_params.put("MapSpeedLimit", json.dumps(self.map_speed_limit))
-+    mem_params.put("MapAdvisoryLimit", json.dumps(self.map_speed_limit))
 +    mem_params.put_bool("MapSpeedLimitControl", self.map_enabled)
 +
 +  def write_car_state(self):
@@ -664,7 +660,6 @@ index 000000000..24ab476ff
 +      self.lat = position["latitude"]
 +      self.lon = position["longitude"]
 +    except: pass
-+    self.map_advisory_limit = json.loads(mem_params.get("MapAdvisoryLimit"))
 +    self.car_speed_limit = json.loads(mem_params.get("CarSpeedLimit"))
 +
 +    if load_persistent_enabled:

@@ -1,5 +1,9 @@
 # Speed Limit Control Changelog
 
+## 12/12/23
+* Removes advisory speed limits, need updated to newer mapd format and to be
+  placed behind a toggle
+
 ## 12/01/23
 * Displays the speed limit from sources other than nav
 * Adds advisory speed limits to map speed limits
