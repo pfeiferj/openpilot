@@ -1,5 +1,6 @@
-# POP - Pfeifer Openpilot Patches
-A collection of patch sets of common unsupported/unofficial community features.
+# Pfeifer Pilot Patches
+A collection of patch sets of common unsupported/unofficial community features
+for [openpilot](https://github.com/commaai/openpilot).
 
 ## Not a developer? Read this!
 This repo is primarily intended for developers. If you're not a developer you
@@ -38,10 +39,6 @@ should never be expected to be in a working state. If a patch doesn't work with
 the latest openpilot master please create an issue. That being said, use at your
 own risk. The patches may at any time become incompatible with Openpilot master.
 
-## Discord
-Join the [discord](https://discord.gg/yqwxTAuxpN) server for discussion about
-this repository and the patches.
-
 ## LICENSE
 The patches are bound by the MIT License located in the
 [LICENSE](./LICENSE) file of this repo and branch. The MIT License is
@@ -63,7 +60,7 @@ and warnings regarding any known issues or other things I deem important to warn
 about. Note that the readme docs are only loosely following the same pattern so
 you should read the entire doc for a patch you plan to use.
 
-### Planned for upstream
+### Planned for upstream openpilot
 If the patch is intended for upstream I will note the upstream PR related to the
 patch in the readme. Note that any patch planned for upstream will not contain
 comment blocks/fences for changes
