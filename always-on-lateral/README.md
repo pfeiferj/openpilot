@@ -18,9 +18,9 @@ any change that modifies it has the above branding requirements. The second
 level is that any change that comma.ai deems outright unsafe will result in
 devices that are uploading logs with those changes will be banned from comma
 services. comma.ai suggested reading and following the following iso guidelines
-to maintain the safety of your users.
-[iso-15622](https://www.iso.org/obp/ui/en/#iso:std:iso:15622:ed-3:v1:en)
-[iso-11270](https://www.iso.org/obp/ui/en/#iso:std:iso:11270:ed-1:v1:en)
+to maintain the safety of your users:
+[iso-15622](https://www.iso.org/obp/ui/en/#iso:std:iso:15622:ed-3:v1:en),
+[iso-11270](https://www.iso.org/obp/ui/en/#iso:std:iso:11270:ed-1:v1:en).
 However, despite that recommendation from comma.ai it's worth noting that they
 have the right to ban a device for any reason and will do so if they see a
 change that they deem to be dangerous even if it follows the iso guidelines.
