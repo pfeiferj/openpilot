@@ -6,6 +6,35 @@ toggle the main cruise control off. Can be configured to only remain active when
 pressing the cruise cancel button and disable completely when the brake is
 pressed. Can also be configured to disable when blinkers are activated.
 
+## comma.ai requirements for panda safety modifications
+This change requires changes to panda safety. If you make modifications to panda
+safety comma.ai states that you should not use the openpilot branding for your
+fork. This means your fork should not be named "openpilot". You can still use
+the installer.comma.ai installer by having your repo be previously named
+openpilot and then changing it to your own branded name.
+
+Note that there are two levels of changes to panda safety. The first level is
+any change that modifies it has the above branding requirements. The second
+level is that any change that comma.ai deems outright unsafe will result in
+devices that are uploading logs with those changes will be banned from comma
+services. comma.ai suggested reading and following the following iso guidelines
+to maintain the safety of your users.
+[iso-15622](https://www.iso.org/obp/ui/en/#iso:std:iso:15622:ed-3:v1:en)
+[iso-11270](https://www.iso.org/obp/ui/en/#iso:std:iso:11270:ed-1:v1:en)
+However, despite that recommendation from comma.ai it's worth noting that they
+have the right to ban a device for any reason and will do so if they see a
+change that they deem to be dangerous even if it follows the iso guidelines.
+
+This code does to the best of my knowledge meet the requirements to not be
+banned from comma.ai services and is reasonably safe to use. However, there is
+always some risk associated to modifying panda in any way and I have not tested
+these changes on all cars. If you use this code you are using it at your own
+risk and the risk of anyone who installs your software. I suggest you take a
+look at the changes these patches make before using and make sure you understand
+the change. The change does not make modifications to the controls allowed state
+of the longitudinal controls, so all longitudinal behavior should remain the
+same.
+
 ## Cars Supported
 I have only personally tested an HKG can vehicle.
 
@@ -24,10 +53,6 @@ The following cars were reported working by members of the community:
 GM:
 * disables lateral while applying regen braking with paddle. Lateral resumes
 after releasing the paddle. (Thanks @Mangomoose)
-
-    - Have looked into this some. The canbus we see the lateral commands on
-    changes while the paddle is being pressed for some reason. If anyone has any
-    suggestions for what might be happening please let me know.
 
 ### Untested Cars
 The following cars _may_ be supported, but they have not been verified working.
@@ -64,18 +89,10 @@ Beta
 [Changelog](./CHANGELOG.md)
 
 * Many cars are untested. However, results so far suggest that remaining untested cars are likely to work.
-* Missing Nissan support
 
 ## Comment Blocks Text
 PFEIFER - AOL
 
-## Panda Safety
-This code does to the best of my knowledge meet the panda safety standards.
-However, there is always some risk associated to modifying panda in any way. I
-suggest you take a look at the changes these patches make before using and
-make sure you understand the change. The change does not make modifications
-to the controls allowed state of the longitudinal controls, so all longitudinal
-behavior should remain the same.
 
 ## Using
 This change requires two patches due to it modifying both openpilot and panda.
