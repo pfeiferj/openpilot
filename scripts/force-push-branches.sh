@@ -49,9 +49,6 @@ git push --force
 git checkout pfeifer-disable-registration
 git push --force
 
-git checkout pfeifer-tailscale
-git push --force
-
 git checkout pfeifer-high-bitrate
 git push --force
 

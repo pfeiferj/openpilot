@@ -49,9 +49,6 @@ git pull
 git checkout pfeifer-disable-registration
 git pull
 
-git checkout pfeifer-tailscale
-git pull
-
 git checkout pfeifer-high-bitrate
 git pull
 
