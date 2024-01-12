@@ -1,4 +1,4 @@
-From 9e6dd32ac01c7019a550171fc7777be2669e59c6 Mon Sep 17 00:00:00 2001
+From da8cf848130acac5d6354c306c2513b02404c5f9 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 18:48:03 -0400
 Subject: [PATCH] Use the cluster speed when limiting speed
@@ -8,10 +8,10 @@ Subject: [PATCH] Use the cluster speed when limiting speed
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 13127b463..85153f87e 100755
+index 018768f24..0c4639804 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -94,8 +94,11 @@ class LongitudinalPlanner:
+@@ -95,8 +95,11 @@ class LongitudinalPlanner:
      self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
  
      v_ego = sm['carState'].vEgo

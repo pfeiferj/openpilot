@@ -1,4 +1,4 @@
-From 7de8f0e2b668b598ef0e83f01c66fe2927bfce3b Mon Sep 17 00:00:00 2001
+From 74a73c71dd6dcf216c7ddc75e36c8d71ea059b6f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
@@ -11,7 +11,7 @@ Subject: [PATCH] mapd
  create mode 100644 selfdrive/mapd.py
 
 diff --git a/selfdrive/locationd/paramsd.py b/selfdrive/locationd/paramsd.py
-index 4a598e8d4..34ecf387f 100755
+index 183a8666e..8215d9df8 100755
 --- a/selfdrive/locationd/paramsd.py
 +++ b/selfdrive/locationd/paramsd.py
 @@ -14,6 +14,9 @@ from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKi
@@ -56,7 +56,7 @@ index 36d69b03b..73d7a385e 100644
    PythonProcess("webrtcd", "system.webrtc.webrtcd", notcar),
 diff --git a/selfdrive/mapd.py b/selfdrive/mapd.py
 new file mode 100644
-index 000000000..353d8cd97
+index 000000000..65b0fc61d
 --- /dev/null
 +++ b/selfdrive/mapd.py
 @@ -0,0 +1,56 @@
@@ -67,7 +67,7 @@ index 000000000..353d8cd97
 +from openpilot.common.realtime import Ratekeeper
 +import stat
 +
-+VERSION = 'v1.7.2'
++VERSION = 'v1.8.1-beta1'
 +URL = f"https://github.com/pfeiferj/openpilot-mapd/releases/download/{VERSION}/mapd"
 +MAPD_PATH = '/data/media/0/osm/mapd'
 +VERSION_PATH = '/data/media/0/osm/mapd_version'

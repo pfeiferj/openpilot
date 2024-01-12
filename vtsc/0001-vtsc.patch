@@ -1,4 +1,4 @@
-From 68e8e6f1c32c45acf099ecaac11e45897d0ddcb8 Mon Sep 17 00:00:00 2001
+From bf63dc8e7d0be5f5b6a236fb97b7234d06ae1bbe Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 28 Jul 2023 22:32:56 -0400
 Subject: [PATCH] vtsc
@@ -13,10 +13,10 @@ Subject: [PATCH] vtsc
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index d1d351346..66a488a35 100644
+index 7b14ac695..52ee87788 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -210,6 +210,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -28,17 +28,17 @@ index d1d351346..66a488a35 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 10bfe4e1f..967bf5577 100644
+index 71c096716..6aa51a231 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -556,3 +556,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/vtsc.py
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 13127b463..136a5c0d9 100755
+index 018768f24..97643de95 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
@@ -52,7 +52,7 @@ index 13127b463..136a5c0d9 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -129,6 +133,12 @@ class LongitudinalPlanner:
+@@ -130,6 +134,12 @@ class LongitudinalPlanner:
      accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
      accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
  

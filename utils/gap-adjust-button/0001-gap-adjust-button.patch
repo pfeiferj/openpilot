@@ -1,4 +1,4 @@
-From b1d245c9f4fac9b780d856c80fe2e0924f3a2e0b Mon Sep 17 00:00:00 2001
+From 90c2a90fc62fdf4d9a0739411de8f48eb7475dc6 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH] gap adjust button
@@ -14,10 +14,10 @@ Subject: [PATCH] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index d1d351346..e5e144cfd 100644
+index 7b14ac695..001b2bd54 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -210,6 +210,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -29,10 +29,10 @@ index d1d351346..e5e144cfd 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index bf5985a84..f0f803d80 100644
+index 3a3079697..ea7d947c0 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -587,3 +587,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -558,3 +558,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
@@ -65,7 +65,7 @@ index 89c1a3596..6ef137a2f 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 2127fc320..0bb8383c0 100644
+index cd6657a23..cb33e180f 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
@@ -77,9 +77,9 @@ index 2127fc320..0bb8383c0 100644
 +# }} PFEIFER - GAB
 +
  Ecu = car.CarParams.Ecu
+ SafetyModel = car.CarParams.SafetyModel
  ButtonType = car.CarState.ButtonEvent.Type
- EventName = car.CarEvent.EventName
-@@ -339,6 +343,11 @@ class CarInterface(CarInterfaceBase):
+@@ -344,6 +348,11 @@ class CarInterface(CarInterfaceBase):
      if self.CS.CP.openpilotLongitudinalControl:
        ret.buttonEvents = create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT)
  

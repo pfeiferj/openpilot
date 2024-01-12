@@ -1,4 +1,4 @@
-From f78d4275c75428e3b84cac8f752e60111aa8d594 Mon Sep 17 00:00:00 2001
+From f4e62766fe8f822a7f1db69d5a0548db53d6d37e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 29 Nov 2023 16:58:22 -0500
 Subject: [PATCH] Road Name Display
@@ -9,10 +9,10 @@ Subject: [PATCH] Road Name Display
  2 files changed, 14 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index d1d351346..415d6af06 100644
+index 7b14ac695..97ac6f4ef 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -210,6 +210,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -24,10 +24,10 @@ index d1d351346..415d6af06 100644
  
  } // namespace
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 971eb673e..1e1d2632d 100644
+index 4df0ed81c..3c568ec50 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -424,6 +424,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
+@@ -425,6 +425,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
    p.setFont(InterFont(66));
    drawText(p, rect().center().x(), 290, speedUnit, 200);
  

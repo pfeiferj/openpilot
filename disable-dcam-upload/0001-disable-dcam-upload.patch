@@ -1,4 +1,4 @@
-From 9e21dc44f2d7d38bdc144295b92e56dd1e1854cf Mon Sep 17 00:00:00 2001
+From 154b6d26f6b11b89c605f736fb4b80e7c4bc3d47 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 13 Sep 2023 20:05:30 -0400
 Subject: [PATCH] disable dcam upload
@@ -10,10 +10,10 @@ Subject: [PATCH] disable dcam upload
  3 files changed, 23 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index d1d351346..e12d8d086 100644
+index 7b14ac695..78d02da97 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,9 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -210,6 +210,9 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -24,10 +24,10 @@ index d1d351346..e12d8d086 100644
  
  } // namespace
 diff --git a/selfdrive/athena/athenad.py b/selfdrive/athena/athenad.py
-index bdca04c45..dc20db7e2 100755
+index ce9e64188..b9f986c1e 100755
 --- a/selfdrive/athena/athenad.py
 +++ b/selfdrive/athena/athenad.py
-@@ -40,6 +40,10 @@ from openpilot.common.swaglog import cloudlog
+@@ -39,6 +39,10 @@ from openpilot.common.swaglog import cloudlog
  from openpilot.system.version import get_commit, get_origin, get_short_branch, get_version
  from openpilot.system.hardware.hw import Paths
  
@@ -38,7 +38,7 @@ index bdca04c45..dc20db7e2 100755
  
  ATHENA_HOST = os.getenv('ATHENA_HOST', 'wss://athena.comma.ai')
  HANDLER_THREADS = int(os.getenv('HANDLER_THREADS', "4"))
-@@ -353,6 +357,9 @@ def scan_dir(path: str, prefix: str) -> List[str]:
+@@ -352,6 +356,9 @@ def scan_dir(path: str, prefix: str) -> List[str]:
        else:
          if rel_path.startswith(prefix):
            files.append(rel_path)
@@ -48,7 +48,7 @@ index bdca04c45..dc20db7e2 100755
    return files
  
  @dispatcher.add_method
-@@ -394,6 +401,11 @@ def uploadFilesToUrls(files_data: List[UploadFileDict]) -> UploadFilesToUrlRespo
+@@ -377,6 +384,11 @@ def uploadFilesToUrls(files_data: List[UploadFileDict]) -> UploadFilesToUrlRespo
    items: List[UploadItemDict] = []
    failed: List[str] = []
    for file in files:

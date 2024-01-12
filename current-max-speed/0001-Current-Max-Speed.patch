@@ -1,4 +1,4 @@
-From 51d2abab67c2ae660c65591ef383c3646a8dc971 Mon Sep 17 00:00:00 2001
+From 02ee90c1b76a5a04ada8748fa8388e93aee8459a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 29 Oct 2023 14:40:35 -0400
 Subject: [PATCH] Current Max Speed
@@ -16,10 +16,10 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index d1d351346..ba8d9a2d1 100644
+index 7b14ac695..6d4a63d97 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -210,6 +210,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -31,17 +31,17 @@ index d1d351346..ba8d9a2d1 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 10bfe4e1f..81db6e1c1 100644
+index 71c096716..ca8ed3ae1 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -585,3 +585,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -556,3 +556,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 41866efc3..fc201c54f 100755
+index 698c14951..c5e257a66 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET
@@ -110,7 +110,7 @@ index 000000000..3f2b7863c
 +
 +cms = CurrentMaxSpeed()
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 13127b463..650229e1a 100755
+index 018768f24..5869f64e0 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
@@ -124,7 +124,7 @@ index 13127b463..650229e1a 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -137,6 +141,9 @@ class LongitudinalPlanner:
+@@ -138,6 +142,9 @@ class LongitudinalPlanner:
  
      self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
      self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)

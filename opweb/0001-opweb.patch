@@ -1,9 +1,10 @@
-From 4b7fd892059c73839619ee43b02a8cb0f4c6617b Mon Sep 17 00:00:00 2001
+From fe7d9c6fd8d551621e42202b3d20be27da3e725e Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 1 Aug 2023 22:55:56 -0400
 Subject: [PATCH] opweb
 
 ---
+ .gitattributes                                |   2 +-
  release/files_common                          |   5 +
  selfdrive/manager/process_config.py           |   4 +
  selfdrive/opwebd/__init__.py                  |   0
@@ -45,7 +46,7 @@ Subject: [PATCH] opweb
  selfdrive/opwebd/templates/video/video.html   |   3 +
  selfdrive/opwebd/templates/wheel.html         |   3 +
  selfdrive/opwebd/utils.py                     |  21 +++
- 41 files changed, 1086 insertions(+)
+ 42 files changed, 1087 insertions(+), 1 deletion(-)
  create mode 100644 selfdrive/opwebd/__init__.py
  create mode 100644 selfdrive/opwebd/components/__init__.py
  create mode 100644 selfdrive/opwebd/components/gpx.py
@@ -86,11 +87,24 @@ Subject: [PATCH] opweb
  create mode 100644 selfdrive/opwebd/templates/wheel.html
  create mode 100644 selfdrive/opwebd/utils.py
 
+diff --git a/.gitattributes b/.gitattributes
+index 8781a7371..1e47b17bd 100644
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -5,7 +5,7 @@
+ *.dlc filter=lfs diff=lfs merge=lfs -text
+ *.onnx filter=lfs diff=lfs merge=lfs -text
+ *.svg filter=lfs diff=lfs merge=lfs -text
+-*.png filter=lfs diff=lfs merge=lfs -text
++# *.png filter=lfs diff=lfs merge=lfs -text
+ *.gif filter=lfs diff=lfs merge=lfs -text
+ *.ttf filter=lfs diff=lfs merge=lfs -text
+ *.wav filter=lfs diff=lfs merge=lfs -text
 diff --git a/release/files_common b/release/files_common
-index 10bfe4e1f..a489db6a4 100644
+index 71c096716..a41022409 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -585,3 +585,8 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -556,3 +556,8 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py

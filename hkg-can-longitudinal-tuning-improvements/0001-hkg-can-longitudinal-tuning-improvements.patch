@@ -1,4 +1,4 @@
-From cd6bfc053fde42d817f40aab1156215f93f966d5 Mon Sep 17 00:00:00 2001
+From 51c9ebfc0f03b5ac7cc95afa9a5e69b44d21da1d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 19 Aug 2023 21:02:19 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -64,10 +64,10 @@ index bc29aeb98..8d4ddd4f5 100644
      "ObjGap": 2 if lead_visible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
    }
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 2127fc320..dc3050ce4 100644
+index cd6657a23..ac38ac6ae 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -262,9 +262,14 @@ class CarInterface(CarInterfaceBase):
+@@ -277,9 +277,14 @@ class CarInterface(CarInterfaceBase):
        ret.longitudinalTuning.kiV = [0.0]
        ret.experimentalLongitudinalAvailable = candidate not in (CANFD_UNSUPPORTED_LONGITUDINAL_CAR | CANFD_RADAR_SCC_CAR)
      else:
