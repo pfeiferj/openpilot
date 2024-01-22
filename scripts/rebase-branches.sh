@@ -56,12 +56,6 @@ git pull --rebase origin master
 git checkout pfeifer-mapd
 git pull --rebase origin master
 
-git checkout pfeifer-opweb
-git pull --rebase origin master
-
-git checkout pfeifer-distance-based-curvature
-git pull --rebase origin master
-
 git checkout pfeifer-disable-registration
 git pull --rebase origin master
 

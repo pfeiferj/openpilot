@@ -58,14 +58,6 @@ git checkout pfeifer-gap-adjust-button
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/utils/gap-adjust-button/
 
-git checkout pfeifer-opweb
-git format-patch -1 HEAD
-mv *.patch ../openpilot-patches/opweb/
-
-git checkout pfeifer-distance-based-curvature
-git format-patch -1 HEAD
-mv *.patch ../openpilot-patches/distance-based-curvature/
-
 git checkout cluster-based-max-speed
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/cluster-based-max-speed/

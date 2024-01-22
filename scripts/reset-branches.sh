@@ -40,12 +40,6 @@ git reset --hard origin/pfeifer-button-manager
 git checkout pfeifer-gap-adjust-button
 git reset --hard origin/pfeifer-gap-adjust-button
 
-git checkout pfeifer-opweb
-git reset --hard origin/pfeifer-opweb
-
-git checkout pfeifer-distance-based-curvature
-git reset --hard origin/pfeifer-distance-based-curvature
-
 git checkout pfeifer-disable-registration
 git reset --hard origin/pfeifer-disable-registration
 

@@ -40,12 +40,6 @@ git pull
 git checkout pfeifer-gap-adjust-button
 git pull
 
-git checkout pfeifer-opweb
-git pull
-
-git checkout pfeifer-distance-based-curvature
-git pull
-
 git checkout pfeifer-disable-registration
 git pull
 
