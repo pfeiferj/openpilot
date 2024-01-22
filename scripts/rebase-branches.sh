@@ -37,9 +37,6 @@ git pull --rebase origin master
 git checkout pfeifer-hkg-long-control-tune
 git pull --rebase origin master
 
-git checkout pfeifer-lane-detection
-git pull --rebase origin master
-
 git checkout pfeifer-nudgeless-lane-change
 git pull --rebase origin master
 

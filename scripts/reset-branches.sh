@@ -19,9 +19,6 @@ git reset --hard origin/pfeifer-gap-adjust-control
 git checkout pfeifer-hkg-long-control-tune
 git reset --hard origin/pfeifer-hkg-long-control-tune
 
-git checkout pfeifer-lane-detection
-git reset --hard origin/pfeifer-lane-detection
-
 git checkout pfeifer-nudgeless-lane-change
 git reset --hard origin/pfeifer-nudgeless-lane-change
 

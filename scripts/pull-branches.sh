@@ -19,9 +19,6 @@ git pull
 git checkout pfeifer-hkg-long-control-tune
 git pull
 
-git checkout pfeifer-lane-detection
-git pull
-
 git checkout pfeifer-nudgeless-lane-change
 git pull
 

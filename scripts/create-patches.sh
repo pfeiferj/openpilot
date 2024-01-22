@@ -30,10 +30,6 @@ git checkout pfeifer-hkg-long-control-tune
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/hkg-can-longitudinal-tuning-improvements/
 
-git checkout pfeifer-lane-detection
-git format-patch -1 HEAD
-mv *.patch ../openpilot-patches/lane-detection/
-
 git checkout pfeifer-nudgeless-lane-change
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/nudgeless-lane-change/

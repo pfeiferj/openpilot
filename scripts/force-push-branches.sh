@@ -19,9 +19,6 @@ git push --force
 git checkout pfeifer-hkg-long-control-tune
 git push --force
 
-git checkout pfeifer-lane-detection
-git push --force
-
 git checkout pfeifer-nudgeless-lane-change
 git push --force
 

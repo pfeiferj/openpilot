@@ -16,7 +16,6 @@ git merge pfeifer-experimental-mode-toggle
 git merge pfeifer-fast-boot
 git merge pfeifer-gap-adjust-control
 git merge pfeifer-hkg-long-control-tune
-git merge pfeifer-lane-detection
 git merge pfeifer-nudgeless-lane-change
 git merge pfeifer-speed-limit-control
 git merge pfeifer-vtsc
