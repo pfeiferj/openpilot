@@ -21,7 +21,6 @@ git merge pfeifer-speed-limit-control
 git merge pfeifer-vtsc
 git merge pfeifer-mapd
 git merge pfeifer-high-bitrate
-git merge pfeifer-sounds
 git merge pfeifer-disable-dcam-upload
 git merge pfeifer-opweb-go
 git merge pfeifer-mtsc
@@ -30,6 +29,7 @@ git merge pfeifer-road-name
 # Upstream PRs
 git merge cluster-based-max-speed
 
-
 # checkout the .gitattributes file so future merges will not be affected
 git checkout .gitattributes
+
+git merge pfeifer-sounds
