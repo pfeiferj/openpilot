@@ -29,7 +29,6 @@ git merge pfeifer-road-name
 
 # Upstream PRs
 git merge cluster-based-max-speed
-git merge wrong-direction-check
 
 
 # checkout the .gitattributes file so future merges will not be affected

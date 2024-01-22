@@ -62,6 +62,3 @@ git pull
 # Upstream Prs
 git checkout cluster-based-max-speed
 git pull
-
-git checkout wrong-direction-check
-git pull

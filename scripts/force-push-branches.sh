@@ -62,6 +62,3 @@ git push --force
 # Upstream Prs
 git checkout cluster-based-max-speed
 git push --force
-
-git checkout wrong-direction-check
-git push --force
