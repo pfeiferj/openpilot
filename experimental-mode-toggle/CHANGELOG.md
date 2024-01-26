@@ -1,5 +1,8 @@
 # Experimental Mode Toggle Changelog
 
+## 01/25/24
+* Updated to use latest version of params library
+
 ## 08/20/23
 * Toyota gap adjust button fix
 
