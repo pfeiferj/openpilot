@@ -1,4 +1,4 @@
-From 02ee90c1b76a5a04ada8748fa8388e93aee8459a Mon Sep 17 00:00:00 2001
+From a88f6feabea54d5b84f01a33c89c57c267fcfb41 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 29 Oct 2023 14:40:35 -0400
 Subject: [PATCH] Current Max Speed
@@ -16,10 +16,10 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 7b14ac695..6d4a63d97 100644
+index 386813efd..1f28d99bc 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -210,6 +210,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -31,20 +31,20 @@ index 7b14ac695..6d4a63d97 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 71c096716..ca8ed3ae1 100644
+index 4784b369e..7173aabba 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -556,3 +556,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -555,3 +555,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 698c14951..c5e257a66 100755
+index 2aae95609..375f10e3b 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
-@@ -28,6 +28,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET
+@@ -27,6 +27,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET
  from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
  from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
  from openpilot.system.hardware import HARDWARE
@@ -54,7 +54,7 @@ index 698c14951..c5e257a66 100755
  
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
-@@ -706,6 +709,9 @@ class Controls:
+@@ -700,6 +703,9 @@ class Controls:
  
      hudControl = CC.hudControl
      hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)

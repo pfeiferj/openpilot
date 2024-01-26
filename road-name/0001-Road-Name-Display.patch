@@ -1,4 +1,4 @@
-From f4e62766fe8f822a7f1db69d5a0548db53d6d37e Mon Sep 17 00:00:00 2001
+From 0671d1af19e6734aa87ef726d31a37b8c4fa04f8 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 29 Nov 2023 16:58:22 -0500
 Subject: [PATCH] Road Name Display
@@ -9,10 +9,10 @@ Subject: [PATCH] Road Name Display
  2 files changed, 14 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 7b14ac695..97ac6f4ef 100644
+index 386813efd..f3fc4cec6 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -210,6 +210,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},

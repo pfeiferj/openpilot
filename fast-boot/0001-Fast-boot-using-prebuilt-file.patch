@@ -1,4 +1,4 @@
-From 48bbfabdb88508783d72c08567a111ecd2991e68 Mon Sep 17 00:00:00 2001
+From 7bad37b5d66d95b192a17863d18e26c6a2644961 Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
@@ -27,10 +27,10 @@ index 43d4bb2cc..64c9d2db3 100644
    print("gone")
    time.sleep(5.0)
 diff --git a/launch_chffrplus.sh b/launch_chffrplus.sh
-index 7578c0296..edb65768e 100755
+index 9271c1543..fa89e04e3 100755
 --- a/launch_chffrplus.sh
 +++ b/launch_chffrplus.sh
-@@ -82,6 +82,14 @@ function launch {
+@@ -76,6 +76,14 @@ function launch {
    # write tmux scrollback to a file
    tmux capture-pane -pq -S-1000 > /tmp/launch_log
  
@@ -44,12 +44,12 @@ index 7578c0296..edb65768e 100755
 +
    # start manager
    cd selfdrive/manager
-   ./build.py && ./manager.py
+   if [ ! -f $DIR/prebuilt ]; then
 diff --git a/selfdrive/thermald/thermald.py b/selfdrive/thermald/thermald.py
-index 7011ff0a9..5fc0671f4 100755
+index ab30b1579..f8a28caf1 100755
 --- a/selfdrive/thermald/thermald.py
 +++ b/selfdrive/thermald/thermald.py
-@@ -450,6 +450,11 @@ def thermald_thread(end_event, hw_queue) -> None:
+@@ -444,6 +444,11 @@ def thermald_thread(end_event, hw_queue) -> None:
      count += 1
      should_start_prev = should_start
  

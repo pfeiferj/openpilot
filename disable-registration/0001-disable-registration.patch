@@ -1,4 +1,4 @@
-From 123c9999f79ea450a1e082c292333c3ad93da045 Mon Sep 17 00:00:00 2001
+From fad004b5d1ab957b54022f1537a9d75f30f96380 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 22 Aug 2023 19:05:58 -0400
 Subject: [PATCH] disable registration
@@ -8,10 +8,10 @@ Subject: [PATCH] disable registration
  1 file changed, 3 insertions(+)
 
 diff --git a/selfdrive/athena/registration.py b/selfdrive/athena/registration.py
-index c9a4b949a..aec30961e 100755
+index 7db94c28c..d43981c63 100755
 --- a/selfdrive/athena/registration.py
 +++ b/selfdrive/athena/registration.py
-@@ -31,6 +31,9 @@ def register(show_spinner=False) -> Optional[str]:
+@@ -30,6 +30,9 @@ def register(show_spinner=False) -> Optional[str]:
    HardwareSerial = params.get("HardwareSerial", encoding='utf8')
    dongle_id: Optional[str] = params.get("DongleId", encoding='utf8')
    needs_registration = None in (IMEI, HardwareSerial, dongle_id)

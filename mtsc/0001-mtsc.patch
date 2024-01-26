@@ -1,4 +1,4 @@
-From 1fb853e0e3b445eebe82cbf89635ca054c5e36e7 Mon Sep 17 00:00:00 2001
+From 934cc5d50ad399e341c1f3ce21361d79e74777cf Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 23 Nov 2023 21:25:32 -0500
 Subject: [PATCH] mtsc
@@ -13,10 +13,10 @@ Subject: [PATCH] mtsc
  create mode 100644 selfdrive/controls/mtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 7b14ac695..3bedda630 100644
+index 386813efd..145295d9c 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -210,6 +210,11 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -206,6 +206,11 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -29,10 +29,10 @@ index 7b14ac695..3bedda630 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 71c096716..cb7f24727 100644
+index 4784b369e..cfc9895ac 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -556,3 +556,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -555,3 +555,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -190,7 +190,7 @@ index 000000000..42a173270
 +
 +mtsc = MapTurnSpeedController()
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 669de5eae..9e0f9d076 100644
+index 6d79aeb23..3468ba4ef 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -71,6 +71,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

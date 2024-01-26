@@ -1,6 +1,6 @@
-From b9932b56ea8627eb840f87f29eaaa2c455687005 Mon Sep 17 00:00:00 2001
+From 4ce49539771e8eca950b6ba3bed3d58c95a11e79 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Thu, 11 Jan 2024 19:43:34 -0500
+Date: Mon, 22 Jan 2024 13:29:04 -0500
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -25,10 +25,10 @@ control.
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 7b14ac695..e46b500c9 100644
+index 386813efd..7f791aa8b 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -210,6 +210,19 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -206,6 +206,19 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -49,17 +49,17 @@ index 7b14ac695..e46b500c9 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 2a0536c63..503268d2c 160000
+index c5e79403a..e6b148fe4 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 2a0536c63148a02add52555386b5533f3555ef58
-+Subproject commit 503268d2cebe761808937732e2f136e825fe1691
+-Subproject commit c5e79403a8c49f5a36e3ede44fcda65fabe263bf
++Subproject commit e6b148fe4f526c0f15c65aac10a8fd2d34f02857
 diff --git a/release/files_common b/release/files_common
-index 71c096716..1ed8d33ea 100644
+index 4784b369e..fe71ada92 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -556,3 +556,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -555,3 +555,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -411,10 +411,10 @@ index 000000000..5a5c5f55c
 +      experience = ALTERNATIVE_EXPERIENCE.ENABLE_ALWAYS_ON_LATERAL
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 698c14951..9f0784f85 100755
+index 2aae95609..a450e5358 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
-@@ -29,6 +29,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
+@@ -28,6 +28,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
  from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
  from openpilot.system.hardware import HARDWARE
  
@@ -436,7 +436,7 @@ index 698c14951..9f0784f85 100755
      # read params
      self.is_metric = self.params.get_bool("IsMetric")
      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
-@@ -195,6 +201,11 @@ class Controls:
+@@ -193,6 +199,11 @@ class Controls:
      # controlsd is driven by can recv, expected at 100Hz
      self.rk = Ratekeeper(100, print_delay_threshold=None)
  
@@ -448,7 +448,7 @@ index 698c14951..9f0784f85 100755
    def set_initial_state(self):
      if REPLAY:
        controls_state = Params().get("ReplayControlsState")
-@@ -584,6 +595,11 @@ class Controls:
+@@ -580,6 +591,11 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
@@ -461,7 +461,7 @@ index 698c14951..9f0784f85 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 669de5eae..89e76ffbd 100644
+index 6d79aeb23..c023fa4fc 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -71,6 +71,42 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

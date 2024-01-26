@@ -1,4 +1,4 @@
-From 833bf705f981c3d66a12390235e07ef1671f4934 Mon Sep 17 00:00:00 2001
+From 2536366a8b178216c9d31068e4f5a0ed526c8dd8 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:04:13 -0400
 Subject: [PATCH] Nudgless Lane Change
@@ -11,10 +11,10 @@ Enables automatically changing lanes when the blinker is turned on.
  3 files changed, 25 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 7b14ac695..3cf460cd9 100644
+index 386813efd..65da42b2c 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -210,6 +210,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -26,7 +26,7 @@ index 7b14ac695..3cf460cd9 100644
  
  } // namespace
 diff --git a/selfdrive/controls/lib/desire_helper.py b/selfdrive/controls/lib/desire_helper.py
-index d53803507..5f9274e40 100644
+index 90b685864..1290802d4 100644
 --- a/selfdrive/controls/lib/desire_helper.py
 +++ b/selfdrive/controls/lib/desire_helper.py
 @@ -1,6 +1,10 @@
@@ -38,8 +38,8 @@ index d53803507..5f9274e40 100644
 +params = Params()
 +# }} PFEIFER - NLC
  
- LaneChangeState = log.LateralPlan.LaneChangeState
- LaneChangeDirection = log.LateralPlan.LaneChangeDirection
+ LaneChangeState = log.LaneChangeState
+ LaneChangeDirection = log.LaneChangeDirection
 @@ -67,6 +71,11 @@ class DesireHelper:
          blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
                                (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
@@ -64,7 +64,7 @@ index d53803507..5f9274e40 100644
      if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
        self.lane_change_timer = 0.0
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 669de5eae..76acd3a56 100644
+index 6d79aeb23..4073cecaa 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -71,6 +71,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
