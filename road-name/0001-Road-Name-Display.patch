@@ -1,4 +1,4 @@
-From 0671d1af19e6734aa87ef726d31a37b8c4fa04f8 Mon Sep 17 00:00:00 2001
+From da65d73f3d8f1e3fb8fb92c051c1f44bde605a37 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 29 Nov 2023 16:58:22 -0500
 Subject: [PATCH] Road Name Display
@@ -9,10 +9,10 @@ Subject: [PATCH] Road Name Display
  2 files changed, 14 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 386813efd..f3fc4cec6 100644
+index eb75705ca..9feeca05c 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -24,7 +24,7 @@ index 386813efd..f3fc4cec6 100644
  
  } // namespace
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 4df0ed81c..3c568ec50 100644
+index 01750eaf2..1b1287fba 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
 @@ -425,6 +425,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {

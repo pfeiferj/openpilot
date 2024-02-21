@@ -1,4 +1,4 @@
-From a88f6feabea54d5b84f01a33c89c57c267fcfb41 Mon Sep 17 00:00:00 2001
+From 9a38bf40734322532660de217eef3cb545770f8d Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 29 Oct 2023 14:40:35 -0400
 Subject: [PATCH] Current Max Speed
@@ -16,10 +16,10 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 386813efd..1f28d99bc 100644
+index eb75705ca..1ea59ef38 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -31,17 +31,17 @@ index 386813efd..1f28d99bc 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 4784b369e..7173aabba 100644
+index 1158d2c55..47ff2480a 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -555,3 +555,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -557,3 +557,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 2aae95609..375f10e3b 100755
+index 3db936e13..128794698 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -27,6 +27,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET
@@ -54,7 +54,7 @@ index 2aae95609..375f10e3b 100755
  
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
-@@ -700,6 +703,9 @@ class Controls:
+@@ -714,6 +717,9 @@ class Controls:
  
      hudControl = CC.hudControl
      hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)

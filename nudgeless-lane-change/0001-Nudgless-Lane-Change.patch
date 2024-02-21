@@ -1,4 +1,4 @@
-From 2536366a8b178216c9d31068e4f5a0ed526c8dd8 Mon Sep 17 00:00:00 2001
+From 13276b97ea3dad6b5f8b518bdd932101c7db6ec3 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 24 Aug 2023 21:04:13 -0400
 Subject: [PATCH] Nudgless Lane Change
@@ -11,10 +11,10 @@ Enables automatically changing lanes when the blinker is turned on.
  3 files changed, 25 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index 386813efd..65da42b2c 100644
+index eb75705ca..a1355e339 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -64,7 +64,7 @@ index 90b685864..1290802d4 100644
      if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
        self.lane_change_timer = 0.0
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 6d79aeb23..4073cecaa 100644
+index 85393cabc..e1e753d9d 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -71,6 +71,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

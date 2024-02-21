@@ -1,4 +1,4 @@
-From d0c2dede8df2ae3a05c3ef8e0b536745f2b818ce Mon Sep 17 00:00:00 2001
+From bf0dd8e5dd9cf7000d1be9391787f8edec0c802c Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,10 +10,10 @@ Subject: [PATCH 1/3] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index 4784b369e..f660a504d 100644
+index 1158d2c55..a56706420 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -555,3 +555,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -557,3 +557,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -243,7 +243,7 @@ index 000000000..343cf6396
 2.39.2
 
 
-From 290631721939ee01ffd7ec98cd8a1a8491b3e5ef Mon Sep 17 00:00:00 2001
+From 9c997c044f0f68fc42187b59e38312568621dd4f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -259,10 +259,10 @@ Subject: [PATCH 2/3] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 386813efd..46542f4a3 100644
+index eb75705ca..4d5b2a7fb 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -274,16 +274,16 @@ index 386813efd..46542f4a3 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index f660a504d..85af9d732 100644
+index a56706420..e4a1eb64c 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -557,3 +557,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -559,3 +559,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
 +selfdrive/controls/gap_adjust_button.py
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index 89c1a3596..6ef137a2f 100644
+index c3d061de7..c0f2cb039 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
@@ -310,7 +310,7 @@ index 89c1a3596..6ef137a2f 100644
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
      self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index cd6657a23..cb33e180f 100644
+index 049a63399..94b2ec820 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
 @@ -10,6 +10,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
@@ -322,9 +322,9 @@ index cd6657a23..cb33e180f 100644
 +# }} PFEIFER - GAB
 +
  Ecu = car.CarParams.Ecu
- SafetyModel = car.CarParams.SafetyModel
  ButtonType = car.CarState.ButtonEvent.Type
-@@ -344,6 +348,11 @@ class CarInterface(CarInterfaceBase):
+ EventName = car.CarEvent.EventName
+@@ -349,6 +353,11 @@ class CarInterface(CarInterfaceBase):
      if self.CS.CP.openpilotLongitudinalControl:
        ret.buttonEvents = create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT)
  
@@ -337,7 +337,7 @@ index cd6657a23..cb33e180f 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 3a89d655d..4fa92ab60 100644
+index e4ea0d30f..a0ab4a381 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
@@ -351,7 +351,7 @@ index 3a89d655d..4fa92ab60 100644
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -160,6 +164,14 @@ class CarState(CarStateBase):
+@@ -163,6 +167,14 @@ class CarState(CarStateBase):
      if self.CP.carFingerprint != CAR.PRIUS_V:
        self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
  
@@ -389,7 +389,7 @@ index 000000000..f34ff3a7f
 2.39.2
 
 
-From 41a89db1d564a626ff66f9ec1e8203079b36576e Mon Sep 17 00:00:00 2001
+From 08b6596e7398d2ae60109168dcd22655098bed3f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:35:40 -0400
 Subject: [PATCH 3/3] gap adjust control
@@ -406,10 +406,10 @@ Subject: [PATCH 3/3] gap adjust control
  create mode 100644 selfdrive/controls/gap_adjust_control.py
 
 diff --git a/release/files_common b/release/files_common
-index 85af9d732..d242acd36 100644
+index e4a1eb64c..b58413025 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -558,3 +558,4 @@ tinygrad_repo/tinygrad/*.py
+@@ -560,3 +560,4 @@ tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
  selfdrive/controls/gap_adjust_button.py
@@ -479,7 +479,7 @@ index bc29aeb98..e682fd670 100644
      "AliveCounterACC": idx % 0x10,
      "ObjValid": 1, # close lead makes controls tighter
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index 4fa92ab60..024cadc17 100644
+index a0ab4a381..d388f5978 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -15,6 +15,10 @@ from openpilot.selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_T
@@ -493,7 +493,7 @@ index 4fa92ab60..024cadc17 100644
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -172,6 +176,13 @@ class CarState(CarStateBase):
+@@ -175,6 +179,13 @@ class CarState(CarStateBase):
          gap_adjust_button.update(distance_button_pressed)
      # }} PFEIFER - GAB
  
@@ -507,7 +507,7 @@ index 4fa92ab60..024cadc17 100644
      return ret
  
    @staticmethod
-@@ -235,6 +246,9 @@ class CarState(CarStateBase):
+@@ -241,6 +252,9 @@ class CarState(CarStateBase):
          ("PRE_COLLISION", 33),
          ("ACC_CONTROL", 33),
          ("PCS_HUD", 1),
@@ -555,7 +555,7 @@ index e14e3e53a..9af88f211 100644
      "PERMIT_BRAKING": 1,
      "RELEASE_STANDSTILL": not standstill_req,
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 2aae95609..d8df6d1a4 100755
+index 3db936e13..cf53ed3a2 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -569,7 +569,7 @@ index 2aae95609..d8df6d1a4 100755
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -850,6 +854,10 @@ class Controls:
+@@ -864,6 +868,10 @@ class Controls:
      self.update_events(CS)
      cloudlog.timestamp("Events updated")
  

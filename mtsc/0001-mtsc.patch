@@ -1,22 +1,22 @@
-From 934cc5d50ad399e341c1f3ce21361d79e74777cf Mon Sep 17 00:00:00 2001
+From 19e6efcb7f3dd1b4f51c6265ea30584cff9378d3 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Thu, 23 Nov 2023 21:25:32 -0500
 Subject: [PATCH] mtsc
 
 ---
- common/params.cc                              |   5 +
+ common/params.cc                              |   6 +
  release/files_common                          |   2 +
- .../controls/lib/longitudinal_planner.py      |  10 ++
- selfdrive/controls/mtsc.py                    | 117 ++++++++++++++++++
- selfdrive/ui/qt/offroad/settings.cc           |   8 ++
- 5 files changed, 142 insertions(+)
+ .../controls/lib/longitudinal_planner.py      |  10 +
+ selfdrive/controls/mtsc.py                    | 183 ++++++++++++++++++
+ selfdrive/ui/qt/offroad/settings.cc           |   8 +
+ 5 files changed, 209 insertions(+)
  create mode 100644 selfdrive/controls/mtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 386813efd..145295d9c 100644
+index eb75705ca..576acf47a 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,11 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,12 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -24,22 +24,23 @@ index 386813efd..145295d9c 100644
 +    // PFEIFER - MTSC {{
 +    {"MapTargetVelocities", PERSISTENT},
 +    {"MTSCEnabled", PERSISTENT},
++    {"MTSCMaxVDiff", PERSISTENT},
 +    // }} PFEIFER - MTSC
  };
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 4784b369e..cfc9895ac 100644
+index 1158d2c55..73182c978 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -555,3 +555,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -557,3 +557,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/mtsc.py
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 018768f24..b1701511a 100755
+index 018768f24..403227b5f 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
@@ -58,7 +59,7 @@ index 018768f24..b1701511a 100755
      accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
  
 +    # PFEIFER - MTSC {{
-+    mtsc_v = mtsc.target_speed(v_ego, sm['carState'].aEgo)
++    mtsc_v = mtsc.target_speed(v_cruise, v_ego, sm['carState'].aEgo, self.j_desired_trajectory.tolist()[0])
 +    if v_cruise > mtsc_v and mtsc_v != 0:
 +      v_cruise = mtsc_v
 +    # }} PFEIFER - MTSC
@@ -68,10 +69,10 @@ index 018768f24..b1701511a 100755
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/mtsc.py b/selfdrive/controls/mtsc.py
 new file mode 100644
-index 000000000..42a173270
+index 000000000..c718b448f
 --- /dev/null
 +++ b/selfdrive/controls/mtsc.py
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,183 @@
 +from openpilot.common.params import Params
 +from openpilot.common.conversions import Conversions as CV
 +import json
@@ -85,8 +86,24 @@ index 000000000..42a173270
 +R = 6373000.0 # approximate radius of earth in meters
 +TO_RADIANS = math.pi / 180
 +TO_DEGREES = 180 / math.pi
-+TARGET_JERK = -1.0 # m/s^3 should match up with the long planner
-+MIN_ACCEL = -3.5 # m/s^2 should match up with the long planner
++TARGET_JERK = -0.6 # m/s^3 should match up with the long planner
++TARGET_ACCEL = -1.2 # m/s^2 should match up with the long planner
++TARGET_OFFSET = 1.0 # seconds - This controls how soon before the curve you reach the target velocity. It also helps
++                    # reach the target velocity when innacuracies in the distance modeling logic would cause overshoot.
++                    # The value is multiplied against the target velocity to determine the additional distance. This is
++                    # done to keep the distance calculations consistent but results in the offset actually being less
++                    # time than specified depending on how much of a speed diffrential there is between v_ego and the
++                    # target velocity.
++
++def calculate_accel(t, target_jerk, a_ego):
++  return a_ego  + target_jerk * t
++
++def calculate_velocity(t, target_jerk, a_ego, v_ego):
++  return v_ego + a_ego * t + target_jerk/2 * (t ** 2)
++
++def calculate_distance(t, target_jerk, a_ego, v_ego):
++  return t * v_ego + a_ego/2 * (t ** 2) + target_jerk/6 * (t ** 3)
++
 +
 +# points should be in radians
 +# output is meters
@@ -100,6 +117,13 @@ index 000000000..42a173270
 +  def __init__(self):
 +    self.enabled = params.get_bool("MTSCEnabled")
 +    self.last_params_update = time()
++    self.target_lat = 0.0
++    self.target_lon = 0.0
++    self.target_v = 0.0
++    self.max_diff = 0.0
++    try:
++      self.max_diff = float(params.get("MTSCMaxVDiff"))
++    except: pass
 +
 +  def update_params(self):
 +    t = time()
@@ -107,7 +131,7 @@ index 000000000..42a173270
 +      self.enabled = params.get_bool("MTSCEnabled")
 +      self.last_params_update = t
 +
-+  def target_speed(self, v_ego, a_ego) -> float:
++  def target_speed(self, v_max, v_ego, a_ego, j_ego) -> float:
 +    self.update_params()
 +
 +    if not self.enabled:
@@ -151,46 +175,89 @@ index 000000000..42a173270
 +      tlat = target_velocity["latitude"]
 +      tlon = target_velocity["longitude"]
 +      tv = target_velocity["velocity"]
++      if tv > v_max:
++        continue
 +      if tv > v_ego:
 +        continue
 +
 +      d = forward_distances[i]
-+      min_accel_t = max(0.1, (MIN_ACCEL - a_ego) / TARGET_JERK) # seconds to reach min accel
-+      min_jerk_v = 0.5 * TARGET_JERK * min_accel_t ** 2 + a_ego + v_ego # the minimum v we can reach before hitting the min accel limit
-+      t = 0.0
-+      if tv > min_jerk_v:
-+        # calculate time needed based on jerk
++
++      a_diff = (a_ego - TARGET_ACCEL)
++      accel_t = abs(a_diff / TARGET_JERK)
++      if tv > v_ego:
++        v_calc = v_max
++      else:
++        v_calc = v_ego
++
++      min_accel_v = calculate_velocity(accel_t, TARGET_JERK, a_ego, v_calc)
++
++      max_d = 0
++      if tv > min_accel_v:
++        # calculate time needed based on target jerk
 +        a = 0.5 * TARGET_JERK
 +        b = a_ego
-+        c = v_ego - tv
-+        t_a = (-1 * b - math.sqrt((b ** 2) - 4 * a * c)) / (2 * a)
-+        t_b = (-1 * b + math.sqrt((b ** 2) - 4 * a * c)) / (2 * a)
-+        if t_a > 0:
++        c = v_calc - tv
++        t_a = -1 * ((b**2 - 4 * a * c) ** 0.5 + b) / 2 * a
++        t_b = ((b**2 - 4 * a * c) ** 0.5 - b) / 2 * a
++        if not isinstance(t_a, complex) and t_a > 0:
 +          t = t_a
 +        else:
 +          t = t_b
-+      else:
-+        # calculate time needed based on hitting the min accel
-+        t = min_accel_t + ((min_jerk_v - tv) / (-1 * MIN_ACCEL))
++        if isinstance(t, complex):
++          continue
 +
-+      # Adjust slightly early so we get to the speed before hitting the curve
-+      t += 3.0
-+      max_d = t * v_ego
-+      if d < max_d:
-+        valid_velocities.append(float(tv))
++        max_d = max_d + calculate_distance(t, TARGET_JERK, a_ego, v_calc)
++
++      else:
++        t = accel_t
++        max_d = calculate_distance(t, TARGET_JERK, a_ego, v_calc)
++
++        # calculate additional time needed based on target accel
++        t = abs((min_accel_v - tv) / TARGET_ACCEL)
++        max_d += calculate_distance(t, 0, TARGET_ACCEL, min_accel_v)
++
++      if d < max_d + tv * TARGET_OFFSET:
++        valid_velocities.append((float(tv), tlat, tlon))
 +
 +    # Find the smallest velocity we need to adjust for
 +    min_v = 100.0
-+    for tv in valid_velocities:
++    target_lat = 0.0
++    target_lon = 0.0
++    for tv, lat, lon in valid_velocities:
 +      if tv < min_v:
 +        min_v = tv
++        target_lat = lat
++        target_lon = lon
 +
++    if self.target_v < min_v and not (self.target_lat == 0 and self.target_lon == 0):
++      for i in range(len(forward_points)):
++        target_velocity = forward_points[i]
++        tlat = target_velocity["latitude"]
++        tlon = target_velocity["longitude"]
++        tv = target_velocity["velocity"]
++        if tv > v_max:
++          continue
++
++        if tlat == self.target_lat and tlon == self.target_lon and tv == self.target_v:
++          return float(self.target_v)
++      # not found so lets reset
++      self.target_v = 0.0
++      self.target_lat = 0.0
++      self.target_lon = 0.0
++
++    self.target_v = min_v
++    self.target_lat = target_lat
++    self.target_lon = target_lon
++
++    # Ignore if we are exceeding the max v diff to help reject bad calculations
++    if self.max_diff != 0 and v_ego - min_v > self.max_diff:
++      return 100.0
 +
 +    return min_v
 +
 +mtsc = MapTurnSpeedController()
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 6d79aeb23..3468ba4ef 100644
+index 85393cabc..d43720449 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -71,6 +71,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {

@@ -1,6 +1,6 @@
-From 4ce49539771e8eca950b6ba3bed3d58c95a11e79 Mon Sep 17 00:00:00 2001
+From 2d1e628943a6efb2e28dc10d0d0e1f0a4fb17283 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Mon, 22 Jan 2024 13:29:04 -0500
+Date: Tue, 20 Feb 2024 19:01:00 -0500
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -25,10 +25,10 @@ control.
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 386813efd..7f791aa8b 100644
+index eb75705ca..351d59468 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -206,6 +206,19 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -208,6 +208,19 @@ std::unordered_map<std::string, uint32_t> keys = {
      {"Version", PERSISTENT},
      {"VisionRadarToggle", PERSISTENT},
      {"WheeledBody", PERSISTENT},
@@ -49,24 +49,24 @@ index 386813efd..7f791aa8b 100644
  
  } // namespace
 diff --git a/panda b/panda
-index c5e79403a..e6b148fe4 160000
+index b4442a7c9..d9bccb506 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit c5e79403a8c49f5a36e3ede44fcda65fabe263bf
-+Subproject commit e6b148fe4f526c0f15c65aac10a8fd2d34f02857
+-Subproject commit b4442a7c930aac112cdd82cddfc3dd12254a56e1
++Subproject commit d9bccb5063935efd4283c638df8a693f46cb06ac
 diff --git a/release/files_common b/release/files_common
-index 4784b369e..fe71ada92 100644
+index 1158d2c55..feb1a9612 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -555,3 +555,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -557,3 +557,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/always_on_lateral.py
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 2f1fb1080..ccbba2055 100644
+index 64a9fdf2c..d0103f445 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -52,6 +52,10 @@ class CarState(CarStateBase):
@@ -411,7 +411,7 @@ index 000000000..5a5c5f55c
 +      experience = ALTERNATIVE_EXPERIENCE.ENABLE_ALWAYS_ON_LATERAL
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 2aae95609..a450e5358 100755
+index 3db936e13..fd79a8f99 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -28,6 +28,10 @@ from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offr
@@ -425,7 +425,7 @@ index 2aae95609..a450e5358 100755
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -100,7 +104,9 @@ class Controls:
+@@ -101,7 +105,9 @@ class Controls:
      self.CP.alternativeExperience = 0
      if not self.disengage_on_accelerator:
        self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
@@ -436,7 +436,7 @@ index 2aae95609..a450e5358 100755
      # read params
      self.is_metric = self.params.get_bool("IsMetric")
      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
-@@ -193,6 +199,11 @@ class Controls:
+@@ -194,6 +200,11 @@ class Controls:
      # controlsd is driven by can recv, expected at 100Hz
      self.rk = Ratekeeper(100, print_delay_threshold=None)
  
@@ -448,7 +448,7 @@ index 2aae95609..a450e5358 100755
    def set_initial_state(self):
      if REPLAY:
        controls_state = Params().get("ReplayControlsState")
-@@ -580,6 +591,11 @@ class Controls:
+@@ -594,6 +605,11 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
@@ -461,7 +461,7 @@ index 2aae95609..a450e5358 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 6d79aeb23..c023fa4fc 100644
+index 85393cabc..830ad6a68 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
 @@ -71,6 +71,42 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
@@ -543,7 +543,7 @@ index 6d79aeb23..c023fa4fc 100644
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 4df0ed81c..342ff1c87 100644
+index 01750eaf2..a2bab1218 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
 @@ -74,6 +74,12 @@ void OnroadWindow::updateState(const UIState &s) {

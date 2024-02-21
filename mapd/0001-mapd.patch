@@ -1,4 +1,4 @@
-From c7f893de37ff12568f0d79a6fdb0b39be7fbbf6d Mon Sep 17 00:00:00 2001
+From b0371ecd432a04dd18b4d8d0fb66cddf5d5f8998 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
@@ -11,7 +11,7 @@ Subject: [PATCH] mapd
  create mode 100644 selfdrive/mapd.py
 
 diff --git a/selfdrive/locationd/paramsd.py b/selfdrive/locationd/paramsd.py
-index 183a8666e..8215d9df8 100755
+index d124eb5f0..4e3ad4cc7 100755
 --- a/selfdrive/locationd/paramsd.py
 +++ b/selfdrive/locationd/paramsd.py
 @@ -14,6 +14,9 @@ from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKi
@@ -40,7 +40,7 @@ index 183a8666e..8215d9df8 100755
        P = np.sqrt(learner.kf.P.diagonal())
        if not all(map(math.isfinite, x)):
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index 36d69b03b..73d7a385e 100644
+index cb6dd8883..25ab7ac1e 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
 @@ -82,6 +82,10 @@ procs = [
