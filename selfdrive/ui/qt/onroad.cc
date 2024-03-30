@@ -83,6 +83,11 @@ void OnroadWindow::updateState(const UIState &s) {
   nvg->updateState(s);
 
   QColor bgColor = bg_colors[s.status];
+  // PFEIFER - AOL {{
+  if(s.status == STATUS_DISENGAGED && Params("/dev/shm/params").getBool("LateralActive")){
+      bgColor = bg_colors[STATUS_LAT_ACTIVE];
+  }
+  // }} PFEIFER - AOL
   if (bg != bgColor) {
     // repaint border
     bg = bgColor;
