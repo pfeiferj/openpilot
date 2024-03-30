@@ -1,6 +1,10 @@
 from cereal import log
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.realtime import DT_MDL
+# PFEIFER - NLC {{
+from openpilot.common.params import Params
+params = Params()
+# }} PFEIFER - NLC
 
 LaneChangeState = log.LaneChangeState
 LaneChangeDirection = log.LaneChangeDirection
@@ -67,6 +71,11 @@ class DesireHelper:
         blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
                               (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
 
+        # PFEIFER - NLC {{
+        if params.get_bool('NudgelessLaneChange'):
+          torque_applied = True
+        # }} PFEIFER - NLC
+
         if not one_blinker or below_lane_change_speed:
           self.lane_change_state = LaneChangeState.off
           self.lane_change_direction = LaneChangeDirection.none
@@ -93,6 +102,10 @@ class DesireHelper:
             self.lane_change_state = LaneChangeState.preLaneChange
           else:
             self.lane_change_state = LaneChangeState.off
+          # PFEIFER - NLC {{
+          if one_blinker and params.get('NudgelessLaneChange'):
+            self.lane_change_state = LaneChangeState.laneChangeFinishing
+          # }} PFEIFER - NLC
 
     if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
       self.lane_change_timer = 0.0
