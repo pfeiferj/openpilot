@@ -24,13 +24,6 @@ git reset --hard pfeifer-gap-adjust-button
 git cherry-pick pemt-tmp
 git branch -D pemt-tmp
 
-git checkout pfeifer-gap-adjust-control
-git checkout -b pgac-tmp
-git checkout pfeifer-gap-adjust-control
-git reset --hard pfeifer-gap-adjust-button
-git cherry-pick pgac-tmp
-git branch -D pgac-tmp
-
 git checkout pfeifer-fast-boot
 git pull --rebase origin master
 

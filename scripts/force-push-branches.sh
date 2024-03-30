@@ -13,9 +13,6 @@ git push --force
 git checkout pfeifer-fast-boot
 git push --force
 
-git checkout pfeifer-gap-adjust-control
-git push --force
-
 git checkout pfeifer-hkg-long-control-tune
 git push --force
 

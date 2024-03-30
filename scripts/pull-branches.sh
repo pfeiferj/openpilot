@@ -13,9 +13,6 @@ git pull
 git checkout pfeifer-fast-boot
 git pull
 
-git checkout pfeifer-gap-adjust-control
-git pull
-
 git checkout pfeifer-hkg-long-control-tune
 git pull
 

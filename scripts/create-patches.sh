@@ -22,10 +22,6 @@ git checkout pfeifer-fast-boot
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/fast-boot/
 
-git checkout pfeifer-gap-adjust-control
-git format-patch -3 HEAD --stdout > gap-adjust-control-combined.patch
-mv *.patch ../openpilot-patches/gap-adjust-control/
-
 git checkout pfeifer-hkg-long-control-tune
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/hkg-can-longitudinal-tuning-improvements/

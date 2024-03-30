@@ -14,7 +14,6 @@ git merge pfeifer-always-on-lateral
 git merge pfeifer-current-max-speed
 git merge pfeifer-experimental-mode-toggle
 git merge pfeifer-fast-boot
-git merge pfeifer-gap-adjust-control
 git merge pfeifer-hkg-long-control-tune
 git merge pfeifer-nudgeless-lane-change
 git merge pfeifer-speed-limit-control

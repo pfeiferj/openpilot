@@ -13,9 +13,6 @@ git reset --hard origin/pfeifer-experimental-mode-toggle
 git checkout pfeifer-fast-boot
 git reset --hard origin/pfeifer-fast-boot
 
-git checkout pfeifer-gap-adjust-control
-git reset --hard origin/pfeifer-gap-adjust-control
-
 git checkout pfeifer-hkg-long-control-tune
 git reset --hard origin/pfeifer-hkg-long-control-tune
 
