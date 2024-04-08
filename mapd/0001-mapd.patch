@@ -1,4 +1,4 @@
-From b0371ecd432a04dd18b4d8d0fb66cddf5d5f8998 Mon Sep 17 00:00:00 2001
+From 1505b57fd736a6dd6c644d0404ddb57df395e081 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 17 Oct 2023 21:55:24 -0400
 Subject: [PATCH] mapd
@@ -40,10 +40,10 @@ index d124eb5f0..4e3ad4cc7 100755
        P = np.sqrt(learner.kf.P.diagonal())
        if not all(map(math.isfinite, x)):
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
-index cb6dd8883..25ab7ac1e 100644
+index 8b616b787..f9ab8df74 100644
 --- a/selfdrive/manager/process_config.py
 +++ b/selfdrive/manager/process_config.py
-@@ -82,6 +82,10 @@ procs = [
+@@ -83,6 +83,10 @@ procs = [
    PythonProcess("uploader", "system.loggerd.uploader", always_run),
    PythonProcess("statsd", "selfdrive.statsd", always_run),
  
@@ -56,7 +56,7 @@ index cb6dd8883..25ab7ac1e 100644
    PythonProcess("webrtcd", "system.webrtc.webrtcd", notcar),
 diff --git a/selfdrive/mapd.py b/selfdrive/mapd.py
 new file mode 100644
-index 000000000..65b0fc61d
+index 000000000..b5da121ca
 --- /dev/null
 +++ b/selfdrive/mapd.py
 @@ -0,0 +1,56 @@
@@ -67,7 +67,7 @@ index 000000000..65b0fc61d
 +from openpilot.common.realtime import Ratekeeper
 +import stat
 +
-+VERSION = 'v1.8.1-beta1'
++VERSION = 'v1.9.0'
 +URL = f"https://github.com/pfeiferj/openpilot-mapd/releases/download/{VERSION}/mapd"
 +MAPD_PATH = '/data/media/0/osm/mapd'
 +VERSION_PATH = '/data/media/0/osm/mapd_version'
@@ -117,5 +117,5 @@ index 000000000..65b0fc61d
 +if __name__ == "__main__":
 +  main()
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

@@ -1,19 +1,19 @@
-From f228b26ee4b7bcdbf62976b2b4a7eb0fe47ae9e5 Mon Sep 17 00:00:00 2001
+From cedf81fffb764e36e3e6798d5f500e010f9c7801 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sat, 19 Aug 2023 21:02:19 -0400
+Date: Fri, 29 Mar 2024 21:45:09 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
 
 ---
- selfdrive/car/hyundai/carcontroller.py | 18 +++++++++++++-----
+ selfdrive/car/hyundai/carcontroller.py | 15 ++++++++++++---
  selfdrive/car/hyundai/hyundaican.py    |  6 +++---
  selfdrive/car/hyundai/interface.py     |  9 +++++++--
- 3 files changed, 23 insertions(+), 10 deletions(-)
+ 3 files changed, 22 insertions(+), 8 deletions(-)
 
 diff --git a/selfdrive/car/hyundai/carcontroller.py b/selfdrive/car/hyundai/carcontroller.py
-index 0b5f724ab..6ddc6e0ca 100644
+index 7829d764b..dfd79e9c5 100644
 --- a/selfdrive/car/hyundai/carcontroller.py
 +++ b/selfdrive/car/hyundai/carcontroller.py
-@@ -143,12 +143,20 @@ class CarController:
+@@ -144,12 +144,21 @@ class CarController(CarControllerBase):
          can_sends.extend(self.create_button_messages(CC, CS, use_clu11=True))
  
        if self.frame % 2 == 0 and self.CP.openpilotLongitudinalControl:
@@ -31,28 +31,27 @@ index 0b5f724ab..6ddc6e0ca 100644
 +
          use_fca = self.CP.flags & HyundaiFlags.USE_FCA.value
 -        can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled, accel, jerk, int(self.frame / 2),
--                                                        hud_control.leadVisible, set_speed_in_units, stopping,
--                                                        CC.cruiseControl.override, use_fca))
 +        can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled, accel, upper_jerk, lower_jerk, int(self.frame / 2),
-+                                                        hud_control.leadVisible, set_speed_in_units, stopping, CC.cruiseControl.override, use_fca))
+                                                         hud_control, set_speed_in_units, stopping,
+                                                         CC.cruiseControl.override, use_fca))
 +        self.accel_last = accel
  
        # 20 Hz LFA MFA message
        if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
 diff --git a/selfdrive/car/hyundai/hyundaican.py b/selfdrive/car/hyundai/hyundaican.py
-index bc29aeb98..8d4ddd4f5 100644
+index fe43def2a..b1fee5b62 100644
 --- a/selfdrive/car/hyundai/hyundaican.py
 +++ b/selfdrive/car/hyundai/hyundaican.py
 @@ -126,7 +126,7 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
    }
    return packer.make_can_msg("LFAHDA_MFC", 0, values)
  
--def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, set_speed, stopping, long_override, use_fca):
-+def create_acc_commands(packer, enabled, accel, upper_jerk, lower_jerk, idx, lead_visible, set_speed, stopping, long_override, use_fca):
+-def create_acc_commands(packer, enabled, accel, upper_jerk, idx, hud_control, set_speed, stopping, long_override, use_fca):
++def create_acc_commands(packer, enabled, accel, upper_jerk, lower_jerk, idx, hud_control, set_speed, stopping, long_override, use_fca):
    commands = []
  
    scc11_values = {
-@@ -164,8 +164,8 @@ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, lead_visible, s
+@@ -164,8 +164,8 @@ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, hud_control, se
    scc14_values = {
      "ComfortBandUpper": 0.0, # stock usually is 0 but sometimes uses higher values
      "ComfortBandLower": 0.0, # stock usually is 0 but sometimes uses higher values
@@ -61,13 +60,13 @@ index bc29aeb98..8d4ddd4f5 100644
 +    "JerkUpperLimit": min(3.0, upper_jerk), # stock usually is 1.0 but sometimes uses higher values
 +    "JerkLowerLimit": max(0.05, lower_jerk), # stock usually is 0.5 but sometimes uses higher values
      "ACCMode": 2 if enabled and long_override else 1 if enabled else 4, # stock will always be 4 instead of 0 after first disengage
-     "ObjGap": 2 if lead_visible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
+     "ObjGap": 2 if hud_control.leadVisible else 0, # 5: >30, m, 4: 25-30 m, 3: 20-25 m, 2: < 20 m, 0: no lead
    }
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 049a63399..aca8830df 100644
+index 00452a9ae..9946dac34 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -272,9 +272,14 @@ class CarInterface(CarInterfaceBase):
+@@ -81,9 +81,14 @@ class CarInterface(CarInterfaceBase):
        ret.longitudinalTuning.kiV = [0.0]
        ret.experimentalLongitudinalAvailable = candidate not in (CANFD_UNSUPPORTED_LONGITUDINAL_CAR | CANFD_RADAR_SCC_CAR)
      else:
@@ -85,5 +84,5 @@ index 049a63399..aca8830df 100644
      ret.pcmCruise = not ret.openpilotLongitudinalControl
  
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

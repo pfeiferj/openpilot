@@ -1,6 +1,6 @@
-From da65d73f3d8f1e3fb8fb92c051c1f44bde605a37 Mon Sep 17 00:00:00 2001
+From 909769b0fc73aff57e6614908cf8cf1aa8041f24 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Wed, 29 Nov 2023 16:58:22 -0500
+Date: Fri, 29 Mar 2024 21:53:07 -0400
 Subject: [PATCH] Road Name Display
 
 ---
@@ -9,13 +9,13 @@ Subject: [PATCH] Road Name Display
  2 files changed, 14 insertions(+)
 
 diff --git a/common/params.cc b/common/params.cc
-index eb75705ca..9feeca05c 100644
+index 38d96a30b..28b89983b 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"UpdaterLastFetchTime", PERSISTENT},
      {"Version", PERSISTENT},
-     {"VisionRadarToggle", PERSISTENT},
-     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - RN {{
 +    {"RoadName", PERSISTENT},
@@ -24,10 +24,10 @@ index eb75705ca..9feeca05c 100644
  
  } // namespace
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 01750eaf2..1b1287fba 100644
+index 5d562d6e2..2198fc34d 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -425,6 +425,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
+@@ -471,6 +471,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
    p.setFont(InterFont(66));
    drawText(p, rect().center().x(), 290, speedUnit, 200);
  
@@ -45,5 +45,5 @@ index 01750eaf2..1b1287fba 100644
  }
  
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

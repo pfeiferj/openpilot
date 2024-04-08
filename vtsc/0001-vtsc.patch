@@ -1,6 +1,6 @@
-From bd570f50f8bda2a839a9a2568acb7958d7232f58 Mon Sep 17 00:00:00 2001
+From 80d3aee7e5999a16d24e1dbfc648815b496dd076 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 28 Jul 2023 22:32:56 -0400
+Date: Fri, 29 Mar 2024 21:49:46 -0400
 Subject: [PATCH] vtsc
 
 ---
@@ -13,13 +13,13 @@ Subject: [PATCH] vtsc
  create mode 100644 selfdrive/controls/vtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index eb75705ca..578c46c9a 100644
+index 38d96a30b..1bd769c79 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"UpdaterLastFetchTime", PERSISTENT},
      {"Version", PERSISTENT},
-     {"VisionRadarToggle", PERSISTENT},
-     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - VTSC {{
 +    {"TurnVisionControl", PERSISTENT},
@@ -28,20 +28,20 @@ index eb75705ca..578c46c9a 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 1158d2c55..7ba65749e 100644
+index b00f99906..cdbc69c25 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -557,3 +557,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -565,3 +565,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/vtsc.py
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 018768f24..97643de95 100755
+index 6cc6e80d3..da935a853 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
+@@ -15,6 +15,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
  from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
  from openpilot.common.swaglog import cloudlog
  
@@ -52,7 +52,7 @@ index 018768f24..97643de95 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -130,6 +134,12 @@ class LongitudinalPlanner:
+@@ -115,6 +119,12 @@ class LongitudinalPlanner:
      accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
      accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
  
@@ -62,7 +62,7 @@ index 018768f24..97643de95 100755
 +      v_cruise = vtsc.v_target
 +    # }} PFEIFER - VTSC
 +
-     self.mpc.set_weights(prev_accel_constraint, personality=self.personality)
+     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
      self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/vtsc.py b/selfdrive/controls/vtsc.py
@@ -128,10 +128,10 @@ index 000000000..8a7f05007
 +
 +vtsc = VisionTurnController()
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 85393cabc..804ccdd71 100644
+index 1c4e14446..6f027d8ee 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -71,6 +71,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -63,6 +63,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -147,5 +147,5 @@ index 85393cabc..804ccdd71 100644
      {
        "NavSettingTime24h",
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

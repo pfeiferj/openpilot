@@ -1,4 +1,4 @@
-From dfd50f8aaf9fb8d211b3cd71a0befaba187b5376 Mon Sep 17 00:00:00 2001
+From c0e519267d6f8f41e7f3d6d22406f96e70a475d1 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 22 Aug 2023 19:05:58 -0400
 Subject: [PATCH] disable registration
@@ -8,12 +8,12 @@ Subject: [PATCH] disable registration
  1 file changed, 3 insertions(+)
 
 diff --git a/selfdrive/athena/registration.py b/selfdrive/athena/registration.py
-index 7db94c28c..d43981c63 100755
+index 6574d9ac2..532a5742a 100755
 --- a/selfdrive/athena/registration.py
 +++ b/selfdrive/athena/registration.py
-@@ -30,6 +30,9 @@ def register(show_spinner=False) -> Optional[str]:
+@@ -29,6 +29,9 @@ def register(show_spinner=False) -> str | None:
    HardwareSerial = params.get("HardwareSerial", encoding='utf8')
-   dongle_id: Optional[str] = params.get("DongleId", encoding='utf8')
+   dongle_id: str | None = params.get("DongleId", encoding='utf8')
    needs_registration = None in (IMEI, HardwareSerial, dongle_id)
 +  # PFEIFER - DR {{
 +  needs_registration = False
@@ -22,5 +22,5 @@ index 7db94c28c..d43981c63 100755
    pubkey = Path(Paths.persist_root()+"/comma/id_rsa.pub")
    if not pubkey.is_file():
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

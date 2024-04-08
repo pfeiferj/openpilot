@@ -1,6 +1,6 @@
-From 9a38bf40734322532660de217eef3cb545770f8d Mon Sep 17 00:00:00 2001
+From 132f6af513db0c70b48fe8afec1ca843b9f55d8b Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Sun, 29 Oct 2023 14:40:35 -0400
+Date: Fri, 29 Mar 2024 21:41:04 -0400
 Subject: [PATCH] Current Max Speed
 
 Show the current maximum speed in the car hud instead of the set max.
@@ -16,13 +16,13 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index eb75705ca..1ea59ef38 100644
+index 38d96a30b..69e56726f 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"UpdaterLastFetchTime", PERSISTENT},
      {"Version", PERSISTENT},
-     {"VisionRadarToggle", PERSISTENT},
-     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - CMS {{
 +    {"CurrentMaxSpeed", PERSISTENT},
@@ -31,22 +31,22 @@ index eb75705ca..1ea59ef38 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index 1158d2c55..47ff2480a 100644
+index b00f99906..e53df06b8 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -557,3 +557,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -565,3 +565,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
 +
 +selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 3db936e13..128794698 100755
+index 72f1514d8..590855eb1 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
-@@ -27,6 +27,9 @@ from openpilot.selfdrive.controls.lib.events import Events, ET
- from openpilot.selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
+@@ -31,6 +31,9 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongControl
  from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
+ 
  from openpilot.system.hardware import HARDWARE
 +# PFEIFER - CMS {{
 +from openpilot.selfdrive.controls.current_max_speed import cms
@@ -54,7 +54,7 @@ index 3db936e13..128794698 100755
  
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
-@@ -714,6 +717,9 @@ class Controls:
+@@ -684,6 +687,9 @@ class Controls:
  
      hudControl = CC.hudControl
      hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)
@@ -110,10 +110,10 @@ index 000000000..3f2b7863c
 +
 +cms = CurrentMaxSpeed()
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 018768f24..5869f64e0 100755
+index 6cc6e80d3..9ad390ef8 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
+@@ -15,6 +15,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
  from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
  from openpilot.common.swaglog import cloudlog
  
@@ -124,7 +124,7 @@ index 018768f24..5869f64e0 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -138,6 +142,9 @@ class LongitudinalPlanner:
+@@ -123,6 +127,9 @@ class LongitudinalPlanner:
  
      self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
      self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
@@ -135,5 +135,5 @@ index 018768f24..5869f64e0 100755
      self.a_desired_trajectory = self.a_desired_trajectory_full[:CONTROL_N]
      self.j_desired_trajectory = np.interp(ModelConstants.T_IDXS[:CONTROL_N], T_IDXS_MPC[:-1], self.mpc.j_solution)
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

@@ -1,4 +1,4 @@
-From 4231c5877f9781503672226345b0eef0ed066364 Mon Sep 17 00:00:00 2001
+From 3f1912c4c42ab80b59e4e60c16105175d0d5820e Mon Sep 17 00:00:00 2001
 From: FrogAi <91348155+FrogAi@users.noreply.github.com>
 Date: Wed, 24 May 2023 17:26:16 -0700
 Subject: [PATCH] Fast boot using prebuilt file
@@ -27,10 +27,10 @@ index 43d4bb2cc..64c9d2db3 100644
    print("gone")
    time.sleep(5.0)
 diff --git a/launch_chffrplus.sh b/launch_chffrplus.sh
-index 9271c1543..fa89e04e3 100755
+index a7f61411c..343fd550d 100755
 --- a/launch_chffrplus.sh
 +++ b/launch_chffrplus.sh
-@@ -76,6 +76,14 @@ function launch {
+@@ -81,6 +81,14 @@ function launch {
    # write tmux scrollback to a file
    tmux capture-pane -pq -S-1000 > /tmp/launch_log
  
@@ -46,10 +46,10 @@ index 9271c1543..fa89e04e3 100755
    cd selfdrive/manager
    if [ ! -f $DIR/prebuilt ]; then
 diff --git a/selfdrive/thermald/thermald.py b/selfdrive/thermald/thermald.py
-index bfca2ccab..a7eed7014 100755
+index f5fc94963..5d63a7949 100755
 --- a/selfdrive/thermald/thermald.py
 +++ b/selfdrive/thermald/thermald.py
-@@ -444,6 +444,11 @@ def thermald_thread(end_event, hw_queue) -> None:
+@@ -445,6 +445,11 @@ def thermald_thread(end_event, hw_queue) -> None:
      count += 1
      should_start_prev = should_start
  
@@ -62,7 +62,7 @@ index bfca2ccab..a7eed7014 100755
  def main():
    hw_queue = queue.Queue(maxsize=1)
 diff --git a/selfdrive/ui/qt/offroad/software_settings.cc b/selfdrive/ui/qt/offroad/software_settings.cc
-index 15c022db9..7dff70d33 100644
+index d12db3f87..d7b1e3044 100644
 --- a/selfdrive/ui/qt/offroad/software_settings.cc
 +++ b/selfdrive/ui/qt/offroad/software_settings.cc
 @@ -6,6 +6,9 @@
@@ -115,5 +115,5 @@ index 74ece36d1..ebd3c1b8d 100644
  
    setStyleSheet(R"(
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

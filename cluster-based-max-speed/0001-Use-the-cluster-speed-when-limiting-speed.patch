@@ -1,4 +1,4 @@
-From a82ec5d638356a988b2266721a95b71fe18fb3c9 Mon Sep 17 00:00:00 2001
+From 393f4d6663fec212d9a774d650f98cfcc88c0b02 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 11 Aug 2023 18:48:03 -0400
 Subject: [PATCH] Use the cluster speed when limiting speed
@@ -8,10 +8,10 @@ Subject: [PATCH] Use the cluster speed when limiting speed
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 018768f24..0c4639804 100755
+index 6cc6e80d3..b25001711 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -95,8 +95,11 @@ class LongitudinalPlanner:
+@@ -80,8 +80,11 @@ class LongitudinalPlanner:
      self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
  
      v_ego = sm['carState'].vEgo
@@ -25,5 +25,5 @@ index 018768f24..0c4639804 100755
      long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
      force_slow_decel = sm['controlsState'].forceDecel
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

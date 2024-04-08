@@ -1,4 +1,4 @@
-From 0f917bde1eea50961440ed35faa13e5870222537 Mon Sep 17 00:00:00 2001
+From de08f59cfd868f06a9dad7b2ce052181780aa86a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Mon, 28 Aug 2023 17:20:55 -0400
 Subject: [PATCH] higher bitrate
@@ -21,5 +21,5 @@ index ea288f486..cbab7a895 100644
  const int QCAM_BITRATE = 256000;
  
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 

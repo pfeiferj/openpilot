@@ -1,4 +1,4 @@
-From bf0dd8e5dd9cf7000d1be9391787f8edec0c802c Mon Sep 17 00:00:00 2001
+From b2494c316004d33f012651694bc6c44d1580d06a Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 10 Jun 2023 15:04:21 -0400
 Subject: [PATCH 1/3] button manager
@@ -10,10 +10,10 @@ Subject: [PATCH 1/3] button manager
  create mode 100644 selfdrive/controls/button_manager.py
 
 diff --git a/release/files_common b/release/files_common
-index 1158d2c55..a56706420 100644
+index b00f99906..914488247 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -557,3 +557,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
+@@ -565,3 +565,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
  tinygrad_repo/tinygrad/runtime/ops_gpu.py
  tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
@@ -240,10 +240,10 @@ index 000000000..343cf6396
 +
 +    return self.state
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 
 
-From 9c997c044f0f68fc42187b59e38312568621dd4f Mon Sep 17 00:00:00 2001
+From 0ac362aca264ba797963a1efff7ca3d16e6f39ea Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 24 Jun 2023 17:59:36 -0400
 Subject: [PATCH 2/3] gap adjust button
@@ -259,13 +259,13 @@ Subject: [PATCH 2/3] gap adjust button
  create mode 100644 selfdrive/controls/gap_adjust_button.py
 
 diff --git a/common/params.cc b/common/params.cc
-index eb75705ca..4d5b2a7fb 100644
+index 38d96a30b..d03eaafb0 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -208,6 +208,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
+     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
+     {"UpdaterLastFetchTime", PERSISTENT},
      {"Version", PERSISTENT},
-     {"VisionRadarToggle", PERSISTENT},
-     {"WheeledBody", PERSISTENT},
 +
 +    // PFEIFER - GAB {{
 +    {"GapAdjustButton", PERSISTENT},
@@ -274,16 +274,16 @@ index eb75705ca..4d5b2a7fb 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index a56706420..e4a1eb64c 100644
+index 914488247..732ba5b3b 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -559,3 +559,4 @@ tinygrad_repo/tinygrad/shape/*
+@@ -567,3 +567,4 @@ tinygrad_repo/tinygrad/shape/*
  tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
 +selfdrive/controls/gap_adjust_button.py
 diff --git a/selfdrive/car/gm/carstate.py b/selfdrive/car/gm/carstate.py
-index c3d061de7..c0f2cb039 100644
+index a1129c59c..bed3f2bf7 100644
 --- a/selfdrive/car/gm/carstate.py
 +++ b/selfdrive/car/gm/carstate.py
 @@ -7,6 +7,10 @@ from opendbc.can.parser import CANParser
@@ -297,7 +297,7 @@ index c3d061de7..c0f2cb039 100644
  TransmissionType = car.CarParams.TransmissionType
  NetworkLocation = car.CarParams.NetworkLocation
  STANDSTILL_THRESHOLD = 10 * 0.0311 * CV.KPH_TO_MS
-@@ -29,6 +33,11 @@ class CarState(CarStateBase):
+@@ -32,6 +36,11 @@ class CarState(CarStateBase):
    def update(self, pt_cp, cam_cp, loopback_cp):
      ret = car.CarState.new_message()
  
@@ -307,13 +307,13 @@ index c3d061de7..c0f2cb039 100644
 +    # }} PFEIFER - GAB
 +
      self.prev_cruise_buttons = self.cruise_buttons
+     self.prev_distance_button = self.distance_button
      self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]["ACCButtons"]
-     self.buttons_counter = pt_cp.vl["ASCMSteeringButton"]["RollingCounter"]
 diff --git a/selfdrive/car/hyundai/interface.py b/selfdrive/car/hyundai/interface.py
-index 049a63399..94b2ec820 100644
+index 00452a9ae..eae0b4e45 100644
 --- a/selfdrive/car/hyundai/interface.py
 +++ b/selfdrive/car/hyundai/interface.py
-@@ -10,6 +10,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
+@@ -9,6 +9,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
  from openpilot.selfdrive.car.interfaces import CarInterfaceBase
  from openpilot.selfdrive.car.disable_ecu import disable_ecu
  
@@ -324,7 +324,7 @@ index 049a63399..94b2ec820 100644
  Ecu = car.CarParams.Ecu
  ButtonType = car.CarState.ButtonEvent.Type
  EventName = car.CarEvent.EventName
-@@ -349,6 +353,11 @@ class CarInterface(CarInterfaceBase):
+@@ -158,6 +162,11 @@ class CarInterface(CarInterfaceBase):
      if self.CS.CP.openpilotLongitudinalControl:
        ret.buttonEvents = create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT)
  
@@ -337,7 +337,7 @@ index 049a63399..94b2ec820 100644
      # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
      # Main button also can trigger an engagement on these cars
 diff --git a/selfdrive/car/toyota/carstate.py b/selfdrive/car/toyota/carstate.py
-index e4ea0d30f..a0ab4a381 100644
+index 0efa065dc..60c0efc12 100644
 --- a/selfdrive/car/toyota/carstate.py
 +++ b/selfdrive/car/toyota/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
@@ -351,9 +351,9 @@ index e4ea0d30f..a0ab4a381 100644
  SteerControlType = car.CarParams.SteerControlType
  
  # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
-@@ -163,6 +167,14 @@ class CarState(CarStateBase):
-     if self.CP.carFingerprint != CAR.PRIUS_V:
-       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
+@@ -175,6 +179,14 @@ class CarState(CarStateBase):
+       else:
+         self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
  
 +    # PFEIFER - GAB {{
 +    distance_button_pressed = False
@@ -386,10 +386,10 @@ index 000000000..f34ff3a7f
 +
 +gap_adjust_button = Button("GapAdjustButton")
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 
 
-From 36cd730aca9dcd73046c283981d1030f607977d7 Mon Sep 17 00:00:00 2001
+From 76d86f66c9704b8a5165b2deb38ff11d5555b763 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Wed, 14 Jun 2023 19:43:11 -0400
 Subject: [PATCH 3/3] Speed Limit Controller
@@ -408,10 +408,10 @@ Limits the speed based on the current speed limit.
  create mode 100644 selfdrive/controls/speed_limit_controller.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 4d5b2a7fb..1ac83bd3a 100644
+index d03eaafb0..7d44fc1fa 100644
 --- a/common/params.cc
 +++ b/common/params.cc
-@@ -212,6 +212,17 @@ std::unordered_map<std::string, uint32_t> keys = {
+@@ -211,6 +211,17 @@ std::unordered_map<std::string, uint32_t> keys = {
      // PFEIFER - GAB {{
      {"GapAdjustButton", PERSISTENT},
      // }} PFEIFER - GAB
@@ -430,16 +430,16 @@ index 4d5b2a7fb..1ac83bd3a 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index e4a1eb64c..5a7d05b49 100644
+index 732ba5b3b..2a657b18b 100644
 --- a/release/files_common
 +++ b/release/files_common
-@@ -560,3 +560,4 @@ tinygrad_repo/tinygrad/*.py
+@@ -568,3 +568,4 @@ tinygrad_repo/tinygrad/*.py
  
  selfdrive/controls/button_manager.py
  selfdrive/controls/gap_adjust_button.py
 +selfdrive/controls/speed_limit_controller.py
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index 64a9fdf2c..f5c57515e 100644
+index eac91d529..a8399e59a 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -11,6 +11,10 @@ from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_G
@@ -496,10 +496,10 @@ index 64a9fdf2c..f5c57515e 100644
  
    @staticmethod
 diff --git a/selfdrive/controls/lib/longitudinal_planner.py b/selfdrive/controls/lib/longitudinal_planner.py
-index 018768f24..489957af1 100755
+index 6cc6e80d3..f007f8a50 100755
 --- a/selfdrive/controls/lib/longitudinal_planner.py
 +++ b/selfdrive/controls/lib/longitudinal_planner.py
-@@ -17,6 +17,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
+@@ -15,6 +15,10 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
  from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
  from openpilot.common.swaglog import cloudlog
  
@@ -510,7 +510,7 @@ index 018768f24..489957af1 100755
  LON_MPC_STEP = 0.2  # first step is 0.2s
  A_CRUISE_MIN = -1.2
  A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-@@ -130,6 +134,12 @@ class LongitudinalPlanner:
+@@ -115,6 +119,12 @@ class LongitudinalPlanner:
      accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
      accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
  
@@ -520,7 +520,7 @@ index 018768f24..489957af1 100755
 +      v_cruise = slc.speed_limit + slc.offset
 +    # }} PFEIFER - SLC
 +
-     self.mpc.set_weights(prev_accel_constraint, personality=self.personality)
+     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
      self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
 diff --git a/selfdrive/controls/speed_limit_controller.py b/selfdrive/controls/speed_limit_controller.py
@@ -682,7 +682,7 @@ index 000000000..58f3ec8a4
 +
 +slc = SpeedLimitController()
 diff --git a/selfdrive/navd/navd.py b/selfdrive/navd/navd.py
-index 2be703cdb..2c4595c89 100755
+index 8cfc495f2..0e0df082b 100755
 --- a/selfdrive/navd/navd.py
 +++ b/selfdrive/navd/navd.py
 @@ -17,6 +17,10 @@ from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
@@ -696,7 +696,7 @@ index 2be703cdb..2c4595c89 100755
  REROUTE_DISTANCE = 25
  MANEUVER_TRANSITION_THRESHOLD = 10
  REROUTE_COUNTER_MIN = 3
-@@ -203,6 +207,11 @@ class RouteEngine:
+@@ -206,6 +210,11 @@ class RouteEngine:
  
      if self.step_idx is None:
        msg.valid = False
@@ -708,7 +708,7 @@ index 2be703cdb..2c4595c89 100755
        self.pm.send('navInstruction', msg)
        return
  
-@@ -277,6 +286,15 @@ class RouteEngine:
+@@ -280,6 +289,15 @@ class RouteEngine:
  
      if ('maxspeed' in closest.annotations) and self.localizer_valid:
        msg.navInstruction.speedLimit = closest.annotations['maxspeed']
@@ -725,10 +725,10 @@ index 2be703cdb..2c4595c89 100755
      # Speed limit sign type
      if 'speedLimitSign' in step:
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 85393cabc..51caa07ac 100644
+index 1c4e14446..3e85f04d4 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -71,6 +71,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -63,6 +63,26 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -756,10 +756,10 @@ index 85393cabc..51caa07ac 100644
      {
        "NavSettingTime24h",
 diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 01750eaf2..05d2ac1fa 100644
+index 5d562d6e2..0f4c5c613 100644
 --- a/selfdrive/ui/qt/onroad.cc
 +++ b/selfdrive/ui/qt/onroad.cc
-@@ -313,6 +313,23 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
+@@ -359,6 +359,23 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
    hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
    status = s.status;
  
@@ -784,5 +784,5 @@ index 01750eaf2..05d2ac1fa 100644
    experimental_btn->updateState(s);
  
 -- 
-2.39.2
+2.39.3 (Apple Git-145)
 
