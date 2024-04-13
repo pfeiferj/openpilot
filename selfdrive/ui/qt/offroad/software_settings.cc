@@ -6,6 +6,9 @@
 
 #include <QDebug>
 #include <QLabel>
+// PFEIFER - FB {{
+#include <QProcess>
+// }} PFEIFER - FB
 
 #include "common/params.h"
 #include "common/util.h"
@@ -44,6 +47,9 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   // install update btn
   installBtn = new ButtonControl(tr("Install Update"), tr("INSTALL"));
   connect(installBtn, &ButtonControl::clicked, [=]() {
+    // PFEIFER - FB {{
+    QProcess::execute("rm -f /data/openpilot/prebuilt"); // Remove the prebuilt file when installing updates
+    // }} PFEIFER - FB
     installBtn->setEnabled(false);
     params.putBool("DoReboot", true);
   });
