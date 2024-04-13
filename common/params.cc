@@ -223,6 +223,9 @@ std::unordered_map<std::string, uint32_t> keys = {
     // PFEIFER - CMS {{
     {"CurrentMaxSpeed", PERSISTENT},
     // }} PFEIFER - CMS
+    // PFEIFER - GAB {{
+    {"GapAdjustButton", PERSISTENT},
+    // }} PFEIFER - GAB
 };
 
 } // namespace
