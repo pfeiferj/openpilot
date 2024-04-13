@@ -246,6 +246,11 @@ std::unordered_map<std::string, uint32_t> keys = {
     // PFEIFER - DDU {{
     {"DisableDCamUpload", PERSISTENT},
     // }} PFEIFER - DDU
+    // PFEIFER - MTSC {{
+    {"MapTargetVelocities", PERSISTENT},
+    {"MTSCEnabled", PERSISTENT},
+    {"MTSCMaxVDiff", PERSISTENT},
+    // }} PFEIFER - MTSC
 };
 
 } // namespace
