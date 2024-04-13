@@ -14,6 +14,9 @@ from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKi
 from openpilot.selfdrive.locationd.models.constants import GENERATED_DIR
 from openpilot.common.swaglog import cloudlog
 
+# PFEIFER - MAPD {{
+mem_params = Params("/dev/shm/params")
+# }} PFEIFER - MAPD
 
 MAX_ANGLE_OFFSET_DELTA = 20 * DT_MDL  # Max 20 deg/s
 ROLL_MAX_DELTA = math.radians(20.0) * DT_MDL  # 20deg in 1 second is well within curvature limits
@@ -191,6 +194,14 @@ def main():
           learner.handle_log(t, which, sm[which])
 
     if sm.updated['liveLocationKalman']:
+      # PFEIFER - MAPD {{
+      location = sm['liveLocationKalman']
+      if (location.status == log.LiveLocationKalman.Status.valid) and location.positionGeodetic.valid and location.gpsOK:
+        bearing = math.degrees(location.calibratedOrientationNED.value[2])
+        lat = location.positionGeodetic.value[0]
+        lon = location.positionGeodetic.value[1]
+        mem_params.put("LastGPSPosition", json.dumps({ "latitude": lat, "longitude": lon, "bearing": bearing }))
+      # }} PFEIFER - MAPD
       x = learner.kf.x
       P = np.sqrt(learner.kf.P.diagonal())
       if not all(map(math.isfinite, x)):
