@@ -492,6 +492,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.setFont(InterFont(66));
   drawText(p, rect().center().x(), 290, speedUnit, 200);
 
+  // PFEIFER - RN {{
+  // Referenced from frogpilot: https://github.com/FrogAi/FrogPilot/
+  const QRect currentRect = rect();
+  const QRect statusBarRect(currentRect.left() - 1, currentRect.bottom() - 50, currentRect.width() + 2, 100);
+  const QString roadName =  QString::fromStdString(Params("/dev/shm/params").get("RoadName"));
+  QRect textRect = p.fontMetrics().boundingRect(statusBarRect, Qt::AlignCenter | Qt::TextWordWrap, roadName);
+  textRect.moveBottom(statusBarRect.bottom() - 50);
+  p.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, roadName);
+  // }} PFEIFER - RN
+
   p.restore();
 }
 
