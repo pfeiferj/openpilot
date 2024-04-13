@@ -57,6 +57,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
       "../assets/offroad/icon_monitoring.png",
     },
+    // PFEIFER - DDU {{
+    {
+      "DisableDCamUpload",
+      tr("Disable Driver Camera Upload"),
+      tr("Disables uploading driver camera to comma connect."),
+      "../assets/offroad/icon_monitoring.png",
+    },
+    // }} PFEIFER - DDU
     {
       "IsMetric",
       tr("Use Metric System"),
