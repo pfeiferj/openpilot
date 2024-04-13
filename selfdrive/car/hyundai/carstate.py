@@ -11,6 +11,10 @@ from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_G
                                                    CANFD_CAR, Buttons, CarControllerParams
 from openpilot.selfdrive.car.interfaces import CarStateBase
 
+# PFEIFER - SLC {{
+from openpilot.selfdrive.controls.speed_limit_controller import slc
+# }} PFEIFER - SLC
+
 PREV_BUTTON_SAMPLES = 8
 CLUSTER_SAMPLE_RATE = 20  # frames
 STANDSTILL_THRESHOLD = 12 * 0.03125 * CV.KPH_TO_MS
@@ -55,6 +59,15 @@ class CarState(CarStateBase):
     # PFEIFER - AOL {{
     self.main_enabled = False
     # }} PFEIFER - AOL
+  # PFEIFER - SLC {{
+  def calculate_speed_limit(self, cp):
+    if "SpeedLim_Nav_Clu" not in cp.vl["Navi_HU"]:
+      return 0
+    speed_limit = cp.vl["Navi_HU"]["SpeedLim_Nav_Clu"]
+    speed_limit = speed_limit if speed_limit not in (0, 255) else 0
+    speed_conv = CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS
+    return speed_limit * speed_conv
+  # }} PFEIFER - SLC
 
   def update(self, cp, cp_cam):
     if self.CP.carFingerprint in CANFD_CAR:
@@ -178,6 +191,11 @@ class CarState(CarStateBase):
       self.main_enabled = not self.main_enabled
     # }} PFEIFER - AOL
 
+    # PFEIFER - SLC {{
+    slc.load_state()
+    slc.car_speed_limit = self.calculate_speed_limit(cp)
+    slc.write_car_state()
+    # }} PFEIFER - SLC
     return ret
 
   def update_canfd(self, cp, cp_cam):
@@ -318,6 +336,12 @@ class CarState(CarStateBase):
       messages.append(("TCU12", 100))
     else:
       messages.append(("LVR12", 100))
+
+    # PFEIFER - SLC {{
+    messages += [
+      ("Navi_HU", 5),
+    ]
+    # }} PFEIFER - SLC
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)
 
