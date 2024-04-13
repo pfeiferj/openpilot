@@ -127,6 +127,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/img_experimental_white.svg",
     },
     // }} PFEIFER - SLC
+    // PFEIFER - VTSC {{
+    {
+      "TurnVisionControl",
+      tr("V-TSC - Vision Turn Speed Control"),
+      tr("Enables V-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2."),
+      "../assets/img_experimental_white.svg",
+    },
+    // }} PFEIFER - VTSC
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",
