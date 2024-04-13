@@ -563,3 +563,4 @@ tinygrad_repo/tinygrad/shape/*
 tinygrad_repo/tinygrad/*.py
 
 selfdrive/controls/always_on_lateral.py
+selfdrive/controls/current_max_speed.py

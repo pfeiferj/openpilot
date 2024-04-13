@@ -220,6 +220,9 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"DisengageLatOnLowSpeedBlinker", PERSISTENT},
     {"LatBlinkerLowSpeedLimit", PERSISTENT},
     // }} PFEIFER - AOL
+    // PFEIFER - CMS {{
+    {"CurrentMaxSpeed", PERSISTENT},
+    // }} PFEIFER - CMS
 };
 
 } // namespace
