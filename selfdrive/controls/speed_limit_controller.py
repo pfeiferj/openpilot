@@ -97,7 +97,7 @@ class SpeedLimitController:
   lat: float = 0 # deg
   lon: float = 0 # deg
   car_speed_limit: float = 0 # m/s
-  offset: float = 0 # m/s
+  offset: float = 2.2352 # m/s
   nav_enabled: bool = False
   car_enabled: bool = False
   speed_enabled: bool = False
