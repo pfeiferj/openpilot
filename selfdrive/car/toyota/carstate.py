@@ -178,14 +178,10 @@ class CarState(CarStateBase):
         self.distance_button = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
       else:
         self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
+      # PFEIFER - GAB {{
+      gap_adjust_button.update(self.distance_button)
+      # }} PFEIFER - GAB
 
-    # PFEIFER - GAB {{
-    distance_button_pressed = False
-    if self.CP.carFingerprint in TSS2_CAR and 'ACC_CONTROL' in cp_acc.vl:
-      if 'DISTANCE' in cp_acc.vl["ACC_CONTROL"]:
-        distance_button_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"] == 1
-        gap_adjust_button.update(distance_button_pressed)
-    # }} PFEIFER - GAB
 
     return ret
 
