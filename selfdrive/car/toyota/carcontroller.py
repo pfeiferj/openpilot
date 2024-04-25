@@ -76,8 +76,10 @@ class CarController(CarControllerBase):
 
         if not lat_active:
           apply_angle = CS.out.steeringAngleDeg + CS.out.steeringAngleOffsetDeg
-
-        self.last_angle = clip(apply_angle, -MAX_LTA_ANGLE, MAX_LTA_ANGLE)
+        if lat_active:
+          self.last_angle = clip(apply_angle, -MAX_LTA_ANGLE, MAX_LTA_ANGLE)
+        else:
+          self.last_angle = apply_angle
 
     self.last_steer = apply_steer
 
