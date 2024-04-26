@@ -74,12 +74,10 @@ class CarController(CarControllerBase):
         # Angular rate limit based on speed
         apply_angle = apply_std_steer_angle_limits(apply_angle, self.last_angle, CS.out.vEgoRaw, self.params)
 
-        if not lat_active:
+        if not lat_active or abs(CS.out.steeringTorque) >= MAX_LTA_DRIVER_TORQUE_ALLOWANCE:
           apply_angle = CS.out.steeringAngleDeg + CS.out.steeringAngleOffsetDeg
-        if lat_active and abs(CS.out.steeringTorque) < MAX_LTA_DRIVER_TORQUE_ALLOWANCE:
-          self.last_angle = clip(apply_angle, -MAX_LTA_ANGLE, MAX_LTA_ANGLE)
-        else:
-          self.last_angle = apply_angle
+
+        self.last_angle = clip(apply_angle, -MAX_LTA_ANGLE, MAX_LTA_ANGLE)
 
     self.last_steer = apply_steer
 
