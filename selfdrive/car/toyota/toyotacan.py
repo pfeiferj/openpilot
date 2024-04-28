@@ -21,7 +21,7 @@ def create_lta_steer_command(packer, steer_control_type, steer_angle, steer_req,
     "COUNTER": frame + 128,
     "SETME_X1": 1,  # suspected LTA feature availability
     # 1 for TSS 2.5 cars, 3 for TSS 2.0. Send based on whether we're using LTA for lateral control
-    "SETME_X3": 1 if steer_control_type == SteerControlType.angle and torque_wind_down > 0 else 3,
+    "SETME_X3": 1 if steer_control_type == SteerControlType.angle else 3,
     "PERCENTAGE": 100,
     "TORQUE_WIND_DOWN": torque_wind_down,
     "ANGLE": 0,
