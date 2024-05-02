@@ -69,7 +69,7 @@ class CarController(CarControllerBase):
       else:
         apply_curvature = 0.
 
-      if CS.acc_tja_status_stock_values["Tja_D_Stat"] != 0 and (self.frame % CarControllerParams.ACC_UI_STEP) == 0:
+      if CS.acc_tja_status_stock_values["Tja_D_Stat"] != 0:
         apply_curvature = -CS.out.yawRate / max(CS.out.vEgoRaw, 0.1)
       self.apply_curvature_last = apply_curvature
 
