@@ -138,6 +138,7 @@ class Uploader:
     return None
 
   def do_upload(self, key: str, fn: str):
+    return FakeResponse()
     url_resp = self.api.get("v1.4/" + self.dongle_id + "/upload_url/", timeout=10, path=key, access_token=self.api.get_token())
     if url_resp.status_code == 412:
       return url_resp
@@ -161,6 +162,7 @@ class Uploader:
       return requests.put(url, data=data, headers=headers, timeout=10)
 
   def upload(self, name: str, key: str, fn: str, network_type: int, metered: bool) -> bool:
+    return False
     try:
       sz = os.path.getsize(fn)
     except OSError:
