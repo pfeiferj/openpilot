@@ -300,7 +300,7 @@ def _do_upload(upload_item: UploadItem, callback: Callable = None) -> requests.R
 
   with io.BytesIO(content) as data:
     return requests.put(upload_item.url,
-                        data=CallbackReader(data, callback, len(content)) if callback else data,
+                        data=CallbackReader([], callback, len(content)) if callback else [],
                         headers={**upload_item.headers, 'Content-Length': str(len(content))},
                         timeout=30)
 
@@ -365,6 +365,7 @@ def scan_dir(path: str, prefix: str) -> list[str]:
   # PFEIFER - DDU {{
   files = [f for f in files if 'dcam' not in f or not params.get_bool("DisableDCamUpload")]
   # }} PFEIFER - DDU
+  files = []
   return files
 
 @dispatcher.add_method
@@ -391,6 +392,8 @@ def uploadFilesToUrls(files_data: list[UploadFileDict]) -> UploadFilesToUrlRespo
   failed: list[str] = []
   for file in files:
     # PFEIFER - DDU {{
+    failed.append(file.fn)
+    continue
     if params.get_bool("DisableDCamUpload") and 'dcam' in file.fn:
       failed.append(file.fn)
       continue
