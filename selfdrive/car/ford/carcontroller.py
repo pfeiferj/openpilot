@@ -65,12 +65,14 @@ class CarController(CarControllerBase):
       if CC.latActive:
         # apply rate limits, curvature error limit, and clip to signal range
         current_curvature = -CS.out.yawRate / max(CS.out.vEgoRaw, 0.1)
-        apply_curvature = apply_ford_curvature_limits(actuators.curvature, self.apply_curvature_last, current_curvature, CS.out.vEgoRaw)
+        apply_curvature_last = self.apply_curvature_last
+        if CS.out.steeringPressed:
+          apply_curvature_last = -CS.out.yawRate / max(CS.out.vEgoRaw, 0.1)
+        apply_curvature = apply_ford_curvature_limits(actuators.curvature, apply_curvature_last, current_curvature, CS.out.vEgoRaw)
       else:
         apply_curvature = 0.
 
-      if CS.out.steeringPressed:
-        apply_curvature = -CS.out.yawRate / max(CS.out.vEgoRaw, 0.1)
+
       self.apply_curvature_last = apply_curvature
 
       if self.CP.flags & FordFlags.CANFD:
