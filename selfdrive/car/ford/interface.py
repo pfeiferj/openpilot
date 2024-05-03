@@ -3,7 +3,7 @@ from panda import Panda
 from openpilot.common.conversions import Conversions as CV
 from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.ford.fordcan import CanBus
-from openpilot.selfdrive.car.ford.values import Ecu, FordFlags
+from openpilot.selfdrive.car.ford.values import DBC, Ecu, FordFlags
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 
 ButtonType = car.CarState.ButtonEvent.Type
@@ -17,7 +17,7 @@ class CarInterface(CarInterfaceBase):
     ret.carName = "ford"
     ret.dashcamOnly = bool(ret.flags & FordFlags.CANFD)
 
-    ret.radarUnavailable = True
+    ret.radarUnavailable = DBC[candidate]['radar'] is None
     ret.steerControlType = car.CarParams.SteerControlType.angle
     ret.steerActuatorDelay = 0.2
     ret.steerLimitTimer = 1.0
