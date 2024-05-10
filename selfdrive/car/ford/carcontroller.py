@@ -67,7 +67,7 @@ class CarController(CarControllerBase):
         current_curvature = -CS.out.yawRate / max(CS.out.vEgoRaw, 0.1)
         apply_curvature_last = self.apply_curvature_last
         if CS.out.steeringPressed:
-          apply_curvature_last = -CS.out.yawRate / max(CS.out.vEgoRaw, 0.1)
+          apply_curvature_last = actuators.curvature
         apply_curvature = apply_ford_curvature_limits(actuators.curvature, apply_curvature_last, current_curvature, CS.out.vEgoRaw)
       else:
         apply_curvature = 0.
