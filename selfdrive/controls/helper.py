@@ -16,6 +16,11 @@ class LongHelper():
   def update(self, accels, speeds):
     self.accels = np.array(accels)
     self.speeds = np.array(speeds)
+    if len(self.accels) == 0 or len(self.speeds) == 0:
+      self.target_accel = 0
+      self.target_speed = 0
+      self.precharge = False
+      return
 
     min_speed = np.min(self.speeds)
     max_speed = np.max(self.speeds)
