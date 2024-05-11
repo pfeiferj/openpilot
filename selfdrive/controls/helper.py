@@ -45,7 +45,7 @@ class LongHelper():
     else:
       self.precharge = False
 
-    self.target_accel = np.clip(self.target_accel, -5, 5.23)
+    self.target_accel = np.clip(self.target_accel, -5, 5)
 
 
 
