@@ -40,7 +40,7 @@ class LongHelper():
     else:
       self.target_accel = max_accel
 
-    if current_accel - self.target_accel > 0.1:
+    if current_accel - self.target_accel > 0.1 and self.target_accel < 0:
       self.precharge = True
     else:
       self.precharge = False
