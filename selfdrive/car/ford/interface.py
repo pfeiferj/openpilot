@@ -23,7 +23,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = 1.0
 
     ret.longitudinalTuning.kpBP = [0.]
-    ret.longitudinalTuning.kpV = [0.5]
+    ret.longitudinalTuning.kpV = [0.7]
     ret.longitudinalTuning.kiV = [0.]
 
     CAN = CanBus(fingerprint=fingerprint)
