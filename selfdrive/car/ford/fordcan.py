@@ -136,7 +136,7 @@ def create_acc_msg(packer, CAN: CanBus, long_active: bool, gas: float, accel: fl
     "AccPrpl_A_Rq": gas,                              # Acceleration request: [-5|5.23] m/s^2
     "AccPrpl_A_Pred": float(lh.target_accel) if long_active else -5.0,                           # Acceleration request: [-5|5.23] m/s^2
     "AccResumEnbl_B_Rq": 1 if long_active else 0,
-    "AccVeh_V_Trg": int(lh.target_speed * CV.MS_TO_KPH) if long_active else v_ego_kph,                        # Target speed: [0|255] km/h
+    "AccVeh_V_Trg": v_ego_kph,                        # Target speed: [0|255] km/h
     # TODO: we may be able to improve braking response by utilizing pre-charging better
     "AccBrkPrchg_B_Rq": 1 if decel and lh.precharge else 0,            # Pre-charge brake request: 0=No, 1=Yes
     "AccBrkDecel_B_Rq": 1 if decel else 0,            # Deceleration request: 0=Inactive, 1=Active
