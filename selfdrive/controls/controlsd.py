@@ -43,6 +43,8 @@ from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral
 from openpilot.selfdrive.controls.experimental_mode_toggle import emt
 # }} PFEIFER - EMT
 
+from openpilot.selfdrive.controls.helper import lh
+
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
@@ -564,6 +566,8 @@ class Controls:
 
     long_plan = self.sm['longitudinalPlan']
     model_v2 = self.sm['modelV2']
+
+    lh.update(long_plan.accels, long_plan.speeds)
 
     CC = car.CarControl.new_message()
     CC.enabled = self.enabled
