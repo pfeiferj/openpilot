@@ -58,6 +58,9 @@ git pull
 git checkout pfeifer-ford-steering-hack
 git pull
 
+git checkout pfeifer-ford-radar-enable
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

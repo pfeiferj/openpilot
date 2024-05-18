@@ -58,6 +58,8 @@ git push --force
 git checkout pfeifer-ford-steering-hack
 git push --force
 
+git checkout pfeifer-ford-radar-enable
+git push --force
 
 # Upstream Prs
 git checkout cluster-based-max-speed

@@ -85,3 +85,7 @@ mv *.patch ../openpilot-patches/road-name/
 git checkout pfeifer-ford-steering-hack
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/ford-steering-hack/
+
+git checkout pfeifer-ford-radar-enable
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/ford-radar-enable/

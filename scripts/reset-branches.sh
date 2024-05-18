@@ -58,6 +58,9 @@ git reset --hard origin/pfeifer-road-name
 git checkout pfeifer-ford-steering-hack
 git reset --hard origin/pfeifer-ford-steering-hack
 
+git checkout pfeifer-ford-radar-enable
+git reset --hard origin/pfeifer-ford-radar-enable
+
 
 # Upstream PRs
 git checkout cluster-based-max-speed
