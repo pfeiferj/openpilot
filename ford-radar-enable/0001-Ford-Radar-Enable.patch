@@ -1,4 +1,4 @@
-From 2c0a7192649521a1e156af4ec2c6098221f6c13e Mon Sep 17 00:00:00 2001
+From 0af3a7030a34a5faf15ccf176eceb970aeeb4460 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sat, 18 May 2024 15:44:28 -0400
 Subject: [PATCH] Ford Radar Enable
@@ -23,7 +23,7 @@ index 233016017..7886a4bba 100644
  
  } // namespace
 diff --git a/selfdrive/car/ford/interface.py b/selfdrive/car/ford/interface.py
-index 7dca45808..96827d205 100644
+index 7dca45808..b01252cee 100644
 --- a/selfdrive/car/ford/interface.py
 +++ b/selfdrive/car/ford/interface.py
 @@ -5,6 +5,10 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
@@ -44,13 +44,13 @@ index 7dca45808..96827d205 100644
 -    ret.radarUnavailable = True
 +    # ret.radarUnavailable = True
 +    # PFEIFER - FRE {{
-+    hasRadar = DBC[fingerprint]['radar'] is not None
-+    if hasRadar:
-+      try:
++    try:
++      hasRadar = DBC[candidate]['radar'] is not None
++      if hasRadar:
 +        ret.radarUnavailable = not Params().get_bool('FordRadarEnable')
-+      except:
++      else:
 +        ret.radarUnavailable = True
-+    else:
++    except:
 +      ret.radarUnavailable = True
 +    # }} PFEIFER - FRE
      ret.steerControlType = car.CarParams.SteerControlType.angle
