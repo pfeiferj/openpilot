@@ -5,6 +5,9 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.ford.fordcan import CanBus
 from openpilot.selfdrive.car.ford.values import Ecu, FordFlags
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
+# PFEIFER - FRE {{
+from openpilot.common.params import Params
+# }} PFEIFER - FRE
 
 ButtonType = car.CarState.ButtonEvent.Type
 TransmissionType = car.CarParams.TransmissionType
@@ -17,7 +20,13 @@ class CarInterface(CarInterfaceBase):
     ret.carName = "ford"
     ret.dashcamOnly = bool(ret.flags & FordFlags.CANFD)
 
-    ret.radarUnavailable = True
+    # ret.radarUnavailable = True
+    # PFEIFER - FRE {{
+    try:
+      ret.radarUnavailable = not Params().get_bool('FordRadarEnable')
+    except:
+      ret.radarUnavailable = True
+    # }} PFEIFER - FRE
     ret.steerControlType = car.CarParams.SteerControlType.angle
     ret.steerActuatorDelay = 0.2
     ret.steerLimitTimer = 1.0
