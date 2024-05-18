@@ -1,4 +1,4 @@
-From 56be13eeacc31390691f5e427bf7c992a062b247 Mon Sep 17 00:00:00 2001
+From 43d1a6c7486a6ff9b2629136acc7a61eddeec8e8 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 20 Feb 2024 18:57:44 -0500
 Subject: [PATCH] Always On Lateral
@@ -231,7 +231,7 @@ index c2406260..17f577e2 100644
        }
      }
 diff --git a/board/safety/safety_subaru.h b/board/safety/safety_subaru.h
-index c445bc43..3df4bc82 100644
+index 581dc50b..32184c4a 100644
 --- a/board/safety/safety_subaru.h
 +++ b/board/safety/safety_subaru.h
 @@ -152,6 +152,9 @@ static void subaru_rx_hook(const CANPacket_t *to_push) {
@@ -335,7 +335,7 @@ index 4140f56e..d0627b61 100644
 +#define ALT_EXP_ENABLE_ALWAYS_ON_LATERAL 32
 +// }} PFEIFER - AOL
 diff --git a/python/__init__.py b/python/__init__.py
-index b69b30ea..8ece9e8e 100644
+index a18fdc5f..f087df75 100644
 --- a/python/__init__.py
 +++ b/python/__init__.py
 @@ -111,6 +111,9 @@ class ALTERNATIVE_EXPERIENCE:
@@ -349,5 +349,5 @@ index b69b30ea..8ece9e8e 100644
  class Panda:
  
 -- 
-2.39.3 (Apple Git-145)
+2.39.2
 

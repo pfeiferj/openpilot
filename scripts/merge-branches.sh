@@ -24,6 +24,7 @@ git merge pfeifer-disable-dcam-upload
 git merge pfeifer-opweb-go
 git merge pfeifer-mtsc
 git merge pfeifer-road-name
+git merge pfeifer-ford-steering-hack
 
 # Upstream PRs
 git merge cluster-based-max-speed

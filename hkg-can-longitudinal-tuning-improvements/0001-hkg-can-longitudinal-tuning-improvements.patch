@@ -1,4 +1,4 @@
-From cedf81fffb764e36e3e6798d5f500e010f9c7801 Mon Sep 17 00:00:00 2001
+From 7acbf630730f63e12482ad55a9c3193f733faf26 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 29 Mar 2024 21:45:09 -0400
 Subject: [PATCH] hkg-can longitudinal tuning improvements
@@ -39,7 +39,7 @@ index 7829d764b..dfd79e9c5 100644
        # 20 Hz LFA MFA message
        if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
 diff --git a/selfdrive/car/hyundai/hyundaican.py b/selfdrive/car/hyundai/hyundaican.py
-index fe43def2a..b1fee5b62 100644
+index b4b951f89..a2690691d 100644
 --- a/selfdrive/car/hyundai/hyundaican.py
 +++ b/selfdrive/car/hyundai/hyundaican.py
 @@ -126,7 +126,7 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
@@ -84,5 +84,5 @@ index 00452a9ae..9946dac34 100644
      ret.pcmCruise = not ret.openpilotLongitudinalControl
  
 -- 
-2.39.3 (Apple Git-145)
+2.39.2
 

@@ -55,6 +55,9 @@ git pull
 git checkout pfeifer-road-name
 git pull
 
+git checkout pfeifer-ford-steering-hack
+git pull
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

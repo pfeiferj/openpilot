@@ -81,3 +81,7 @@ mv *.patch ../openpilot-patches/mtsc/
 git checkout pfeifer-road-name
 git format-patch -1 HEAD
 mv *.patch ../openpilot-patches/road-name/
+
+git checkout pfeifer-ford-steering-hack
+git format-patch -1 HEAD
+mv *.patch ../openpilot-patches/ford-steering-hack/

@@ -67,6 +67,9 @@ git pull --rebase origin master
 git checkout pfeifer-road-name
 git pull --rebase origin master
 
+git checkout pfeifer-ford-steering-hack
+git pull --rebase origin master
+
 
 # Upstream Prs
 git checkout cluster-based-max-speed

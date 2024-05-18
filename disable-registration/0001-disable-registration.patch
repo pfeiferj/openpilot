@@ -1,4 +1,4 @@
-From c0e519267d6f8f41e7f3d6d22406f96e70a475d1 Mon Sep 17 00:00:00 2001
+From 6c666ecbf4e89e6aa8f8538dd25f5d33a17f72d5 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Tue, 22 Aug 2023 19:05:58 -0400
 Subject: [PATCH] disable registration
@@ -22,5 +22,5 @@ index 6574d9ac2..532a5742a 100755
    pubkey = Path(Paths.persist_root()+"/comma/id_rsa.pub")
    if not pubkey.is_file():
 -- 
-2.39.3 (Apple Git-145)
+2.39.2
 

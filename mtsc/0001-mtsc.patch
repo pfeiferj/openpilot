@@ -1,4 +1,4 @@
-From 4818820e692808c3a951a3fc8dca398ecb735561 Mon Sep 17 00:00:00 2001
+From 5a05ed4f59fdeb6b528a86927a5069dcc2531ee4 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 29 Mar 2024 21:52:18 -0400
 Subject: [PATCH] mtsc
@@ -13,7 +13,7 @@ Subject: [PATCH] mtsc
  create mode 100644 selfdrive/controls/mtsc.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 38d96a30b..fd1b19cd2 100644
+index 233016017..b32651e17 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -207,6 +207,12 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -30,7 +30,7 @@ index 38d96a30b..fd1b19cd2 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index b00f99906..700296acb 100644
+index 34d8f0097..bbcb95d88 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -565,3 +565,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
@@ -257,10 +257,10 @@ index 000000000..c718b448f
 +
 +mtsc = MapTurnSpeedController()
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 1c4e14446..dacff2c0e 100644
+index 96fe6585c..64b5c814a 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -63,6 +63,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -69,6 +69,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -276,5 +276,5 @@ index 1c4e14446..dacff2c0e 100644
      {
        "NavSettingTime24h",
 -- 
-2.39.3 (Apple Git-145)
+2.39.2
 

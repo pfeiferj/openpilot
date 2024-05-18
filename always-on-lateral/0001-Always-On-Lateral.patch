@@ -1,6 +1,6 @@
-From 9bf6ad9ea494f912d15769e2e6d1274370aae6ad Mon Sep 17 00:00:00 2001
+From 4c7ddea7c0c378785a10d1e1c438d319887f0f12 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
-Date: Fri, 29 Mar 2024 21:40:13 -0400
+Date: Fri, 17 May 2024 21:40:31 -0400
 Subject: [PATCH] Always On Lateral
 
 Provides support for Always On Lateral on some cars. Note that always on
@@ -20,13 +20,13 @@ control.
  selfdrive/controls/always_on_lateral.py | 270 ++++++++++++++++++++++++
  selfdrive/controls/controlsd.py         |  14 ++
  selfdrive/ui/qt/offroad/settings.cc     |  57 +++++
- selfdrive/ui/qt/onroad.cc               |   5 +
+ selfdrive/ui/qt/onroad/onroad_home.cc   |   5 +
  selfdrive/ui/ui.h                       |   6 +
  10 files changed, 401 insertions(+), 3 deletions(-)
  create mode 100644 selfdrive/controls/always_on_lateral.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 38d96a30b..e07fedd96 100644
+index 233016017..db808d16c 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -207,6 +207,19 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -50,14 +50,14 @@ index 38d96a30b..e07fedd96 100644
  
  } // namespace
 diff --git a/panda b/panda
-index 01c54d119..56be13eea 160000
+index cade0d5e7..43d1a6c74 160000
 --- a/panda
 +++ b/panda
 @@ -1 +1 @@
--Subproject commit 01c54d11990fb82b85acc322a6e2e34a4b7ee389
-+Subproject commit 56be13eeacc31390691f5e427bf7c992a062b247
+-Subproject commit cade0d5e75cdd6a659e1ded21a45d8f3c6c62c18
++Subproject commit 43d1a6c7486a6ff9b2629136acc7a61eddeec8e8
 diff --git a/release/files_common b/release/files_common
-index b00f99906..e332f811d 100644
+index 34d8f0097..1e8b47fe9 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -565,3 +565,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
@@ -67,32 +67,32 @@ index b00f99906..e332f811d 100644
 +
 +selfdrive/controls/always_on_lateral.py
 diff --git a/selfdrive/car/card.py b/selfdrive/car/card.py
-index 82335500d..1165a9e55 100755
+index ed916a6fe..a412399a9 100755
 --- a/selfdrive/car/card.py
 +++ b/selfdrive/car/card.py
-@@ -15,6 +15,10 @@ from openpilot.selfdrive.boardd.boardd import can_list_to_can_capnp
- from openpilot.selfdrive.car.car_helpers import get_car, get_one_can
+@@ -16,6 +16,10 @@ from openpilot.selfdrive.car.car_helpers import get_car, get_one_can
  from openpilot.selfdrive.car.interfaces import CarInterfaceBase
+ from openpilot.selfdrive.controls.lib.events import Events
  
 +# PFEIFER - AOL {{
 +from openpilot.selfdrive.controls.always_on_lateral import AlwaysOnLateral
 +# }} PFEIFER - AOL
 +
- 
  REPLAY = "REPLAY" in os.environ
  
-@@ -53,6 +57,9 @@ class CarD:
+ EventName = car.CarEvent.EventName
+@@ -54,6 +58,9 @@ class CarD:
      self.CP.alternativeExperience = 0
-     if not disengage_on_accelerator:
+     if not self.disengage_on_accelerator:
        self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
 +    # PFEIFER - AOL {{
 +    self.CP.alternativeExperience |= AlwaysOnLateral.alternative_experience()
 +    # }} PFEIFER - AOL
  
-     car_recognized = self.CP.carName != 'mock'
      openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
+ 
 diff --git a/selfdrive/car/hyundai/carstate.py b/selfdrive/car/hyundai/carstate.py
-index eac91d529..3f1513175 100644
+index 92c489cf3..28234a2db 100644
 --- a/selfdrive/car/hyundai/carstate.py
 +++ b/selfdrive/car/hyundai/carstate.py
 @@ -52,6 +52,10 @@ class CarState(CarStateBase):
@@ -118,7 +118,7 @@ index eac91d529..3f1513175 100644
        ret.cruiseState.enabled = cp.vl["TCS13"]["ACC_REQ"] == 1
        ret.cruiseState.standstill = False
        ret.cruiseState.nonAdaptive = False
-@@ -162,7 +169,14 @@ class CarState(CarStateBase):
+@@ -163,7 +170,14 @@ class CarState(CarStateBase):
      self.steer_state = cp.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
@@ -133,7 +133,7 @@ index eac91d529..3f1513175 100644
  
      return ret
  
-@@ -217,7 +231,10 @@ class CarState(CarStateBase):
+@@ -218,7 +232,10 @@ class CarState(CarStateBase):
  
      # cruise state
      # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
@@ -145,7 +145,7 @@ index eac91d529..3f1513175 100644
      if self.CP.openpilotLongitudinalControl:
        # These are not used for engage/disengage since openpilot keeps track of state using the buttons
        ret.cruiseState.enabled = cp.vl["TCS"]["ACC_REQ"] == 1
-@@ -238,7 +255,14 @@ class CarState(CarStateBase):
+@@ -239,7 +256,14 @@ class CarState(CarStateBase):
  
      self.prev_cruise_buttons = self.cruise_buttons[-1]
      self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
@@ -437,7 +437,7 @@ index 000000000..5a5c5f55c
 +      experience = ALTERNATIVE_EXPERIENCE.ENABLE_ALWAYS_ON_LATERAL
 +    return experience
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 72f1514d8..5e22454e9 100755
+index 92c933112..dc82e54f3 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -32,6 +32,10 @@ from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
@@ -451,7 +451,7 @@ index 72f1514d8..5e22454e9 100755
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
  LANE_DEPARTURE_THRESHOLD = 0.1
-@@ -168,6 +172,11 @@ class Controls:
+@@ -164,6 +168,11 @@ class Controls:
      # controlsd is driven by can recv, expected at 100Hz
      self.rk = Ratekeeper(100, print_delay_threshold=None)
  
@@ -462,8 +462,8 @@ index 72f1514d8..5e22454e9 100755
 +
    def set_initial_state(self):
      if REPLAY:
-       controls_state = Params().get("ReplayControlsState")
-@@ -556,6 +565,11 @@ class Controls:
+       controls_state = self.params.get("ReplayControlsState")
+@@ -540,6 +549,11 @@ class Controls:
      standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
      CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                     (not standstill or self.joystick_mode)
@@ -476,10 +476,10 @@ index 72f1514d8..5e22454e9 100755
  
      actuators = CC.actuators
 diff --git a/selfdrive/ui/qt/offroad/settings.cc b/selfdrive/ui/qt/offroad/settings.cc
-index 1c4e14446..3f07a8412 100644
+index 96fe6585c..345c38a4d 100644
 --- a/selfdrive/ui/qt/offroad/settings.cc
 +++ b/selfdrive/ui/qt/offroad/settings.cc
-@@ -63,6 +63,42 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -69,6 +69,42 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
        tr("Display speed in km/h instead of mph."),
        "../assets/offroad/icon_metric.png",
      },
@@ -522,7 +522,7 @@ index 1c4e14446..3f07a8412 100644
  #ifdef ENABLE_MAPS
      {
        "NavSettingTime24h",
-@@ -110,6 +146,10 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
+@@ -116,6 +152,10 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
    toggles["ExperimentalMode"]->setActiveIcon("../assets/img_experimental.svg");
    toggles["ExperimentalMode"]->setConfirmation(true, true);
    toggles["ExperimentalLongitudinalEnabled"]->setConfirmation(true, false);
@@ -533,9 +533,9 @@ index 1c4e14446..3f07a8412 100644
  
    connect(toggles["ExperimentalLongitudinalEnabled"], &ToggleControl::toggleFlipped, [=]() {
      updateToggles();
-@@ -159,6 +199,23 @@ void TogglesPanel::updateToggles() {
-                                   .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner. "
-                                           "When a navigation destination is set and the driving model is using it as input, the driving path on the map will turn green."));
+@@ -158,6 +198,23 @@ void TogglesPanel::updateToggles() {
+                                   .arg(tr("New Driving Visualization"))
+                                   .arg(tr("The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner."));
  
 +  // PFEIFER - AOL {{
 +  // Disable all AOL toggles while on-road
@@ -557,11 +557,11 @@ index 1c4e14446..3f07a8412 100644
    const bool is_release = params.getBool("IsReleaseBranch");
    auto cp_bytes = params.get("CarParamsPersistent");
    if (!cp_bytes.empty()) {
-diff --git a/selfdrive/ui/qt/onroad.cc b/selfdrive/ui/qt/onroad.cc
-index 5d562d6e2..31963f43e 100644
---- a/selfdrive/ui/qt/onroad.cc
-+++ b/selfdrive/ui/qt/onroad.cc
-@@ -83,6 +83,11 @@ void OnroadWindow::updateState(const UIState &s) {
+diff --git a/selfdrive/ui/qt/onroad/onroad_home.cc b/selfdrive/ui/qt/onroad/onroad_home.cc
+index 66eb1812e..47c6da06e 100644
+--- a/selfdrive/ui/qt/onroad/onroad_home.cc
++++ b/selfdrive/ui/qt/onroad/onroad_home.cc
+@@ -65,6 +65,11 @@ void OnroadWindow::updateState(const UIState &s) {
    nvg->updateState(s);
  
    QColor bgColor = bg_colors[s.status];
@@ -574,7 +574,7 @@ index 5d562d6e2..31963f43e 100644
      // repaint border
      bg = bgColor;
 diff --git a/selfdrive/ui/ui.h b/selfdrive/ui/ui.h
-index d639d85ee..b02531c72 100644
+index 7238159dd..f7399111d 100644
 --- a/selfdrive/ui/ui.h
 +++ b/selfdrive/ui/ui.h
 @@ -50,6 +50,9 @@ typedef enum UIStatus {
@@ -587,7 +587,7 @@ index d639d85ee..b02531c72 100644
  } UIStatus;
  
  enum PrimeType {
-@@ -66,6 +69,9 @@ const QColor bg_colors [] = {
+@@ -67,6 +70,9 @@ const QColor bg_colors [] = {
    [STATUS_DISENGAGED] = QColor(0x17, 0x33, 0x49, 0xc8),
    [STATUS_OVERRIDE] = QColor(0x91, 0x9b, 0x95, 0xf1),
    [STATUS_ENGAGED] = QColor(0x17, 0x86, 0x44, 0xf1),
@@ -598,5 +598,5 @@ index d639d85ee..b02531c72 100644
  
  
 -- 
-2.39.3 (Apple Git-145)
+2.39.2
 

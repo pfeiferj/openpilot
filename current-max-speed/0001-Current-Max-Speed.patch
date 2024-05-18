@@ -1,4 +1,4 @@
-From 132f6af513db0c70b48fe8afec1ca843b9f55d8b Mon Sep 17 00:00:00 2001
+From a1c4f39b6db165113fa73c9a383ae1b2ed6e9a6f Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Fri, 29 Mar 2024 21:41:04 -0400
 Subject: [PATCH] Current Max Speed
@@ -16,7 +16,7 @@ speed, i.e. speed limit control.
  create mode 100644 selfdrive/controls/current_max_speed.py
 
 diff --git a/common/params.cc b/common/params.cc
-index 38d96a30b..69e56726f 100644
+index 233016017..2c671d86b 100644
 --- a/common/params.cc
 +++ b/common/params.cc
 @@ -207,6 +207,10 @@ std::unordered_map<std::string, uint32_t> keys = {
@@ -31,7 +31,7 @@ index 38d96a30b..69e56726f 100644
  
  } // namespace
 diff --git a/release/files_common b/release/files_common
-index b00f99906..e53df06b8 100644
+index 34d8f0097..94d4c4e53 100644
 --- a/release/files_common
 +++ b/release/files_common
 @@ -565,3 +565,5 @@ tinygrad_repo/tinygrad/runtime/ops_disk.py
@@ -41,7 +41,7 @@ index b00f99906..e53df06b8 100644
 +
 +selfdrive/controls/current_max_speed.py
 diff --git a/selfdrive/controls/controlsd.py b/selfdrive/controls/controlsd.py
-index 72f1514d8..590855eb1 100755
+index 92c933112..e32e20bc4 100755
 --- a/selfdrive/controls/controlsd.py
 +++ b/selfdrive/controls/controlsd.py
 @@ -31,6 +31,9 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongControl
@@ -54,7 +54,7 @@ index 72f1514d8..590855eb1 100755
  
  SOFT_DISABLE_TIME = 3  # seconds
  LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
-@@ -684,6 +687,9 @@ class Controls:
+@@ -666,6 +669,9 @@ class Controls:
  
      hudControl = CC.hudControl
      hudControl.setSpeed = float(self.v_cruise_helper.v_cruise_cluster_kph * CV.KPH_TO_MS)
@@ -135,5 +135,5 @@ index 6cc6e80d3..9ad390ef8 100755
      self.a_desired_trajectory = self.a_desired_trajectory_full[:CONTROL_N]
      self.j_desired_trajectory = np.interp(ModelConstants.T_IDXS[:CONTROL_N], T_IDXS_MPC[:-1], self.mpc.j_solution)
 -- 
-2.39.3 (Apple Git-145)
+2.39.2
 

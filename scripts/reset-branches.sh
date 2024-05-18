@@ -55,6 +55,9 @@ git reset --hard origin/pfeifer-mtsc
 git checkout pfeifer-road-name
 git reset --hard origin/pfeifer-road-name
 
+git checkout pfeifer-ford-steering-hack
+git reset --hard origin/pfeifer-ford-steering-hack
+
 
 # Upstream PRs
 git checkout cluster-based-max-speed
