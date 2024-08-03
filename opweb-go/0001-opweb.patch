@@ -1,13 +1,15 @@
-From d1417174ae26a22bec08fc73f373f5604256b6e4 Mon Sep 17 00:00:00 2001
+From f10046e5679988275e8c9f03ac43bc615fc227d5 Mon Sep 17 00:00:00 2001
 From: Jacob Pfeifer <jacob@pfeifer.dev>
 Date: Sun, 1 Oct 2023 15:26:30 -0400
 Subject: [PATCH] opweb
 
 ---
- selfdrive/manager/process_config.py |  4 +++
- selfdrive/opwebd.py                 | 56 +++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+)
+ selfdrive/manager/process_config.py |   4 +
+ selfdrive/opwebd.py                 |  56 +++++++++++
+ settings.json                       | 142 ++++++++++++++++++++++++++++
+ 3 files changed, 202 insertions(+)
  create mode 100644 selfdrive/opwebd.py
+ create mode 100644 settings.json
 
 diff --git a/selfdrive/manager/process_config.py b/selfdrive/manager/process_config.py
 index 4c34e7339..6667c571c 100644
@@ -26,7 +28,7 @@ index 4c34e7339..6667c571c 100644
    PythonProcess("webrtcd", "system.webrtc.webrtcd", notcar),
 diff --git a/selfdrive/opwebd.py b/selfdrive/opwebd.py
 new file mode 100644
-index 000000000..1aadf0dec
+index 000000000..9c093e447
 --- /dev/null
 +++ b/selfdrive/opwebd.py
 @@ -0,0 +1,56 @@
@@ -37,7 +39,7 @@ index 000000000..1aadf0dec
 +from openpilot.common.realtime import Ratekeeper
 +import stat
 +
-+VERSION = 'v1.2.1'
++VERSION = 'v1.3.0'
 +URL = f"https://github.com/pfeiferj/opweb/releases/download/{VERSION}/opwebd"
 +OPWEBD_PATH = '/data/media/0/opwebd'
 +VERSION_PATH = '/data/media/0/opwebd_version'
@@ -86,6 +88,154 @@ index 000000000..1aadf0dec
 +
 +if __name__ == "__main__":
 +  main()
+diff --git a/settings.json b/settings.json
+new file mode 100644
+index 000000000..12ebcfde6
+--- /dev/null
++++ b/settings.json
+@@ -0,0 +1,142 @@
++[
++  {
++    "Id": "AOL",
++    "Name": "AOL - Always On Lateral",
++    "Description": "Allows you to keep lateral controls enabled even when long control is not enabled. Lateral control can be disabled by pressing the main cruise control button.",
++    "Settings": [
++      {
++        "Name": "Always On Lateral Enabled",
++        "Description": "Enables the Always On Lateral feature.",
++        "Key": "AlwaysOnLateralEnabled",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Main Enables Lateral",
++        "Description": "Lateral is toggled on whenever you press the main cruise control button. When this is disabled you can only engage lateral control by engaging long control.",
++        "Key": "AlwaysOnLateralMainEnables",
++        "DefaultValue": "1",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Disengage While Braking",
++        "Description": "Lateral will be disabled while the brake pedal is pressed and will resume when the brake pedal is released.",
++        "Key": "DisengageLatOnBrake",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Disengage While Blinker Engaged",
++        "Description": "Lateral will be disabled while the blinker is engaged and will resume when the blinker is disengaged.",
++        "Key": "DisengageLatOnBlinker",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Disengage While Low Speed Blinker Engaged",
++        "Description": "Lateral will be disabled while the blinker is engaged if the speed is below the Blinker Low Speed Limit setting and will resume when the blinker is disengaged or the speed is no longer below the limit.",
++        "Key": "DisengageLatOnLowSpeedBlinker",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Blinker Low Speed Limit (m/s)",
++        "Description": "Lateral will be disabled while the blinker is engaged if the speed is below the Low Speed Blinker setting and will resume when the blinker is disengaged. Speed must be specified in meters/second.",
++        "Key": "LatBlinkerLowSpeedLimit",
++        "DefaultValue": "8",
++        "Type": "number",
++        "UpdateMemParam": true
++      }
++    ]
++  },
++  {
++    "Id": "SLC",
++    "Name": "SLC - Speed Limit Control",
++    "Description": "Uses various data sources to automatically limit the max speed based on the current speed limit.",
++    "Settings": [
++      {
++        "Name": "Nav Speed Limit Enabled",
++        "Description": "Enables the openpilot navigation speed limit source.",
++        "Key": "NavSpeedLimitControl",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Map Speed Limit Enabled",
++        "Description": "Enables the mapd (openstreetmap) speed limit source.",
++        "Key": "MapSpeedLimitControl",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Car Speed Limit Enabled",
++        "Description": "Enables the car's factory speed limit source. Only works on hkg-can vehicles.",
++        "Key": "CarSpeedLimitControl",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Speed Limit Offset (m/s)",
++        "Description": "How much above the speed limit that should be used when limiting the max speed. Speed must be specified in meters/second.",
++        "Key": "SpeedLimitOffset",
++        "DefaultValue": "0",
++        "Type": "number",
++        "UpdateMemParam": true
++      }
++    ]
++  },
++  {
++    "Id": "TSC",
++    "Name": "TSC - Turn Speed Control",
++    "Description": "Uses curvatures from various sources to limit the max speed in a curve.",
++    "Settings": [
++      {
++        "Name": "Vision Turn Speed Control Enabled",
++        "Description": "Uses the curvatures reported from the driving model to determine an appropriate speed for upcoming curves. It then limits the max speed to the calculated speed.",
++        "Key": "TurnVisionControl",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "Map Turn Speed Control Enabled",
++        "Description": "Uses the curve speeds and positions reported by mapd (openstreetmap) and calculates the time required to slow down to the target speed. Once it is within the minimum distance to hit the speed it limits the max speed to the reported speed.",
++        "Key": "MTSCEnabled",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      },
++      {
++        "Name": "MTSC Target Lateral Accel",
++        "Description": "Sets the target lateral acceleration for the map turn speed control. This is used to calculate the target speed for upcoming curves. Default value is 2.0 m/s^2 and increments of 0.1 m/s^2 result in approximately 1 mph changes in the target speed for curves. Value is a floating point number in m/s^2.",
++        "Key": "MapTargetLatA",
++        "DefaultValue": "2.0",
++        "Type": "number",
++        "UpdateMemParam": true
++      }
++    ]
++  },
++  {
++    "Id": "Upload",
++    "Name": "Uploads",
++    "Description": "Allows disabling of uploads to comma servers.",
++    "Settings": [
++      {
++        "Name": "Disable Driver Cam Upload",
++        "Description": "Disables uploading of driver camera data to comma servers.",
++        "Key": "DisableDCamUpload",
++        "DefaultValue": "0",
++        "Type": "toggle",
++        "UpdateMemParam": true
++      }
++    ]
++  }
++]
 -- 
 2.39.2
 
