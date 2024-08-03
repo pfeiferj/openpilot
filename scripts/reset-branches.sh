@@ -58,8 +58,8 @@ git reset --hard origin/pfeifer-road-name
 git checkout pfeifer-ford-steering-hack
 git reset --hard origin/pfeifer-ford-steering-hack
 
-git checkout pfeifer-ford-radar-enable
-git reset --hard origin/pfeifer-ford-radar-enable
+git checkout pfeifer-ford-steering-data-radar
+git reset --hard origin/pfeifer-ford-steering-data-radar
 
 
 # Upstream PRs

@@ -25,7 +25,7 @@ git merge pfeifer-opweb-go
 git merge pfeifer-mtsc
 git merge pfeifer-road-name
 git merge pfeifer-ford-steering-hack
-git merge pfeifer-ford-radar-enable
+git merge pfeifer-ford-steering-data-radar
 
 # Upstream PRs
 git merge cluster-based-max-speed

@@ -58,7 +58,7 @@ git pull
 git checkout pfeifer-ford-steering-hack
 git pull
 
-git checkout pfeifer-ford-radar-enable
+git checkout pfeifer-ford-steering-data-radar
 git pull
 
 

@@ -58,7 +58,7 @@ git push --force
 git checkout pfeifer-ford-steering-hack
 git push --force
 
-git checkout pfeifer-ford-radar-enable
+git checkout pfeifer-ford-steering-data-radar
 git push --force
 
 # Upstream Prs
