@@ -2,6 +2,16 @@
 A collection of patch sets of common unsupported/unofficial community features
 for [openpilot](https://github.com/commaai/openpilot).
 
+## NOTE: DEPRECATED
+The openpilot fork space has changed drastically since I started this repo. When
+this repo was started the major forks had significant parts of their code closed
+source. Now all of the major forks are completely open source which removes much
+of the need for a project like this. As such I'm deprecating this project and
+while I may occasionally still update one or two of the patches, for all intents
+and purposes you can consider this repo to be unmaintained. I plan to continue
+working on my other openpilot projects and will be using the time I was spending
+maintaining this repo for those projects.
+
 ## Not a developer? Read this!
 This repo is primarily intended for developers. If you're not a developer you
 may be better served by some of the amazing community forks of openpilot. The
