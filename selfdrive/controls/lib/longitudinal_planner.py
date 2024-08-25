@@ -151,8 +151,8 @@ class LongitudinalPlanner:
 
     # PFEIFER - SLC {{
     slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS, v_ego)
-    if slc.speed_limit > 0 and (slc.speed_limit + slc.offset) < v_cruise:
-      v_cruise = slc.speed_limit + slc.offset
+    if slc.speed_limit > 0 and (slc.speed_limit + slc.offset + v_ego_diff) < v_cruise:
+      v_cruise = slc.speed_limit + slc.offset + v_ego_diff
     # }} PFEIFER - SLC
     # PFEIFER - VTSC {{
     vtsc.update(prev_accel_constraint, v_ego, sm)
